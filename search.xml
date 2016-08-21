@@ -35,7 +35,7 @@
 <li>DELETE方法：删除相应对象记录。无返回。</li>
 </ol>
 <p>　　有一些HTTP proxy只支持GET和POST方法，而不支持其他方法。这种情况在规范里一般在http header里加入X-HTTP-Method-Override的key，里面保存真正的http方法，例如”PUT”或”PATCH”，而请求一律通过POST方法发送到服务器端。具体的代码实现将会在下一讲介绍。</p>
-<h3 id="数据传输及序列化与反序列化"><a href="#数据传输及序列化与反序列化" class="headerlink" title="数据传输及序列化与反序列化"></a>数据传输及序列化与反序列化</h3><p>　　在RESTful API操作的是对象，传出与接收一般是实体的POJO对象。而对象如果传出，需要先进行序列化，以xml或json的形式传送。对象如果接收，则要进行反序列化，把json或xml的数据转换成实体的POJO对象。序列化或进行反序列化的数据类型一般用@Produces和@Consumes注解来。下面给出一个例子：</p>
+<h3 id="数据传输及序列化与反序列化"><a href="#数据传输及序列化与反序列化" class="headerlink" title="数据传输及序列化与反序列化"></a>数据传输及序列化与反序列化</h3><p>　　在RESTful API操作的是对象，传出与接收一般是实体的POJO对象。而对象如果传出，需要先进行序列化，以xml或json的形式传送。对象如果接收，则要进行反序列化，把json或xml的数据转换成实体的POJO对象。序列化或进行反序列化的数据类型一般用@Produces和@Consumes注解来实现。下面给出一个例子：</p>
 <p><pre><code><br>    @PUT<br>    @Path(“{id}/block”)<br>    @Consumes({“application/json”})<br>    @Produces({“application/json”})<br>    public MessageDTO block(@PathParam(“id”) Long id,@Context HttpServletRequest request,MessageDTO messageDTO) {<br></code></pre></p>
 <p><pre><code><br>    @XmlRootElement</code></pre></p>
 <pre><code>public class MessageDTO {
