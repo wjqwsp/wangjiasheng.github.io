@@ -112,7 +112,7 @@
 <meta property="og:description" content="前言　　关于RESTful API的概念网上已经说过很多，可以用很多语言与框架实现，其规范也十分详尽。我这篇入门教程尽量用自己的理解去总结RESTful API的一些要点，并以JaveEE规范的JAX-RS框架为例，以实战的形式去讲述怎么搭建一套RESTful API，并在实践过程中体现RESTful API的设计规范。
 什么是RESTful API
 服务器端提供给开发者的一套接口，开发者通过调用">
-<meta property="og:updated_time" content="2016-08-21T16:40:23.141Z">
+<meta property="og:updated_time" content="2016-08-22T15:50:49.243Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="RESTful API 入门一(JAX-RS实现)">
 <meta name="twitter:description" content="前言　　关于RESTful API的概念网上已经说过很多，可以用很多语言与框架实现，其规范也十分详尽。我这篇入门教程尽量用自己的理解去总结RESTful API的一些要点，并以JaveEE规范的JAX-RS框架为例，以实战的形式去讲述怎么搭建一套RESTful API，并在实践过程中体现RESTful API的设计规范。
@@ -349,16 +349,16 @@
 <p>　　显而易见，这种目录式的URI定位十分直观，简单。</p>
 <h3 id="搭建基本JAX-RS环境"><a href="#搭建基本JAX-RS环境" class="headerlink" title="搭建基本JAX-RS环境"></a>搭建基本JAX-RS环境</h3><p>　　JAX-RS是JaveEE框架里专门用来实现RESTful API的技术。搭建十分简单，且大都用注解注入的形式实现，使代码结构十分清晰，代码量很少。除了依赖的包以及一些xml配置文件以外，代码里只需要自己继承实现javax.ws.rs.core.Application类便可以完成最基本的配置。依赖的包和xml配置可自行上网搜索，不是我这篇教程的重点，这里将主要介绍代码里如何实现RESTful API</p>
 <h5 id="Application类"><a href="#Application类" class="headerlink" title="Application类"></a>Application类</h5><p>　　必须创建一个类继承Application类。JAX-RS里我们用到的组件主要有两类，分别是Resource和Provider。Resource就是上述的URI对应的可供用户访问的资源。Provider是运行时自行调用的一些类，起到配置作用，这在下一讲再详细介绍。这两类组件都必须在Application类的实现类的Set<class<?>&gt; getClasses()方法里进行注册。以下是官网文档的示例：</class<?></p>
-<p><pre><code>public class MyApplication extends Application {<br>    @Override<br>    public Set<class<?>&gt; getClasses() {<br>        Set<class<?>&gt; s = new HashSet<class<?>&gt;();<br>        s.add(HelloWorldResource.class);<br>        return s;<br>    }<br>}</class<?></class<?></class<?></code></pre><br>　　HelloWorldResource就是Resource组件的其中一个类，如果RESTful API需要访问这个资源类，则需要用上述的语法实现注册，是不是很简单。</p>
-<h5 id="ResourceConfig类"><a href="#ResourceConfig类" class="headerlink" title="ResourceConfig类"></a>ResourceConfig类</h5><p>　　ResourceConfig是JAX-RS里提供的一个Application的实现类，通过继承这个类并且在其派生类的构造方法里对组件进行注册，可以简化注册的过程。除了对需要使用的Resource和Provider组件进行register以外，还可以通过提供要注册组件所在的包，而自动将包内所有这两类组件注册。以下是示例：</p>
-<p><pre><code>public class MyApplication extends ResourceConfig {<br>    public MyApplication() {<br>        packages(“org.foo.rest;org.bar.rest”);<br>    }<br>}</code></pre></p>
-<p><pre><code>public class MyRESTExampleApplication extends ResourceConfig {<br>    public MyRESTExampleApplication() {<br>         packages(“com.carano.fleet4all.restExample”);<br>         register(JacksonFeature.class);<br>    }<br>}</code></pre></p>
-<h5 id="ApplicationPath注解"><a href="#ApplicationPath注解" class="headerlink" title="ApplicationPath注解"></a>ApplicationPath注解</h5><p>　　可以为Application的实现类添加@javax.ws.rs.ApplicationPath注解，那么所有RESTful API的URI资源都将包含该注解提供的名字作为前缀。以下是示例：</p>
-<p><pre><code><br>    @javax.ws.rs.ApplicationPath(“api”)<br>    public class ApplicationConfig extends Application {<br>    @Override<br>    public Set<class<?>&gt; getClasses() {<br>        Set<class<?>&gt; resources = new java.util.HashSet&lt;&gt;();<br>        addRestResourceClasses(resources);<br>        resources.add(JacksonFeature.class);<br>        return resources;<br>    }<br>}<br></class<?></class<?></code></pre><br>　　在这里注册的所有资源，其URI定位都必然是/api/…</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyApplication</span> <span class="keyword">extends</span> <span class="title">Application</span> </span>&#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="keyword">public</span> Set&lt;Class&lt;?&gt;&gt; getClasses() &#123;</div><div class="line">        Set&lt;Class&lt;?&gt;&gt; s = <span class="keyword">new</span> HashSet&lt;Class&lt;?&gt;&gt;();</div><div class="line">        s.add(HelloWorldResource.class);</div><div class="line">        <span class="keyword">return</span> s;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　HelloWorldResource就是Resource组件的其中一个类，如果RESTful API需要访问这个资源类，则需要用上述的语法实现注册，是不是很简单。</p>
+<h5 id="ResourceConfig类"><a href="#ResourceConfig类" class="headerlink" title="ResourceConfig类"></a>ResourceConfig类</h5><p>　　ResourceConfig是JAX-RS里提供的一个Application的实现类，通过继承这个类并且在其派生类的构造方法里对组件进行注册，可以简化注册的过程。除了对需要使用的Resource和Provider组件进行register以外，还可以通过提供要注册组件所在的包，而自动将包内所有这两类组件注册。以下是示例：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyApplication</span> <span class="keyword">extends</span> <span class="title">ResourceConfig</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">MyApplication</span><span class="params">()</span> </span>&#123;</div><div class="line">        packages(<span class="string">"org.foo.rest;org.bar.rest"</span>);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyRESTExampleApplication</span> <span class="keyword">extends</span> <span class="title">ResourceConfig</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">MyRESTExampleApplication</span><span class="params">()</span> </span>&#123;</div><div class="line">         packages(<span class="string">"com.carano.fleet4all.restExample"</span>);</div><div class="line">         register(JacksonFeature.class);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="ApplicationPath注解"><a href="#ApplicationPath注解" class="headerlink" title="ApplicationPath注解"></a>ApplicationPath注解</h5><p>　　可以为Application的实现类添加@javax.ws.rs.ApplicationPath注解，那么所有RESTful API的URI资源都将包含该注解提供的名字作为前缀。以下是示例：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">    <span class="meta">@javax</span>.ws.rs.ApplicationPath(<span class="string">"api"</span>)</div><div class="line">    <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ApplicationConfig</span> <span class="keyword">extends</span> <span class="title">Application</span> </span>&#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="keyword">public</span> Set&lt;Class&lt;?&gt;&gt; getClasses() &#123;</div><div class="line">        Set&lt;Class&lt;?&gt;&gt; resources = <span class="keyword">new</span> java.util.HashSet&lt;&gt;();</div><div class="line">        addRestResourceClasses(resources); </div><div class="line">        resources.add(JacksonFeature.class);    </div><div class="line">        <span class="keyword">return</span> resources;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>　　在这里注册的所有资源，其URI定位都必然是/api/…</p>
 <h3 id="Resource组件"><a href="#Resource组件" class="headerlink" title="Resource组件"></a>Resource组件</h3><p>　　搭建了基本的JAX-RS环境，便可以进行真正的业务逻辑的实现了。所谓的业务逻辑，无非对特定URI资源的增删改查操作。这些都是在Resource组件方法里通过特定的注解实现操作和资源的匹配的。所有在类名上面添加了@path注解的，都被认为是Resource组件。这些类方法上添加的@path注解，将与类的@path注解提供的名字以及ApplicationPath注解提供的名字组合在一起，作为其URI。</p>
-<p>　　以下是Resource组件类示例：</p>
-<p><pre><code>@Path(“message”)<br>public class MessageFacadeREST extends AbstractFacade<message> {<br></message></code></pre><br>　　以下是某资源方法示例：</p>
-<p><pre><code><br>    @GET<br>    @Path(“danger-unsolved”)<br>    @Consumes({“application/json”})<br>    @Produces({“application/json;charset=UTF-8”})<br>    public Response findUnSolved(@QueryParam(“page”) int page,@QueryParam(“per-page”) int perPage,@Context HttpServletResponse response) {<br></code></pre><br>　　先忽略掉无关的代码，只看@GET和@Path标注。@GET很容易猜到是用http的GET方法。@Path便是该资源的URI的一部分。如果findUnSolved方法是类MessageFacadeREST里的方法，且MessageFacadeREST在ApplicationConfig类里注册，那么findUnSolved方法便可以通过/api/message/danger-unsolved这个URI访问。如果加上@GET方法，那么就是对/api/message/danger-unsolved这个资源用http的GET方法访问，实际上便是调用对应的findUnSolved方法。</p>
+<p>　　以下是Resource组件类示例：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Path</span>(<span class="string">"message"</span>)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MessageFacadeREST</span> <span class="keyword">extends</span> <span class="title">AbstractFacade</span>&lt;<span class="title">Message</span>&gt; </span>&#123;</div></pre></td></tr></table></figure></p>
+<p>　　以下是某资源方法示例：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@GET</span></div><div class="line"><span class="meta">@Path</span>(<span class="string">"danger-unsolved"</span>)</div><div class="line"><span class="meta">@Consumes</span>(&#123;<span class="string">"application/json"</span>&#125;)</div><div class="line"><span class="meta">@Produces</span>(&#123;<span class="string">"application/json;charset=UTF-8"</span>&#125;)</div><div class="line"><span class="function"><span class="keyword">public</span> Response <span class="title">findUnSolved</span><span class="params">(@QueryParam(<span class="string">"page"</span>)</span> <span class="keyword">int</span> page,@<span class="title">QueryParam</span><span class="params">(<span class="string">"per-page"</span>)</span> <span class="keyword">int</span> perPage,@Context HttpServletResponse response) </span>&#123;</div></pre></td></tr></table></figure></p>
+<p>　　先忽略掉无关的代码，只看@GET和@Path标注。@GET很容易猜到是用http的GET方法。@Path便是该资源的URI的一部分。如果findUnSolved方法是类MessageFacadeREST里的方法，且MessageFacadeREST在ApplicationConfig类里注册，那么findUnSolved方法便可以通过/api/message/danger-unsolved这个URI访问。如果加上@GET方法，那么就是对/api/message/danger-unsolved这个资源用http的GET方法访问，实际上便是调用对应的findUnSolved方法。</p>
 <h3 id="HTTP方法"><a href="#HTTP方法" class="headerlink" title="HTTP方法"></a>HTTP方法</h3><p>　　RESTful API里涉及的HTTP方法一般是GET,POST,PUT,PATCH,DELETE。这些HTTP方法都是用注解形式添加在相应的Resource组件类的方法上。</p>
 <ol>
 <li>GET方法：用于对资源的读取，一般返回单个对象或者对象列表。</li>
@@ -368,214 +368,9 @@
 <li>DELETE方法：删除相应对象记录。无返回。</li>
 </ol>
 <p>　　有一些HTTP proxy只支持GET和POST方法，而不支持其他方法。这种情况在规范里一般在http header里加入X-HTTP-Method-Override的key，里面保存真正的http方法，例如”PUT”或”PATCH”，而请求一律通过POST方法发送到服务器端。具体的代码实现将会在下一讲介绍。</p>
-<h3 id="数据传输及序列化与反序列化"><a href="#数据传输及序列化与反序列化" class="headerlink" title="数据传输及序列化与反序列化"></a>数据传输及序列化与反序列化</h3><p>　　在RESTful API操作的是对象，传出与接收一般是实体的POJO对象。而对象如果传出，需要先进行序列化，以xml或json的形式传送。对象如果接收，则要进行反序列化，把json或xml的数据转换成实体的POJO对象。序列化或进行反序列化的数据类型一般用@Produces和@Consumes注解来实现。下面给出一个例子：</p>
-<p><pre><code><br>    @PUT<br>    @Path(“{id}/block”)<br>    @Consumes({“application/json”})<br>    @Produces({“application/json”})<br>    public MessageDTO block(@PathParam(“id”) Long id,@Context HttpServletRequest request,MessageDTO messageDTO) {<br></code></pre></p>
-<p><pre><code><br>    @XmlRootElement</code></pre></p>
-<pre><code>public class MessageDTO {
-
-private Long message1Id;
-
-private String message1Word;
-
-private int message1CommentCount;
-
-private int message1TransmissionCount;
-
-private String message1UserName;
-
-private Timestamp message1Date;
-
-private Long message1OwnerId;
-
-private boolean referenced;
-
-private Long message2Id;
-
-private String message2Word;
-
-private int message2CommentCount;
-
-private int message2TransmissionCount;
-
-private String message2UserName;
-
-private Timestamp message2Date;
-
-private Long message2OwnerId;
-
-private boolean blocked;
-
-private boolean deleted;
-
-private Timestamp managedDate;
-
-private String action;
-
-private String operator;
-
-public Timestamp getManagedDate() {
-    return managedDate;
-}
-
-public void setManagedDate(Timestamp managedDate) {
-    this.managedDate = managedDate;
-}
-
-public String getAction() {
-    return action;
-}
-
-public void setAction(String action) {
-    this.action = action;
-}
-
-public String getOperator() {
-    return operator;
-}
-
-public void setOperator(String operator) {
-    this.operator = operator;
-}
-
-public boolean isBlocked() {
-    return blocked;
-}
-
-public void setBlocked(boolean blocked) {
-    this.blocked = blocked;
-}
-
-public boolean isDeleted() {
-    return deleted;
-}
-
-public void setDeleted(boolean deleted) {
-    this.deleted = deleted;
-}
-
-public MessageDTO() {
-}
-
-public Long getMessage1Id() {
-    return message1Id;
-}
-
-public void setMessage1Id(Long message1Id) {
-    this.message1Id = message1Id;
-}
-
-public String getMessage1Word() {
-    return message1Word;
-}
-
-public void setMessage1Word(String message1Word) {
-    this.message1Word = message1Word;
-}
-
-public int getMessage1CommentCount() {
-    return message1CommentCount;
-}
-
-public void setMessage1CommentCount(int message1CommentCount) {
-    this.message1CommentCount = message1CommentCount;
-}
-
-public int getMessage1TransmissionCount() {
-    return message1TransmissionCount;
-}
-
-public void setMessage1TransmissionCount(int message1TransmissionCount) {
-    this.message1TransmissionCount = message1TransmissionCount;
-}
-
-public String getMessage1UserName() {
-    return message1UserName;
-}
-
-public void setMessage1UserName(String message1UserName) {
-    this.message1UserName = message1UserName;
-}
-
-public Timestamp getMessage1Date() {
-    return message1Date;
-}
-
-public void setMessage1Date(Timestamp message1Date) {
-    this.message1Date = message1Date;
-}
-
-public Long getMessage1OwnerId() {
-    return message1OwnerId;
-}
-
-public void setMessage1OwnerId(Long message1OwnerId) {
-    this.message1OwnerId = message1OwnerId;
-}
-
-public boolean isReferenced() {
-    return referenced;
-}
-
-public void setReferenced(boolean referenced) {
-    this.referenced = referenced;
-}
-
-public Long getMessage2Id() {
-    return message2Id;
-}
-
-public void setMessage2Id(Long message2Id) {
-    this.message2Id = message2Id;
-}
-
-public String getMessage2Word() {
-    return message2Word;
-}
-
-public void setMessage2Word(String message2Word) {
-    this.message2Word = message2Word;
-}
-
-public int getMessage2CommentCount() {
-    return message2CommentCount;
-}
-
-public void setMessage2CommentCount(int message2CommentCount) {
-    this.message2CommentCount = message2CommentCount;
-}
-
-public int getMessage2TransmissionCount() {
-    return message2TransmissionCount;
-}
-
-public void setMessage2TransmissionCount(int message2TransmissionCount) {
-    this.message2TransmissionCount = message2TransmissionCount;
-}
-
-public String getMessage2UserName() {
-    return message2UserName;
-}
-
-public void setMessage2UserName(String message2UserName) {
-    this.message2UserName = message2UserName;
-}
-
-public Timestamp getMessage2Date() {
-    return message2Date;
-}
-
-public void setMessage2Date(Timestamp message2Date) {
-    this.message2Date = message2Date;
-}
-
-public Long getMessage2OwnerId() {
-    return message2OwnerId;
-}
-
-public void setMessage2OwnerId(Long message2OwnerId) {
-    this.message2OwnerId = message2OwnerId;
-}
-</code></pre><p>}<br><br>　　方法block是通过http的PUT方法访问的，需要传入一个MessageDTO对象，并返回一个MessageDTO对象。@Produces定义了返回对象将序列化成为json格式；@Cosumes定义了接收的对象是json格式的，将对其进行反序列化。JAX-RS里本身没有实现对特定对象自动进行序列化与反序列化。一般需实现MessageBodyWriter或MessageBodyReader这两个类，在这两个类里自行进行序列化与反序列化的处理。这两个类都属于Provider，将在下一讲介绍。但实际上，如果只是简单的进行json或xml的转换是非常简单的，并不需要另外实现Provider，只有对具体的格式有要求或者需要进行更多的配置才有必要实现。一般如果进行xml转换，只需要修改@Produces和@Consumes为对应格式，并且在需要进行序列化与反序列化的POJO类上加上@XmlRootElement注解，便可实现。这种做法实际上是JAX-RS后台调用JAXB实现，@XmlRootElement是JAXB注解，而JAXB是专门用于进行xml和JAVA对象转换的技术。如果需要用json格式，同样可以通过JAXB的@XmlRootElement注解实现，只需把@Provider或@Consumes修改为application/json即可。实际上如果你是用glassfish 4以上作为application server container的，如果以json格式进行传输不需要任何其他Provider或@XmlRootElement，只需要修改@Provider或@Consumes即可。因为glassfish 4已经配置了MOXy作为Default JSON-Binding Provider。MOXy是json的一个框架，它可以在Application里自动注册，不需要显示地手动注册资源。</p>
+<h3 id="数据传输及序列化与反序列化"><a href="#数据传输及序列化与反序列化" class="headerlink" title="数据传输及序列化与反序列化"></a>数据传输及序列化与反序列化</h3><p>　　在RESTful API操作的是对象，传出与接收一般是实体的POJO对象。而对象如果传出，需要先进行序列化，以xml或json的形式传送。对象如果接收，则要进行反序列化，把json或xml的数据转换成实体的POJO对象。序列化或进行反序列化的数据类型一般用@Produces和@Consumes注解来实现。下面给出一个例子：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@PUT</span></div><div class="line"><span class="meta">@Path</span>(<span class="string">"&#123;id&#125;/block"</span>)</div><div class="line"><span class="meta">@Consumes</span>(&#123;<span class="string">"application/json"</span>&#125;)</div><div class="line"><span class="meta">@Produces</span>(&#123;<span class="string">"application/json"</span>&#125;)</div><div class="line"><span class="function"><span class="keyword">public</span> MessageDTO <span class="title">block</span><span class="params">(@PathParam(<span class="string">"id"</span>)</span> Long id,@Context HttpServletRequest request,MessageDTO messageDTO) </span>&#123;</div></pre></td></tr></table></figure></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div><div class="line">179</div><div class="line">180</div><div class="line">181</div><div class="line">182</div><div class="line">183</div><div class="line">184</div><div class="line">185</div><div class="line">186</div><div class="line">187</div><div class="line">188</div><div class="line">189</div><div class="line">190</div><div class="line">191</div><div class="line">192</div><div class="line">193</div><div class="line">194</div><div class="line">195</div><div class="line">196</div><div class="line">197</div><div class="line">198</div><div class="line">199</div><div class="line">200</div><div class="line">201</div><div class="line">202</div><div class="line">203</div><div class="line">204</div><div class="line">205</div><div class="line">206</div><div class="line">207</div><div class="line">208</div></pre></td><td class="code"><pre><div class="line">    <span class="meta">@XmlRootElement</span></div><div class="line"></div><div class="line">    <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MessageDTO</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> Long message1Id;</div><div class="line">    </div><div class="line">    <span class="keyword">private</span> String message1Word;</div><div class="line">    </div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> message1CommentCount;</div><div class="line">    </div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> message1TransmissionCount;</div><div class="line">    </div><div class="line">    <span class="keyword">private</span> String message1UserName;</div><div class="line">    </div><div class="line">    <span class="keyword">private</span> Timestamp message1Date;</div><div class="line">    </div><div class="line">    <span class="keyword">private</span> Long message1OwnerId;</div><div class="line">    </div><div class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> referenced;</div><div class="line">    </div><div class="line">    <span class="keyword">private</span> Long message2Id;</div><div class="line">    </div><div class="line">    <span class="keyword">private</span> String message2Word;</div><div class="line">    </div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> message2CommentCount;</div><div class="line">    </div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> message2TransmissionCount;</div><div class="line">    </div><div class="line">    <span class="keyword">private</span> String message2UserName;</div><div class="line">    </div><div class="line">    <span class="keyword">private</span> Timestamp message2Date;</div><div class="line">    </div><div class="line">    <span class="keyword">private</span> Long message2OwnerId;</div><div class="line">    </div><div class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> blocked;</div><div class="line">    </div><div class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> deleted;</div><div class="line">    </div><div class="line">    <span class="keyword">private</span> Timestamp managedDate;</div><div class="line">    </div><div class="line">    <span class="keyword">private</span> String action;</div><div class="line">    </div><div class="line">    <span class="keyword">private</span> String operator;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> Timestamp <span class="title">getManagedDate</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> managedDate;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setManagedDate</span><span class="params">(Timestamp managedDate)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.managedDate = managedDate;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getAction</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> action;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setAction</span><span class="params">(String action)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.action = action;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getOperator</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> operator;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setOperator</span><span class="params">(String operator)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.operator = operator;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isBlocked</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> blocked;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setBlocked</span><span class="params">(<span class="keyword">boolean</span> blocked)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.blocked = blocked;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isDeleted</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> deleted;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setDeleted</span><span class="params">(<span class="keyword">boolean</span> deleted)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.deleted = deleted;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">MessageDTO</span><span class="params">()</span> </span>&#123;</div><div class="line">    &#125;</div><div class="line">  </div><div class="line">    <span class="function"><span class="keyword">public</span> Long <span class="title">getMessage1Id</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> message1Id;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMessage1Id</span><span class="params">(Long message1Id)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.message1Id = message1Id;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getMessage1Word</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> message1Word;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMessage1Word</span><span class="params">(String message1Word)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.message1Word = message1Word;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getMessage1CommentCount</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> message1CommentCount;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMessage1CommentCount</span><span class="params">(<span class="keyword">int</span> message1CommentCount)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.message1CommentCount = message1CommentCount;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getMessage1TransmissionCount</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> message1TransmissionCount;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMessage1TransmissionCount</span><span class="params">(<span class="keyword">int</span> message1TransmissionCount)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.message1TransmissionCount = message1TransmissionCount;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getMessage1UserName</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> message1UserName;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMessage1UserName</span><span class="params">(String message1UserName)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.message1UserName = message1UserName;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> Timestamp <span class="title">getMessage1Date</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> message1Date;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMessage1Date</span><span class="params">(Timestamp message1Date)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.message1Date = message1Date;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> Long <span class="title">getMessage1OwnerId</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> message1OwnerId;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMessage1OwnerId</span><span class="params">(Long message1OwnerId)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.message1OwnerId = message1OwnerId;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isReferenced</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> referenced;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setReferenced</span><span class="params">(<span class="keyword">boolean</span> referenced)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.referenced = referenced;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> Long <span class="title">getMessage2Id</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> message2Id;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMessage2Id</span><span class="params">(Long message2Id)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.message2Id = message2Id;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getMessage2Word</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> message2Word;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMessage2Word</span><span class="params">(String message2Word)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.message2Word = message2Word;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getMessage2CommentCount</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> message2CommentCount;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMessage2CommentCount</span><span class="params">(<span class="keyword">int</span> message2CommentCount)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.message2CommentCount = message2CommentCount;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getMessage2TransmissionCount</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> message2TransmissionCount;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMessage2TransmissionCount</span><span class="params">(<span class="keyword">int</span> message2TransmissionCount)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.message2TransmissionCount = message2TransmissionCount;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getMessage2UserName</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> message2UserName;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMessage2UserName</span><span class="params">(String message2UserName)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.message2UserName = message2UserName;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> Timestamp <span class="title">getMessage2Date</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> message2Date;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMessage2Date</span><span class="params">(Timestamp message2Date)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.message2Date = message2Date;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> Long <span class="title">getMessage2OwnerId</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> message2OwnerId;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMessage2OwnerId</span><span class="params">(Long message2OwnerId)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.message2OwnerId = message2OwnerId;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　方法block是通过http的PUT方法访问的，需要传入一个MessageDTO对象，并返回一个MessageDTO对象。@Produces定义了返回对象将序列化成为json格式；@Cosumes定义了接收的对象是json格式的，将对其进行反序列化。JAX-RS里本身没有实现对特定对象自动进行序列化与反序列化。一般需实现MessageBodyWriter或MessageBodyReader这两个类，在这两个类里自行进行序列化与反序列化的处理。这两个类都属于Provider，将在下一讲介绍。但实际上，如果只是简单的进行json或xml的转换是非常简单的，并不需要另外实现Provider，只有对具体的格式有要求或者需要进行更多的配置才有必要实现。一般如果进行xml转换，只需要修改@Produces和@Consumes为对应格式，并且在需要进行序列化与反序列化的POJO类上加上@XmlRootElement注解，便可实现。这种做法实际上是JAX-RS后台调用JAXB实现，@XmlRootElement是JAXB注解，而JAXB是专门用于进行xml和JAVA对象转换的技术。如果需要用json格式，同样可以通过JAXB的@XmlRootElement注解实现，只需把@Provider或@Consumes修改为application/json即可。实际上如果你是用glassfish 4以上作为application server container的，如果以json格式进行传输不需要任何其他Provider或@XmlRootElement，只需要修改@Provider或@Consumes即可。因为glassfish 4已经配置了MOXy作为Default JSON-Binding Provider。MOXy是json的一个框架，它可以在Application里自动注册，不需要显示地手动注册资源。</p>
 <p>　　目前，RESTful API规范建议一律采用json作为数据传输的格式，而不要使用xml。</p>
 <h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>　　这篇教程主要针对JAX-RS的Resource组件的基础知识，介绍了RESTful API的概念，以及HTTP方法，URI资源定位和数据传输格式这三个最核心的内容，并涉及了一些RESTful API的设计规范。更多的设计规范以及关于Provider和http request和http response构建的知识，将再后面一一介绍。</p>
 
@@ -609,6 +404,20 @@ public void setMessage2OwnerId(Long message2OwnerId) {
         </div>
       
 
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/08/22/RESTful-API-入门二-JAX-RS实现/" rel="prev" title="RESTful API 入门二(JAX-RS实现)">
+                RESTful API 入门二(JAX-RS实现) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
       
 
       
@@ -677,7 +486,7 @@ public void setMessage2OwnerId(Long message2OwnerId) {
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">1</span>
+              <span class="site-state-item-count">2</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
