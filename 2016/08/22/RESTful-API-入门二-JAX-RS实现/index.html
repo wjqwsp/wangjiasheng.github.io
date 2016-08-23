@@ -108,7 +108,7 @@
 <meta property="og:url" content="http://yoursite.com/2016/08/22/RESTful-API-入门二-JAX-RS实现/index.html">
 <meta property="og:site_name" content="南国倾城">
 <meta property="og:description" content="为什么要用Provider　　provider是在程序运行时自动调用的一些类，起到配置与修改http请求与回应的作用，是JAX-RS里不可或缺的一项组件。从上一讲可以看到，Resource组件已经能够完全实现RESTful API，在JAX-RS标准里无非就是添加一些注解的事。然而，实现功能只是最基本的要求，要做出企业级的应用，必须符合一些标准和规范，才能最大程度地提高团队的开发效率，并从最佳实践">
-<meta property="og:updated_time" content="2016-08-22T16:01:48.716Z">
+<meta property="og:updated_time" content="2016-08-23T08:17:32.609Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="RESTful API 入门二(JAX-RS实现)">
 <meta name="twitter:description" content="为什么要用Provider　　provider是在程序运行时自动调用的一些类，起到配置与修改http请求与回应的作用，是JAX-RS里不可或缺的一项组件。从上一讲可以看到，Resource组件已经能够完全实现RESTful API，在JAX-RS标准里无非就是添加一些注解的事。然而，实现功能只是最基本的要求，要做出企业级的应用，必须符合一些标准和规范，才能最大程度地提高团队的开发效率，并从最佳实践">
@@ -334,7 +334,7 @@
 
       
         <h3 id="为什么要用Provider"><a href="#为什么要用Provider" class="headerlink" title="为什么要用Provider"></a>为什么要用Provider</h3><p>　　provider是在程序运行时自动调用的一些类，起到配置与修改http请求与回应的作用，是JAX-RS里不可或缺的一项组件。从上一讲可以看到，Resource组件已经能够完全实现RESTful API，在JAX-RS标准里无非就是添加一些注解的事。然而，实现功能只是最基本的要求，要做出企业级的应用，必须符合一些标准和规范，才能最大程度地提高团队的开发效率，并从最佳实践的角度去吻合市场的需求。RESTful API的一些设计规范，就必须要使用到provider去做配置。</p>
-<h3 id="几种provider的介绍"><a href="#几种provider的介绍" class="headerlink" title="几种provider的介绍"></a>几种provider的介绍</h3><p>　　所有类名上添加了@provider注解的类，都属于provider组件。下面对这些组件类一一介绍一下。<br><a id="more"></a></p>
+<h3 id="几种provider的介绍"><a href="#几种provider的介绍" class="headerlink" title="几种provider的介绍"></a>几种provider的介绍</h3><p>　　所有类名上添加了@provider注解的类，都属于provider组件。下面将介绍一下常用的provider。<br><a id="more"></a></p>
 <h5 id="ContainerRequestFilter-ContainerResponseFilter"><a href="#ContainerRequestFilter-ContainerResponseFilter" class="headerlink" title="ContainerRequestFilter,ContainerResponseFilter"></a>ContainerRequestFilter,ContainerResponseFilter</h5><p>　　过滤器，顾名思义，是对进入服务器与从服务器输出的数据进行过滤。由于RESTful API实际上是操作http协议，那么过滤器便是对http request或http response的header或body进行过滤，作出一些修改，或判断是否拒绝该http request或http response。</p>
 <p>　　containerRequestFilter的核心是filter方法，接收ContainerRequestContext对象，这个对象封装了http request。一般在这个方法里对header进行操作。ContainerResponseFilter的核心也是filter方法，接收ContainerResponseContext和ContainerResponseContext对象，这个对象封装的则是http response，也主要针对其heaer操作。</p>
 <p>　　下面从两个主要的设计规范点出发，看看怎么用JAX-RS的过滤器来实现。</p>
