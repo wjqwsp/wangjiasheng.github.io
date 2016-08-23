@@ -86,7 +86,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="RESTful,后端," />
 
 
 
@@ -102,15 +102,28 @@
 
 
 
-<meta name="description" content="广寒宫送千里香，杳杳随风入梦凉。我欲因之凌霄起，嫦娥丹桂尽入囊。">
-<meta property="og:type" content="website">
-<meta property="og:title" content="南国倾城">
-<meta property="og:url" content="http://yoursite.com/index.html">
+<meta name="description" content="搜索的过滤与排序　　搜索在RESTful API里是用GET方法实现的，URI一般是某个对象，可以是单个也可以是列表。以微博搜索为例，如果不加任何条件，其URI一般是这样的：
+/api/weibo
+/api/weibo/6
+
+　　但往往还需要限制一下搜索条件，例如评论数大于某个数，或者含有什么关键字，如果是搜索微博列表，也可能加上对日期作升序或降序排序的要求。这些附加条件，是作为query par">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RESTful API规范补充以及JAX-RS传递参数的方法">
+<meta property="og:url" content="http://yoursite.com/2016/08/23/RESTful-API规范补充/index.html">
 <meta property="og:site_name" content="南国倾城">
-<meta property="og:description" content="广寒宫送千里香，杳杳随风入梦凉。我欲因之凌霄起，嫦娥丹桂尽入囊。">
+<meta property="og:description" content="搜索的过滤与排序　　搜索在RESTful API里是用GET方法实现的，URI一般是某个对象，可以是单个也可以是列表。以微博搜索为例，如果不加任何条件，其URI一般是这样的：
+/api/weibo
+/api/weibo/6
+
+　　但往往还需要限制一下搜索条件，例如评论数大于某个数，或者含有什么关键字，如果是搜索微博列表，也可能加上对日期作升序或降序排序的要求。这些附加条件，是作为query par">
+<meta property="og:updated_time" content="2016-08-23T08:01:22.880Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="南国倾城">
-<meta name="twitter:description" content="广寒宫送千里香，杳杳随风入梦凉。我欲因之凌霄起，嫦娥丹桂尽入囊。">
+<meta name="twitter:title" content="RESTful API规范补充以及JAX-RS传递参数的方法">
+<meta name="twitter:description" content="搜索的过滤与排序　　搜索在RESTful API里是用GET方法实现的，URI一般是某个对象，可以是单个也可以是列表。以微博搜索为例，如果不加任何条件，其URI一般是这样的：
+/api/weibo
+/api/weibo/6
+
+　　但往往还需要限制一下搜索条件，例如评论数大于某个数，或者含有什么关键字，如果是搜索微博列表，也可能加上对日期作升序或降序排序的要求。这些附加条件，是作为query par">
 
 
 
@@ -131,9 +144,9 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/"/>
+  <link rel="canonical" href="http://yoursite.com/2016/08/23/RESTful-API规范补充/"/>
 
-  <title> 南国倾城 </title>
+  <title> RESTful API规范补充以及JAX-RS传递参数的方法 | 南国倾城 </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -154,9 +167,7 @@
     
   
 
-  <div class="container one-collumn sidebar-position-left 
-   page-home 
- ">
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -256,9 +267,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
   
@@ -278,10 +289,7 @@
             
             
               
-                
-                <a class="post-title-link" href="/2016/08/23/RESTful-API规范补充/" itemprop="url">
-                  RESTful API规范补充以及JAX-RS传递参数的方法
-                </a>
+                RESTful API规范补充以及JAX-RS传递参数的方法
               
             
           </h1>
@@ -337,8 +345,7 @@
       
 
       
-        
-          <h3 id="搜索的过滤与排序"><a href="#搜索的过滤与排序" class="headerlink" title="搜索的过滤与排序"></a>搜索的过滤与排序</h3><p>　　搜索在RESTful API里是用GET方法实现的，URI一般是某个对象，可以是单个也可以是列表。以微博搜索为例，如果不加任何条件，其URI一般是这样的：</p>
+        <h3 id="搜索的过滤与排序"><a href="#搜索的过滤与排序" class="headerlink" title="搜索的过滤与排序"></a>搜索的过滤与排序</h3><p>　　搜索在RESTful API里是用GET方法实现的，URI一般是某个对象，可以是单个也可以是列表。以微博搜索为例，如果不加任何条件，其URI一般是这样的：</p>
 <pre><code>/api/weibo</code></pre>
 <pre><code>/api/weibo/6</code></pre>
 
@@ -350,270 +357,115 @@
 <li>GET /weibo?keyword=xxx - 得到包含关键字xxx的微博列表</li>
 <li>GET /weibo?keyword=xxx&amp;deleted=true&amp;sort=comment-count,-create-date - 搜索关键字包含xxx的标记为删除的微博，按照评论数再按创建日期反序排序得到微博列表</li>
 </ul>
-<p>　　确定了搜索对象，例如weibo，那么在服务器端我们就知道需要查找哪个表，或者需要连接哪几个表。where后面的条件则根据附上的参数动态选择。order by后面的属性则根据sort后面的参数添加，带-号的代表降序，很容易翻译成sql语言。<br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/08/23/RESTful-API规范补充/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
+<p>　　确定了搜索对象，例如weibo，那么在服务器端我们就知道需要查找哪个表，或者需要连接哪几个表。where后面的条件则根据附上的参数动态选择。order by后面的属性则根据sort后面的参数添加，带-号的代表降序，很容易翻译成sql语言。<br><a id="more"></a></p>
+<p>　　我们还可以选择返回哪些属性，或者不返回哪些属性。例如：</p>
+<ul>
+<li>GET /weibo?fields=id,subject - 得到微博列表，每个微博里的字段只有id和subject两个，其他的都排除了。</li>
+<li>GET /weibo?fields-exclude=id,subject - 得到微博列表，每个微博里的id和subject被排除了，输出其他的字段。</li>
+</ul>
+<p>　　这些参数就是select后面的列信息。</p>
+<p>　　由于RESTful API的资源是面向对象的，我们往往是对某一个对象作查找，如果在查找里需要附带其他资源对象的信息，也可以在query param里添加，用embed字段作为key。例如：</p>
+<ul>
+<li>GET /weibo?embed=owner.id,owner.name - 得到微博列表，每个微博里的信息里加入这个微博的所有者的id和name两个属性。</li>
+</ul>
+<p>　　这些属性也是跟在select后面的，只要参数名与数据库的表名能一一对应即可。由于存在嵌入的对象属性，在数据库查找上往往便需要多表连接。</p>
+<p>　　上一讲说的翻页的页数和每页的数据项数也是作为query param传给服务器的。</p>
+<h3 id="常用的查询"><a href="#常用的查询" class="headerlink" title="常用的查询"></a>常用的查询</h3><p>　　上面说的对搜索的过滤和排序是通用的，根据传入的参数而动态构造sql语句。而对于某些特别常用的查询，例如新浪微博里的最热微博top10，则可以用专用的名字代替，例如：</p>
+<ul>
+<li>GET /weibo/top10</li>
+</ul>
+<h3 id="不太能归类的操作"><a href="#不太能归类的操作" class="headerlink" title="不太能归类的操作"></a>不太能归类的操作</h3><p>　　http是面向资源的，RESTful API是基于http的，其操作也是针对某个资源对象进行的，操作的类型则用http方法表达，例如PUT,POST,PATCH,DELETE,GET。然而，有些操作不是那么容易归类为上述的http方法，例如给微博点赞。我们可以把点赞操作理解成修改微博对象，按照这个定义是应该用PUT或PATCH方法。但是一般意义上我们说的对微博的修改是指编辑微博的文本内容。因此，有必要把点赞这个操作独立出来，会更加方便，意义也更加清晰。例如：</p>
+<ul>
+<li>PUT /weibo/12/like - 给某个微博点赞</li>
+<li>DELETE /weibo/12/like - 删除某个微博的赞</li>
+</ul>
+<h3 id="常用的status-code"><a href="#常用的status-code" class="headerlink" title="常用的status code"></a>常用的status code</h3><ul>
+<li>200 OK - 正常返回，用于GET, PUT, PATCH的这些正常操作。</li>
+<li>201 Created - 用于POST创建对象正常返回。</li>
+<li>204 No Content - 用于DELETE，成功操作但没啥返回的。</li>
+<li>304 Not Modified - 有Cache，表示没改过。</li>
+<li>400 Bad Request - 指请求里面有些参数不对。</li>
+<li>401 Unauthorized - 没有登录</li>
+<li>403 Forbidden - 登录了但是没有授权访问某个资源</li>
+<li>404 Not Found - 资源不存在</li>
+<li>405 Method Not Allowed - 登录了但是不允许做某个操作</li>
+<li>410 Gone - 表示资源不再提供了，用来做老版本提示用的</li>
+<li>415 Unsupported Media Type - 請求的Centent Type不對</li>
+<li>422 Unprocessable Entity - 一般用于validation校验</li>
+<li>429 Too Many Requests - 请求太快太多，达到限制</li>
+</ul>
+<p>　　http提供了很多的status code。但在RESTful API里常用的就这几个。我们可以根据业务需求对不同的request返回相匹配的状态码。方法就是上一讲提到的构造Response对象返回以及异常处理。</p>
+<h3 id="JAX-RS怎样接收客户端的参数"><a href="#JAX-RS怎样接收客户端的参数" class="headerlink" title="JAX-RS怎样接收客户端的参数"></a>JAX-RS怎样接收客户端的参数</h3><p>　　RESTful API的核心是URI，HTTP方法以及数据传输格式，在第一讲详细讲过。http header也十分重要，在第二讲讲过。除此之外，服务器与客户端的交互往往需要传递一些参数，例如对象id，需要更新的整个对象以及上面提到的query param等。这些参数的传递都是通过注解实现的。下面介绍一下常用的参数注解。</p>
+<h5 id="PathParam"><a href="#PathParam" class="headerlink" title="PathParam"></a>PathParam</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@PATCH</span></div><div class="line"><span class="meta">@Path</span>(<span class="string">"&#123;id&#125;/remove"</span>)</div><div class="line"><span class="meta">@Consumes</span>(&#123;<span class="string">"application/json"</span>&#125;)</div><div class="line"><span class="meta">@Produces</span>(&#123;<span class="string">"application/json"</span>&#125;)</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">remove</span><span class="params">(@PathParam(<span class="string">"id"</span>)</span> Long id,@Context HttpServletRequest request) </span>&#123;</div></pre></td></tr></table></figure>
+<p>　　需要删除某条微博，此时URI里必定含有该微博的id信息，可以用@PathParam注解从URI里提取参数。</p>
+<h5 id="QueryParam"><a href="#QueryParam" class="headerlink" title="QueryParam"></a>QueryParam</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@GET</span></div><div class="line"><span class="meta">@Path</span>(<span class="string">"danger-unsolved"</span>)</div><div class="line"><span class="meta">@Consumes</span>(&#123;<span class="string">"application/json"</span>&#125;)</div><div class="line"><span class="meta">@Produces</span>(&#123;<span class="string">"application/json;charset=UTF-8"</span>&#125;)</div><div class="line"><span class="function"><span class="keyword">public</span> Response <span class="title">findUnSolved</span><span class="params">(@QueryParam(<span class="string">"page"</span>)</span> <span class="keyword">int</span> page,@<span class="title">QueryParam</span><span class="params">(<span class="string">"per-page"</span>)</span> <span class="keyword">int</span> perPage,@Context HttpServletResponse response) </span>&#123;</div></pre></td></tr></table></figure>
+<p>　　翻页信息用query param传递，用@QueryParam注解可以提取。</p>
+<h5 id="FormParam"><a href="#FormParam" class="headerlink" title="FormParam"></a>FormParam</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@POST</span></div><div class="line"><span class="meta">@Path</span>(<span class="string">"login"</span>)</div><div class="line"><span class="meta">@PermitAll</span></div><div class="line"><span class="meta">@Consumes</span>(&#123;<span class="string">"application/x-www-form-urlencoded"</span>&#125;)</div><div class="line"><span class="function"><span class="keyword">public</span> Response <span class="title">login</span><span class="params">(@Context HttpServletRequest request,</span></span></div><div class="line">        @Context HttpServletResponse response,</div><div class="line">        @FormParam(<span class="string">"username"</span>) String username,</div><div class="line">        @<span class="title">FormParam</span><span class="params">(<span class="string">"password"</span>)</span> String password,</div><div class="line">        @<span class="title">FormParam</span><span class="params">(<span class="string">"remember_me"</span>)</span> String rememberMe) &#123;</div></pre></td></tr></table></figure>
+<p>　　用POST请求提交的表格，其表单内容可以用@FormParam获取。</p>
+<h5 id="MatrixParam"><a href="#MatrixParam" class="headerlink" title="MatrixParam"></a>MatrixParam</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Path</span>(<span class="string">"/books"</span>)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BookService</span> </span>&#123;</div><div class="line"></div><div class="line">	<span class="meta">@GET</span></div><div class="line">	<span class="meta">@Path</span>(<span class="string">"&#123;year&#125;"</span>)</div><div class="line">	<span class="function"><span class="keyword">public</span> Response <span class="title">getBooks</span><span class="params">(@PathParam(<span class="string">"year"</span>)</span> String year,</span></div><div class="line">			@<span class="title">MatrixParam</span><span class="params">(<span class="string">"author"</span>)</span> String author,</div><div class="line">			@<span class="title">MatrixParam</span><span class="params">(<span class="string">"country"</span>)</span> String country) &#123;</div><div class="line"></div><div class="line">		<span class="keyword">return</span> Response</div><div class="line">			.status(<span class="number">200</span>)</div><div class="line">			.entity(<span class="string">"getBooks is called, year : "</span> + year</div><div class="line">				+ <span class="string">", author : "</span> + author + <span class="string">", country : "</span> + country)</div><div class="line">			.build();</div><div class="line"></div><div class="line">	&#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　上述的request请求URI是/books/2011;author=mkyong;country=malaysia。@MatirxParam可以提取用；分隔的一组key/value对。</p>
+<h5 id="HeaderParam和CookieParam"><a href="#HeaderParam和CookieParam" class="headerlink" title="HeaderParam和CookieParam"></a>HeaderParam和CookieParam</h5><p>　　@HeaderParam和@CookieParam注解都是提取header或者cookie里某个key的value。像@HeaderParam(“Referer”)和@CookieParam(“customerId”)等，非常简单。</p>
+<h5 id="获取HttpServletRequest和HttpServletResponse"><a href="#获取HttpServletRequest和HttpServletResponse" class="headerlink" title="获取HttpServletRequest和HttpServletResponse"></a>获取HttpServletRequest和HttpServletResponse</h5><p>　　JAX-RS是基于servlet实现的。其每个资源方法都可以提取相应请求的HttpServletRequest和HttpServletResponse对象。利用这两个对象，我们可以在资源方法内构造Response对象，也可以修改header和cookie。这两个对象都可以用@Context注解获取。上面的一些例子也有体现。</p>
+<h5 id="payload对象"><a href="#payload对象" class="headerlink" title="payload对象"></a>payload对象</h5><p>　　http request的payload对象在网络中是以json或xml的格式传输的，只要JAX-RS里能保证其反序列化，那么在参数列表里直接用相应的POJO对象类名和实体名表示即可。例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@PATCH</span></div><div class="line"><span class="meta">@Path</span>(<span class="string">"&#123;id&#125;/block"</span>)</div><div class="line"><span class="meta">@Consumes</span>(&#123;<span class="string">"application/json"</span>&#125;)</div><div class="line"><span class="meta">@Produces</span>(&#123;<span class="string">"application/json"</span>&#125;)</div><div class="line"><span class="function"><span class="keyword">public</span> MessageDTO <span class="title">block</span><span class="params">(@PathParam(<span class="string">"id"</span>)</span> Long id,@Context HttpServletRequest request,MessageDTO messageDTO) </span>&#123;</div></pre></td></tr></table></figure>
+<p>　　上面的MessageDTO对象便是http request的payload对象。</p>
+<p>　　</p>
+
+      
+    </div>
+
+    <div>
+      
         
+
       
     </div>
 
     <div>
       
-    </div>
+        
 
-    <div>
       
     </div>
 
     <footer class="post-footer">
       
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/08/22/RESTful-API-入门二-JAX-RS实现/" itemprop="url">
-                  RESTful API 入门二(JAX-RS实现)
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-08-22T20:04:04+08:00" content="2016-08-22">
-              2016-08-22
-            </time>
-          </span>
-
+        <div class="post-tags">
           
-
+            <a href="/tags/RESTful/" rel="tag">#RESTful</a>
           
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/08/22/RESTful-API-入门二-JAX-RS实现/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/08/22/RESTful-API-入门二-JAX-RS实现/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-             <span id="/2016/08/22/RESTful-API-入门二-JAX-RS实现/" class="leancloud_visitors" data-flag-title="RESTful API 入门二(JAX-RS实现)">
-               &nbsp; | &nbsp;
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
-          
-
+            <a href="/tags/后端/" rel="tag">#后端</a>
           
         </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
       
 
       
-        
-          <h3 id="为什么要用Provider"><a href="#为什么要用Provider" class="headerlink" title="为什么要用Provider"></a>为什么要用Provider</h3><p>　　provider是在程序运行时自动调用的一些类，起到配置与修改http请求与回应的作用，是JAX-RS里不可或缺的一项组件。从上一讲可以看到，Resource组件已经能够完全实现RESTful API，在JAX-RS标准里无非就是添加一些注解的事。然而，实现功能只是最基本的要求，要做出企业级的应用，必须符合一些标准和规范，才能最大程度地提高团队的开发效率，并从最佳实践的角度去吻合市场的需求。RESTful API的一些设计规范，就必须要使用到provider去做配置。</p>
-<h3 id="几种provider的介绍"><a href="#几种provider的介绍" class="headerlink" title="几种provider的介绍"></a>几种provider的介绍</h3><p>　　所有类名上添加了@provider注解的类，都属于provider组件。下面对这些组件类一一介绍一下。<br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/08/22/RESTful-API-入门二-JAX-RS实现/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/08/22/RESTful-API-入门二-JAX-RS实现/" rel="next" title="RESTful API 入门二(JAX-RS实现)">
+                <i class="fa fa-chevron-left"></i> RESTful API 入门二(JAX-RS实现)
+              </a>
+            
           </div>
-        
-      
-    </div>
 
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
+          <div class="post-nav-prev post-nav-item">
             
-            
-              
-                
-                <a class="post-title-link" href="/2016/08/21/RESTful-API-入门-JAX-RS实现/" itemprop="url">
-                  RESTful API 入门一(JAX-RS实现)
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-08-21T20:52:42+08:00" content="2016-08-21">
-              2016-08-21
-            </time>
-          </span>
-
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/08/21/RESTful-API-入门-JAX-RS实现/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/08/21/RESTful-API-入门-JAX-RS实现/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-             <span id="/2016/08/21/RESTful-API-入门-JAX-RS实现/" class="leancloud_visitors" data-flag-title="RESTful API 入门一(JAX-RS实现)">
-               &nbsp; | &nbsp;
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
-          
-
-          
+          </div>
         </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
       
 
       
-        
-          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　关于RESTful API的概念网上已经说过很多，可以用很多语言与框架实现，其规范也十分详尽。我这篇入门教程尽量用自己的理解去总结RESTful API的一些要点，并以JaveEE规范的JAX-RS框架为例，以实战的形式去讲述怎么搭建一套RESTful API，并在实践过程中体现RESTful API的设计规范。</p>
-<h3 id="什么是RESTful-API"><a href="#什么是RESTful-API" class="headerlink" title="什么是RESTful API"></a>什么是RESTful API</h3><ol>
-<li>服务器端提供给开发者的一套接口，开发者通过调用这些接口，访问服务器的资源。这些资源通常是数据库的表抽象出来的对象，程序员通过获取这些对象，把对这些对象的增删改查映射到数据库，从而实现自己前后端的其他业务逻辑。目前移动端很多都是使用RESTful API来访问后台，受移动端影响，浏览器端也越来越多地使用这种规范。</li>
-<li>本质就是http协议。RESTful API的所有操作无非是CRUD，全部映射成http的POST,GET,PUT,PATCH,DELETE等方法，操作RESTful API实际上就是操作http报文，其只是在http协议外面再封装一层。因此操作十分简洁，直观，代码优雅。</li>
-<li>用URI定位所有资源。服务器端把所有供开发者访问的资源都以特定的URI表示。URI与http方法(上述的POST，GET等)组合，便可以实现对所有资源的所有操作。以微博和评论为例，假如新浪微博开放了所有微博和评论允许开发者访问。那么所有微博的URI可能是：
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/08/21/RESTful-API-入门-JAX-RS实现/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
       
     </footer>
   </article>
 
 
-    
-  </section>
 
-  
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -621,6 +473,14 @@
 
 
           
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/08/23/RESTful-API规范补充/"
+           data-title="RESTful API规范补充以及JAX-RS传递参数的方法" data-url="http://yoursite.com/2016/08/23/RESTful-API规范补充/">
+      </div>
+    
+  </div>
+
 
         </div>
         
@@ -640,8 +500,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel  sidebar-panel-active ">
+      <section class="site-overview sidebar-panel ">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/uploads/avatar.jpg"
@@ -684,6 +553,17 @@
 
       </section>
 
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#搜索的过滤与排序"><span class="nav-number">1.</span> <span class="nav-text">搜索的过滤与排序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#常用的查询"><span class="nav-number">2.</span> <span class="nav-text">常用的查询</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#不太能归类的操作"><span class="nav-number">3.</span> <span class="nav-text">不太能归类的操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#常用的status-code"><span class="nav-number">4.</span> <span class="nav-text">常用的status code</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JAX-RS怎样接收客户端的参数"><span class="nav-number">5.</span> <span class="nav-text">JAX-RS怎样接收客户端的参数</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#PathParam"><span class="nav-number">5.0.1.</span> <span class="nav-text">PathParam</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#QueryParam"><span class="nav-number">5.0.2.</span> <span class="nav-text">QueryParam</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#FormParam"><span class="nav-number">5.0.3.</span> <span class="nav-text">FormParam</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#MatrixParam"><span class="nav-number">5.0.4.</span> <span class="nav-text">MatrixParam</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#HeaderParam和CookieParam"><span class="nav-number">5.0.5.</span> <span class="nav-text">HeaderParam和CookieParam</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#获取HttpServletRequest和HttpServletResponse"><span class="nav-number">5.0.6.</span> <span class="nav-text">获取HttpServletRequest和HttpServletResponse</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#payload对象"><span class="nav-number">5.0.7.</span> <span class="nav-text">payload对象</span></a></li></ol></li></ol></li></ol></div>
+            
+          </div>
+        </section>
       
 
     </div>
@@ -787,6 +667,10 @@
 
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
 
   
 
