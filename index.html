@@ -342,15 +342,7 @@
 <pre><code>/api/weibo</code></pre>
 <pre><code>/api/weibo/6</code></pre>
 
-<p>　　但往往还需要限制一下搜索条件，例如评论数大于某个数，或者含有什么关键字，如果是搜索微博列表，也可能加上对日期作升序或降序排序的要求。这些附加条件，是作为query param附加在http请求里的。例如：</p>
-<ul>
-<li>GET /weibo?deleted=true - 得到所有标记为删除的微博</li>
-<li>GET /weibo?sort=-create-date - 按照创建日期反序排序得到微博列表</li>
-<li>GET /weibo?sort=comment-count,-create-date - 先按微博评论数再按创建日期反序排序得到微博列表</li>
-<li>GET /weibo?keyword=xxx - 得到包含关键字xxx的微博列表</li>
-<li>GET /weibo?keyword=xxx&amp;deleted=true&amp;sort=comment-count,-create-date - 搜索关键字包含xxx的标记为删除的微博，按照评论数再按创建日期反序排序得到微博列表</li>
-</ul>
-<p>　　确定了搜索对象，例如weibo，那么在服务器端我们就知道需要查找哪个表，或者需要连接哪几个表。where后面的条件则根据附上的参数动态选择。order by后面的属性则根据sort后面的参数添加，带-号的代表降序，很容易翻译成sql语言。<br>
+<p>　　但往往还需要限制一下搜索条件，例如评论数大于某个数，或者含有什么关键字，如果是搜索微博列表，也可能加上对日期作升序或降序排序的要求。这些附加条件，是作为query param附加在http请求里的。例如：<br>
           <div class="post-more-link text-center">
             <a class="btn" href="/2016/08/23/RESTful-API规范补充/#more" rel="contents">
               阅读全文 &raquo;
