@@ -1,0 +1,949 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Lobster Two:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="JPA,ORM,数据库," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="什么是ORM　　ORM,即Object Relation Mapping，对象关系映射。我们一般用数据库作数据的持久化存储，通过针对表，属性等进行各种sql的操作，来进行增删改查。但作为程序员，在面向对象思想大行其道的今天，我们更倾向于处理对象，而不是直接处理数据库里面的关系表。我们希望在程序的业务逻辑中，一切皆是对象，而不是表与表的关系，表之间的属性。于是一套从表到对象的映射技术，便应运而生。目">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ORM in JaveEE——JPA">
+<meta property="og:url" content="http://yoursite.com/2016/08/26/ORM-in-JaveEE——JPA/index.html">
+<meta property="og:site_name" content="南国倾城">
+<meta property="og:description" content="什么是ORM　　ORM,即Object Relation Mapping，对象关系映射。我们一般用数据库作数据的持久化存储，通过针对表，属性等进行各种sql的操作，来进行增删改查。但作为程序员，在面向对象思想大行其道的今天，我们更倾向于处理对象，而不是直接处理数据库里面的关系表。我们希望在程序的业务逻辑中，一切皆是对象，而不是表与表的关系，表之间的属性。于是一套从表到对象的映射技术，便应运而生。目">
+<meta property="og:image" content="http://yoursite.com/img/system-structure.png">
+<meta property="og:updated_time" content="2016-08-26T05:42:36.436Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ORM in JaveEE——JPA">
+<meta name="twitter:description" content="什么是ORM　　ORM,即Object Relation Mapping，对象关系映射。我们一般用数据库作数据的持久化存储，通过针对表，属性等进行各种sql的操作，来进行增删改查。但作为程序员，在面向对象思想大行其道的今天，我们更倾向于处理对象，而不是直接处理数据库里面的关系表。我们希望在程序的业务逻辑中，一切皆是对象，而不是表与表的关系，表之间的属性。于是一套从表到对象的映射技术，便应运而生。目">
+<meta name="twitter:image" content="http://yoursite.com/img/system-structure.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 6320571070080353000,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/08/26/ORM-in-JaveEE——JPA/"/>
+
+  <title> ORM in JaveEE——JPA | 南国倾城 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">南国倾城</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">左手代码，右手年华</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                ORM in JaveEE——JPA
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-08-26T13:42:40+08:00" content="2016-08-26">
+              2016-08-26
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/08/26/ORM-in-JaveEE——JPA/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/08/26/ORM-in-JaveEE——JPA/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/08/26/ORM-in-JaveEE——JPA/" class="leancloud_visitors" data-flag-title="ORM in JaveEE——JPA">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="什么是ORM"><a href="#什么是ORM" class="headerlink" title="什么是ORM"></a>什么是ORM</h3><p>　　ORM,即Object Relation Mapping，对象关系映射。我们一般用数据库作数据的持久化存储，通过针对表，属性等进行各种sql的操作，来进行增删改查。但作为程序员，在面向对象思想大行其道的今天，我们更倾向于处理对象，而不是直接处理数据库里面的关系表。我们希望在程序的业务逻辑中，一切皆是对象，而不是表与表的关系，表之间的属性。于是一套从表到对象的映射技术，便应运而生。目前，很多框架都可以实现从关系型数据库到对象的映射，例如Hibernate,EclipseLink等。只需要编写一些配置文件，便可以轻松实现。</p>
+<h3 id="什么是JPA"><a href="#什么是JPA" class="headerlink" title="什么是JPA"></a>什么是JPA</h3><p>　　由于市面上有很多框架都可以实现ORM，我们使用不同的框架，就需要一套不一样的配置文件，一套不一样的代码。换言之，我们的工程与这些框架是紧耦合的。如果我们想更换这些框架，那么改动就非常大了。JPA就实现了一套统一的接口标准，让我们可以自由选择不同供应商的不同ORM框架，实现与这些第三方框架的解耦合。并且，JPA广泛使用注解，代码简单，开发十分方便。</p>
+<h3 id="JPA与RESTful-API"><a href="#JPA与RESTful-API" class="headerlink" title="JPA与RESTful API"></a>JPA与RESTful API</h3><p>　　前面我们提到RESTful API使用JAX-RS实现的。RESTful API与JPA没有直接的关系，但我们知道通过RESTful API我们实际上是把对对象的增删改查映射到HTTP方法上。而JPA相当于是处理下一层的工作，把对数据库表的增删改查映射到对象上。这样，经过JAX-RS到JPA再到数据库这么三层的处理，我们便可以利用RESTful API来实现我们的业务逻辑。<br><a id="more"></a></p>
+<h3 id="BCE模型"><a href="#BCE模型" class="headerlink" title="BCE模型"></a>BCE模型</h3><p>  BCE模型，即Boundary-Controll-Entity，是Web应用系统的一种十分常见的结构。Boundary,即系统之间交互的边界，一般指一些涉及对Web应用的数据的输入输出的类，例如RESTful API直接访问的JAX-RS的Resource类。Control，一般是完成一些复杂的计算与业务逻辑的处理，是从Entity到Boundary的中间层。Entity，就是数据库表直接ORM转化的实体对象类。下面就从BCE模型入手，按Entity，Control，Boundary的顺序，围绕实例介绍一下JPA标准以及其与JAX-RS的结合。</p>
+<h4 id="Entity"><a href="#Entity" class="headerlink" title="Entity"></a>Entity</h4><p>　　先来看看JPA的Entity类是什么样的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Entity</span></div><div class="line"><span class="meta">@Table</span>(name = <span class="string">"commentary"</span>, catalog = <span class="string">"weibo"</span>, schema = <span class="string">"public"</span>)</div><div class="line"><span class="meta">@XmlRootElement</span></div><div class="line"><span class="meta">@NamedQueries</span>(&#123;</div><div class="line">    <span class="meta">@NamedQuery</span>(name = <span class="string">"Commentary.findAll"</span>, query = <span class="string">"SELECT c FROM Commentary c"</span>),</div><div class="line">    <span class="meta">@NamedQuery</span>(name = <span class="string">"Commentary.findById"</span>, query = <span class="string">"SELECT c FROM Commentary c WHERE c.id = :id"</span>),</div><div class="line">    <span class="meta">@NamedQuery</span>(name = <span class="string">"Commentary.findByWord"</span>, query = <span class="string">"SELECT c FROM Commentary c WHERE c.word = :word"</span>),</div><div class="line">    <span class="meta">@NamedQuery</span>(name = <span class="string">"Commentary.findByCreateDate"</span>, query = <span class="string">"SELECT c FROM Commentary c WHERE c.createDate = :createDate"</span>),</div><div class="line">    <span class="meta">@NamedQuery</span>(name = <span class="string">"Commentary.findByIsDeleted"</span>, query = <span class="string">"SELECT c FROM Commentary c WHERE c.isDeleted = :isDeleted"</span>)&#125;)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Commentary</span> <span class="keyword">implements</span> <span class="title">Serializable</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">long</span> serialVersionUID = <span class="number">1L</span>;</div><div class="line">    <span class="meta">@Id</span></div><div class="line">    <span class="meta">@GeneratedValue</span>(strategy = GenerationType.IDENTITY)</div><div class="line">    <span class="meta">@Basic</span>(optional = <span class="keyword">false</span>)</div><div class="line">    <span class="meta">@Column</span>(name = <span class="string">"id"</span>)</div><div class="line">    <span class="keyword">private</span> Long id;</div><div class="line">    <span class="meta">@Basic</span>(optional = <span class="keyword">false</span>)</div><div class="line">    <span class="meta">@NotNull</span></div><div class="line">    <span class="meta">@Size</span>(min = <span class="number">1</span>, max = <span class="number">140</span>)</div><div class="line">    <span class="meta">@Column</span>(name = <span class="string">"word"</span>)</div><div class="line">    <span class="keyword">private</span> String word;</div><div class="line">    <span class="meta">@Column</span>(name = <span class="string">"create_date"</span>)</div><div class="line">    <span class="meta">@Temporal</span>(TemporalType.TIMESTAMP)</div><div class="line">    <span class="keyword">private</span> Date createDate;</div><div class="line">    <span class="meta">@Column</span>(name = <span class="string">"is_deleted"</span>)</div><div class="line">    <span class="keyword">private</span> Boolean isDeleted;</div><div class="line">    <span class="meta">@JoinColumn</span>(name = <span class="string">"reply_subscriber_id"</span>, referencedColumnName = <span class="string">"id"</span>)</div><div class="line">    <span class="meta">@ManyToOne</span></div><div class="line">    <span class="keyword">private</span> Subscriber replySubscriberId;</div><div class="line">    <span class="meta">@JoinColumn</span>(name = <span class="string">"subscriber_id"</span>, referencedColumnName = <span class="string">"id"</span>)</div><div class="line">    <span class="meta">@ManyToOne</span></div><div class="line">    <span class="keyword">private</span> Subscriber subscriberId;</div><div class="line">    <span class="meta">@JoinColumn</span>(name = <span class="string">"message_id"</span>, referencedColumnName = <span class="string">"id"</span>)</div><div class="line">    <span class="meta">@ManyToOne</span></div><div class="line">    <span class="keyword">private</span> Message messageId;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Commentary</span><span class="params">()</span> </span>&#123;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Commentary</span><span class="params">(Long id)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.id = id;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Commentary</span><span class="params">(Long id, String word)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.id = id;</div><div class="line">        <span class="keyword">this</span>.word = word;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> Long <span class="title">getId</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> id;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setId</span><span class="params">(Long id)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.id = id;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getWord</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> word;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setWord</span><span class="params">(String word)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.word = word;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> Date <span class="title">getCreateDate</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> createDate;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setCreateDate</span><span class="params">(Date createDate)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.createDate = createDate;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> Boolean <span class="title">getIsDeleted</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> isDeleted;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setIsDeleted</span><span class="params">(Boolean isDeleted)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.isDeleted = isDeleted;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> Subscriber <span class="title">getReplySubscriberId</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> replySubscriberId;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setReplySubscriberId</span><span class="params">(Subscriber replySubscriberId)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.replySubscriberId = replySubscriberId;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> Subscriber <span class="title">getSubscriberId</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> subscriberId;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setSubscriberId</span><span class="params">(Subscriber subscriberId)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.subscriberId = subscriberId;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> Message <span class="title">getMessageId</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> messageId;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMessageId</span><span class="params">(Message messageId)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.messageId = messageId;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">hashCode</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">int</span> hash = <span class="number">0</span>;</div><div class="line">        hash += (id != <span class="keyword">null</span> ? id.hashCode() : <span class="number">0</span>);</div><div class="line">        <span class="keyword">return</span> hash;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object object)</span> </span>&#123;</div><div class="line">        <span class="comment">// <span class="doctag">TODO:</span> Warning - this method won't work in the case the id fields are not set</span></div><div class="line">        <span class="keyword">if</span> (!(object <span class="keyword">instanceof</span> Commentary)) &#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</div><div class="line">        &#125;</div><div class="line">        Commentary other = (Commentary) object;</div><div class="line">        <span class="keyword">if</span> ((<span class="keyword">this</span>.id == <span class="keyword">null</span> &amp;&amp; other.id != <span class="keyword">null</span>) || (<span class="keyword">this</span>.id != <span class="keyword">null</span> &amp;&amp; !<span class="keyword">this</span>.id.equals(other.id))) &#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="string">"sampleweb.message.entity.Commentary[ id="</span> + id + <span class="string">" ]"</span>;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　简单分析一下，@Entity标注说明该类是JPA的实体类。@Table标注说明了该类对应的数据库，schema以及表名，由此使Entity与数据库的表建立一一对应的关系。</p>
+<p>　　@Id标注说明了主键，@Column说明了表的列属性。@Basic(optional = false)与@NotNull都是表示该属性对应到数据库的列不能为空。@Size一般说明字符串类型的长度范围，对应数据库里的char或varchar等类型。@GeneratedValue(strategy = GenerationType.IDENTITY)说明主键的生成策略采用了数据库自身的自增长主键。</p>
+<p>　　@ManyToOne和@OneToMany说明了该实体对应的表与实体对应的表的外键引用关系，通过这些关系可以比较方便的实现Entity的连接。类似的还有@OneToOne和@ManyToMany。</p>
+<p>　　然后便是对每一个属性的getter和setter方法。Entity类必须含有一个空的构造方法。</p>
+<p>　　该类实现了Serializable接口，并且打上了@XmlRootElement标注，表明该实体可以被序列化，直接作为数据进行输入输出。这时候它既属于Entity也属于Boundary，没有经过数据的再封装。只有需要不同的Entity的数据组合，或者需要多次查询多个实体的数据，则需要在Boundary下再定义一个专门用于数据传输的POJO类。</p>
+<p>　　我们只要有一个大概的认识，了解一下实体是怎么与数据库的表映射在一起的。这里面广泛使用了注解，代码很少，配置简单。其实Entity类基本不用自己写的，IDE里只要连接了数据库，通常可以直接从数据库一键生成Entity类，根据数据库的结构自动地配置好所有标注与变量，我们只需把重点放在Boundary与Control部分即可。</p>
+<p>　　这里有一点需要注意一下，从数据库的表一键生成Entity类时，我们需要指定一个数据库的表，作为Entity的基础，并且会自动把与其相关联的有外键引用关系的表一起生成为其他Entity。但是，其外键的引用关系只能是同一个schema里的，如果是不同schema之间的外键引用，则无法做到ORM。反正我的试验下是这样的，如果有正确的方法实现不同schema之间的ORM，希望不吝赐教~</p>
+<h4 id="Control"><a href="#Control" class="headerlink" title="Control"></a>Control</h4><p>　　控制层是JPA的关键与重点，我们的绝大部分业务逻辑都集中在控制层内。下面我们从EJB，EntityManager以及Query API三个方面来介绍一下Control层。</p>
+<h5 id="EJB"><a href="#EJB" class="headerlink" title="EJB"></a>EJB</h5><p>　　EJB,即EnterPrise JaveBean，是分离视图层与数据库访问的一层技术，是Control的核心，是数据库接口与业务逻辑的封装体。它有自己的生命周期管理机制，是一套跨application server的独立组件。它可以是有状态和无状态的。无状态的EJB说明其每次调用都是无记忆无状态的，是没有关联的。一般应尽量使用无状态的EJB，其能够具备最好的线程安全性与并发性。而且，我们绝大多数的应用场景用无状态的EJB便能满足，特别是基于http的RESTful API的实现。下面重点介绍一下无状态的EJB，即stateless EJB。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Stateless</span></div><div class="line"><span class="meta">@RolesAllowed</span>(&#123;<span class="string">"operator"</span>&#125;)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MessageService</span> </span>&#123;</div><div class="line">    <span class="meta">@PersistenceContext</span>(unitName = <span class="string">"com.hudoumiao_sampleweb_war_1.0-SNAPSHOTPU"</span>)</div><div class="line">    <span class="keyword">private</span> EntityManager em;</div><div class="line">    </div><div class="line">    <span class="keyword">public</span> List&lt;Object[]&gt; findDangerousMessages(<span class="keyword">int</span> page,<span class="keyword">int</span> perPage)&#123;</div><div class="line">        String sql = <span class="string">"(select message1.word,message1.comment_count,message1.transmission_count,message1.id,message1.publish_date,"</span> +</div><div class="line">                        <span class="string">"message2.word,message2.comment_count,message2.transmission_count,message2.id,message2.publish_date,"</span> +</div><div class="line">                        <span class="string">"subscriber1.username,subscriber2.username,subscriber1.id,subscriber2.id,manager.dangerous_message.managed_date,"</span> +</div><div class="line">                        <span class="string">"manager.action.action_name,account.auth_user.name from manager.dangerous_message left outer join "</span> +</div><div class="line">                        <span class="string">"message message1 on(manager.dangerous_message.message_id = message1.id) left outer join account.auth_user "</span> +</div><div class="line">                        <span class="string">"on(manager.dangerous_message.manager_id = account.auth_user.id) left outer join manager.action "</span> +</div><div class="line">                        <span class="string">"on(manager.dangerous_message.action_id = manager.action.id) left outer join message message2 on(message1.reference_id = message2.id)"</span> +</div><div class="line">                        <span class="string">"inner join subscriber subscriber1 on (message1.subscriber_id = subscriber1.id) left outer join subscriber subscriber2 on (message2.subscriber_id = subscriber2.id) "</span> +</div><div class="line">                        <span class="string">"where message1.is_deleted = false and message1.is_blocked = false and message1.is_removed = false)"</span> +                        </div><div class="line">                        <span class="string">"order by 2 desc,5 desc "</span> +</div><div class="line">                        <span class="string">"limit "</span> + perPage + <span class="string">"offset "</span> + (page - <span class="number">1</span>) * <span class="number">10</span>;</div><div class="line">        <span class="keyword">return</span> em.createNativeQuery(sql).getResultList();       </div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">countDangerousMessage</span><span class="params">()</span></span>&#123;</div><div class="line">        String sql = <span class="string">"select count(manager.dangerous_message.id) from manager.dangerous_message left outer join message "</span></div><div class="line">                + <span class="string">"on(manager.dangerous_message.message_id = message.id) where message.is_deleted = false and "</span></div><div class="line">                + <span class="string">"message.is_blocked = false and message.is_removed = false"</span>;</div><div class="line">        <span class="keyword">return</span> (Long)em.createNativeQuery(sql).getSingleResult();</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">countSolvedMessages</span><span class="params">()</span></span>&#123;</div><div class="line">        String sql = <span class="string">"select count(manager.dangerous_message.id) from manager.dangerous_message left outer join message "</span></div><div class="line">                + <span class="string">"on(manager.dangerous_message.message_id = message.id) where message.is_deleted = false and "</span></div><div class="line">                + <span class="string">"(message.is_blocked = true or message.is_removed = true)"</span>;</div><div class="line">        <span class="keyword">return</span> (Long)em.createNativeQuery(sql).getSingleResult();</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="keyword">public</span> List&lt;Object[]&gt; findSolvedMessages(<span class="keyword">int</span> page,<span class="keyword">int</span> perPage)&#123;</div><div class="line">        String sql = <span class="string">"(select message1.word,message1.comment_count,message1.transmission_count,message1.id,message1.publish_date,"</span> +</div><div class="line">                        <span class="string">"message2.word,message2.comment_count,message2.transmission_count,message2.id,message2.publish_date,"</span> +</div><div class="line">                        <span class="string">"subscriber1.username,subscriber2.username,subscriber1.id,subscriber2.id,message1.is_removed,message1.is_blocked,manager.dangerous_message.managed_date,"</span> +</div><div class="line">                        <span class="string">"manager.action.action_name,account.auth_user.name from manager.dangerous_message left outer join "</span> +</div><div class="line">                        <span class="string">"message message1 on(manager.dangerous_message.message_id = message1.id) left outer join account.auth_user "</span> +</div><div class="line">                        <span class="string">"on(manager.dangerous_message.manager_id = account.auth_user.id) left outer join manager.action "</span> +</div><div class="line">                        <span class="string">"on(manager.dangerous_message.action_id = manager.action.id) left outer join message message2 on(message1.reference_id = message2.id)"</span> +</div><div class="line">                        <span class="string">"inner join subscriber subscriber1 on (message1.subscriber_id = subscriber1.id) left outer join subscriber subscriber2 on (message2.subscriber_id = subscriber2.id) "</span> +</div><div class="line">                        <span class="string">"where message1.is_removed = true and message1.is_deleted = false)"</span> +  </div><div class="line">                     <span class="string">"union"</span> +</div><div class="line">                     <span class="string">"(select message1.word,message1.comment_count,message1.transmission_count,message1.id,message1.publish_date,"</span> +</div><div class="line">                        <span class="string">"message2.word,message2.comment_count,message2.transmission_count,message2.id,message2.publish_date,"</span> +</div><div class="line">                        <span class="string">"subscriber1.username,subscriber2.username,subscriber1.id,subscriber2.id,message1.is_removed,message1.is_blocked,manager.dangerous_message.managed_date,"</span> +</div><div class="line">                        <span class="string">"manager.action.action_name,account.auth_user.name from manager.dangerous_message left outer join "</span> +</div><div class="line">                        <span class="string">"message message1 on(manager.dangerous_message.message_id = message1.id) left outer join account.auth_user "</span> +</div><div class="line">                        <span class="string">"on(manager.dangerous_message.manager_id = account.auth_user.id) left outer join manager.action "</span> +</div><div class="line">                        <span class="string">"on(manager.dangerous_message.action_id = manager.action.id) left outer join message message2 on(message1.reference_id = message2.id)"</span> +</div><div class="line">                        <span class="string">"inner join subscriber subscriber1 on (message1.subscriber_id = subscriber1.id) left outer join subscriber subscriber2 on (message2.subscriber_id = subscriber2.id) "</span> +</div><div class="line">                        <span class="string">"where message1.is_blocked = true and message1.is_deleted = false)"</span> +</div><div class="line">                        <span class="string">"order by 2 desc,5 desc "</span> +</div><div class="line">                        <span class="string">"limit "</span> + perPage + <span class="string">"offset "</span> + (page - <span class="number">1</span>) * <span class="number">10</span>;</div><div class="line">        <span class="keyword">return</span> em.createNativeQuery(sql).getResultList();</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">public</span> List&lt;SumItem&gt; <span class="title">sumMessage</span><span class="params">()</span></span>&#123;</div><div class="line">        String sql = <span class="string">"select count(to_char(publish_date,'yyyy-mm-dd')),to_char(publish_date,'yyyy-mm-dd') from message "</span> +</div><div class="line">                   <span class="string">"where publish_date &gt; current_date - interval '9 day' "</span> +</div><div class="line">                   <span class="string">"group by to_char(publish_date,'yyyy-mm-dd') order by to_char(publish_date,'yyyy-mm-dd')"</span>;</div><div class="line">        List&lt;Object[]&gt; results = em.createNativeQuery(sql).getResultList();</div><div class="line">        List&lt;SumItem&gt; messageSum = <span class="keyword">new</span> ArrayList();        </div><div class="line">        Calendar cal = Calendar.getInstance();</div><div class="line">        cal.add(Calendar.DAY_OF_MONTH, -<span class="number">9</span>);</div><div class="line">        SimpleDateFormat sdf = <span class="keyword">new</span> SimpleDateFormat(<span class="string">"yyyy-MM-dd"</span>);</div><div class="line">        String start = sdf.format(cal.getTime());</div><div class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>;i &lt; <span class="number">10</span>;i++)&#123;                      </div><div class="line">            SumItem sumItem = <span class="keyword">new</span> SumItem();</div><div class="line">            sumItem.setCount(<span class="number">0</span>);</div><div class="line">            sumItem.setDate(sdf.format(cal.getTime()));</div><div class="line">            messageSum.add(sumItem);</div><div class="line">            cal.add(Calendar.DAY_OF_MONTH, <span class="number">1</span>);</div><div class="line">        &#125;                </div><div class="line">        <span class="keyword">if</span>(!results.isEmpty())&#123;</div><div class="line">            <span class="keyword">for</span>(Object[] result : results)&#123;</div><div class="line">                String end = (String)result[<span class="number">1</span>];</div><div class="line">                <span class="keyword">try</span>&#123;</div><div class="line">                    <span class="keyword">int</span> interval = (<span class="keyword">int</span>)((sdf.parse(end).getTime() - sdf.parse(start).getTime()) / (<span class="number">1000</span> * <span class="number">60</span> * <span class="number">60</span> * <span class="number">24</span>)); </div><div class="line">                    messageSum.get(interval).setCount(((Long)result[<span class="number">0</span>]).intValue());</div><div class="line">                &#125;<span class="keyword">catch</span>(ParseException e)&#123;</div><div class="line">                    e.printStackTrace();</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> messageSum;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">public</span> List&lt;SumItem&gt; <span class="title">sumComment</span><span class="params">()</span></span>&#123;</div><div class="line">        String sql = <span class="string">"select count(to_char(create_date,'yyyy-mm-dd')),to_char(create_date,'yyyy-mm-dd') from commentary "</span> +</div><div class="line">                   <span class="string">"where create_date &gt; current_date - interval '9 day' "</span> +</div><div class="line">                   <span class="string">"group by to_char(create_date,'yyyy-mm-dd') order by to_char(create_date,'yyyy-mm-dd')"</span>;</div><div class="line">        List&lt;Object[]&gt; results = em.createNativeQuery(sql).getResultList();</div><div class="line">        List&lt;SumItem&gt; commentSum = <span class="keyword">new</span> ArrayList();</div><div class="line">        Calendar cal = Calendar.getInstance();</div><div class="line">        SimpleDateFormat sdf = <span class="keyword">new</span> SimpleDateFormat(<span class="string">"yyyy-MM-dd"</span>);</div><div class="line">        cal.add(Calendar.DAY_OF_MONTH, -<span class="number">9</span>);</div><div class="line">        String start = sdf.format(cal.getTime());</div><div class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>;i &lt; <span class="number">10</span>;i++)&#123;</div><div class="line">            SumItem sumItem = <span class="keyword">new</span> SumItem();</div><div class="line">            sumItem.setCount(<span class="number">0</span>);</div><div class="line">            sumItem.setDate(sdf.format(cal.getTime()));</div><div class="line">            commentSum.add(sumItem);</div><div class="line">            cal.add(Calendar.DAY_OF_MONTH, <span class="number">1</span>);</div><div class="line">        &#125; </div><div class="line">        <span class="keyword">if</span>(!results.isEmpty())&#123;</div><div class="line">            <span class="keyword">for</span>(Object[] result : results)&#123;</div><div class="line">                String end = (String)result[<span class="number">1</span>];</div><div class="line">                <span class="keyword">try</span>&#123;</div><div class="line">                    <span class="keyword">int</span> interval = (<span class="keyword">int</span>)((sdf.parse(end).getTime() - sdf.parse(start).getTime()) / (<span class="number">1000</span> * <span class="number">60</span> * <span class="number">60</span> * <span class="number">24</span>));</div><div class="line">                    commentSum.get(interval).setCount(((Long)result[<span class="number">0</span>]).intValue());</div><div class="line">                &#125;<span class="keyword">catch</span>(ParseException e)&#123;</div><div class="line">                    e.printStackTrace();</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> commentSum;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Stateless</span></div><div class="line"><span class="meta">@RolesAllowed</span>(&#123;<span class="string">"operator"</span>&#125;)</div><div class="line"><span class="meta">@Path</span>(<span class="string">"message"</span>)</div><div class="line"><span class="meta">@Tracked</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MessageFacadeREST</span> <span class="keyword">extends</span> <span class="title">AbstractFacade</span>&lt;<span class="title">Message</span>&gt; </span>&#123;</div><div class="line">    <span class="meta">@PersistenceContext</span>(unitName = <span class="string">"com.hudoumiao_sampleweb_war_1.0-SNAPSHOTPU"</span>)</div><div class="line">    <span class="keyword">private</span> EntityManager em;</div><div class="line">    <span class="meta">@EJB</span></div><div class="line">    MessageService messageService;</div><div class="line">    <span class="meta">@EJB</span></div><div class="line">    CommentService commentService;</div></pre></td></tr></table></figure>
+<p>　　第一段代码是EJB的定义类，@stateless标注说明是无状态的EJB。其必须含有无参的构造函数，这里用默认的无参构造函数。我们可以先忽略类里各方法的实现细节，但不难看出，每个方法都是对数据库的操作，以及获取数据后的一些处理。这就是我们的数据库访问与业务逻辑，全部封装在EJB里。</p>
+<p>　　第二段代码是注入EJB到类变量里。这里的MessageFacadeRest是JAX-RS的Resource类，我们需要借助EJB来处理业务逻辑，然后返回处理过后的数据到Resource类的相应方法内以供RESTful API访问。@EJB就表示EJB实体对象。</p>
+<p>　　我们每调用一次EJB的实体对象，都会经历一次EJB的生命周期，下面简单阐述一下其生命周期的流程。我们所用的application server container，例如GlassFish,Tomcat等，都会维护一个EJB pool，类似数据库连接池或者线程池，都是预先存放好一定数量的EJB实体对象，需要调用的时候从中抽取，调用完毕再由池回收。这整个过程application server container都会帮我们管理。</p>
+<ol>
+<li>首先，container会根据EJB的无参构造函数创建EJB。</li>
+<li>EJB里的资源会根据注解注入，例如第一段代码的@EntityManager，这是数据库连接资源，后面再详细介绍。</li>
+<li>建立EJB池，把建立好的EJB放入池中。</li>
+<li>如果客户端有请求访问EJB，如果池中有空闲的EJB则会抽取出来给客户端使用，如果没有空闲的EJB，则会创建更多的EJB实体。</li>
+<li>执行EJB业务逻辑。</li>
+<li>业务逻辑执行完毕后，EJB归还池中。</li>
+<li>根据需要移除EJB实体。</li>
+</ol>
+<p>　　EJB很好的封装了业务逻辑与数据库访问，把数据库与视图分离，且EJB pool很好地处理了线程安全与并发的问题。</p>
+<h5 id="EntityManager"><a href="#EntityManager" class="headerlink" title="EntityManager"></a>EntityManager</h5><p>　　JPA关键在于实现ORM,前面我们介绍了Entity，但单靠创建Entity，我们是无法实现ORM的。要实现ORM，我们需要一个Persistence Unit，即持久化单元。我们依靠Persistence Unit去建立数据库连接。通过Persistent Unit，我们可以注入EntityManager，进而实现数据库业务逻辑的增删改查。</p>
+<p>　　我们需要现在相应的第三方ORM框架的配置文件persistence.xml里定义Persistence Unit:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">persistence</span> <span class="attr">version</span>=<span class="string">"2.1"</span> <span class="attr">xmlns</span>=<span class="string">"http://xmlns.jcp.org/xml/ns/persistence"</span> <span class="attr">xmlns:xsi</span>=<span class="string">"http://www.w3.org/2001/XMLSchema-instance"</span> <span class="attr">xsi:schemaLocation</span>=<span class="string">"http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd"</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">persistence-unit</span> <span class="attr">name</span>=<span class="string">"com.hudoumiao_sampleweb_war_1.0-SNAPSHOTPU"</span> <span class="attr">transaction-type</span>=<span class="string">"JTA"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">jta-data-source</span>&gt;</span>jdbc/weibo<span class="tag">&lt;/<span class="name">jta-data-source</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">exclude-unlisted-classes</span>&gt;</span>false<span class="tag">&lt;/<span class="name">exclude-unlisted-classes</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">properties</span>/&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">persistence-unit</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">persistence</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>　　比较重要的是name属性，这个属性是我们在EJB里引用persistence unit所需要的。上面介绍EJB代码里已有相关示例。当我们要把项目部署到application server container里，我们需要使用transaction-type=”JTA”。在这种transaction-type下，我们不需要罗列需要引入的entity class，只需在jta-data-source里指定数据库就行。并且数据库的详细配置我们不需要再persistence.xml里写，只需在application server container的配置文件里配置好就行。例如，如果用GlassFish作为application server container,则配置文件glassfish-resources.xml如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">jdbc-connection-pool</span> <span class="attr">allow-non-component-callers</span>=<span class="string">"false"</span> <span class="attr">associate-with-thread</span>=<span class="string">"false"</span> <span class="attr">connection-creation-retry-attempts</span>=<span class="string">"0"</span> <span class="attr">connection-creation-retry-interval-in-seconds</span>=<span class="string">"10"</span> <span class="attr">connection-leak-reclaim</span>=<span class="string">"false"</span> <span class="attr">connection-leak-timeout-in-seconds</span>=<span class="string">"0"</span> <span class="attr">connection-validation-method</span>=<span class="string">"auto-commit"</span> <span class="attr">datasource-classname</span>=<span class="string">"org.postgresql.ds.PGSimpleDataSource"</span> <span class="attr">fail-all-connections</span>=<span class="string">"false"</span> <span class="attr">idle-timeout-in-seconds</span>=<span class="string">"300"</span> <span class="attr">is-connection-validation-required</span>=<span class="string">"false"</span> <span class="attr">is-isolation-level-guaranteed</span>=<span class="string">"true"</span> <span class="attr">lazy-connection-association</span>=<span class="string">"false"</span> <span class="attr">lazy-connection-enlistment</span>=<span class="string">"false"</span> <span class="attr">match-connections</span>=<span class="string">"false"</span> <span class="attr">max-connection-usage-count</span>=<span class="string">"0"</span> <span class="attr">max-pool-size</span>=<span class="string">"32"</span> <span class="attr">max-wait-time-in-millis</span>=<span class="string">"60000"</span> <span class="attr">name</span>=<span class="string">"post-gre-sql_weibo_postgresPool"</span> <span class="attr">non-transactional-connections</span>=<span class="string">"false"</span> <span class="attr">pool-resize-quantity</span>=<span class="string">"2"</span> <span class="attr">res-type</span>=<span class="string">"javax.sql.DataSource"</span> <span class="attr">statement-timeout-in-seconds</span>=<span class="string">"-1"</span> <span class="attr">steady-pool-size</span>=<span class="string">"8"</span> <span class="attr">validate-atmost-once-period-in-seconds</span>=<span class="string">"0"</span> <span class="attr">wrap-jdbc-objects</span>=<span class="string">"false"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"serverName"</span> <span class="attr">value</span>=<span class="string">"localhost"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"portNumber"</span> <span class="attr">value</span>=<span class="string">"5432"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"databaseName"</span> <span class="attr">value</span>=<span class="string">"weibo"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"User"</span> <span class="attr">value</span>=<span class="string">"postgres"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"Password"</span> <span class="attr">value</span>=<span class="string">"gdzqzxwjs95"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"URL"</span> <span class="attr">value</span>=<span class="string">"jdbc:postgresql://localhost:5432/weibo"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"driverClass"</span> <span class="attr">value</span>=<span class="string">"org.postgresql.Driver"</span>/&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">jdbc-connection-pool</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">jdbc-resource</span> <span class="attr">enabled</span>=<span class="string">"true"</span> <span class="attr">jndi-name</span>=<span class="string">"jdbc/weibo"</span> <span class="attr">object-type</span>=<span class="string">"user"</span> <span class="attr">pool-name</span>=<span class="string">"post-gre-sql_weibo_postgresPool"</span>/&gt;</span></div></pre></td></tr></table></figure>
+<p>　　上面的定义的jndi-name就是persistence.xml引用的数据库凭据。</p>
+<p>　　持久化单元(persist unit)就是关于一组Entity的命名配置。持久化单元是一个静态概念。</p>
+<p>　　持久化上下文(Persist Context)就是一个受管的Entity实例的集合。每一个持久化上下文都关联一个持久化单元，持久化上下文不可能脱离持久化单元独立存在。持久化上下文是一个动态概念。</p>
+<p>　　尽管持久化上下文非常重要，但是开发者不直接与之打交道，持久化上下文在程序中是透明的，我们通过EntityManager间接管理它。</p>
+<p>　　利用EntityManager我们便能够完成数据库的增删改查。例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractFacade</span>&lt;<span class="title">T</span>&gt; </span>&#123;</div><div class="line">    <span class="keyword">private</span> Class&lt;T&gt; entityClass;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">AbstractFacade</span><span class="params">(Class&lt;T&gt; entityClass)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.entityClass = entityClass;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">abstract</span> EntityManager <span class="title">getEntityManager</span><span class="params">()</span></span>;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">create</span><span class="params">(T entity)</span> </span>&#123;</div><div class="line">        getEntityManager().persist(entity);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">edit</span><span class="params">(T entity)</span> </span>&#123;</div><div class="line">        getEntityManager().merge(entity);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">remove</span><span class="params">(T entity)</span> </span>&#123;</div><div class="line">        getEntityManager().remove(getEntityManager().merge(entity));</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> T <span class="title">find</span><span class="params">(Object id)</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> getEntityManager().find(entityClass, id);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> List&lt;T&gt; <span class="title">findAll</span><span class="params">()</span> </span>&#123;</div><div class="line">        javax.persistence.criteria.CriteriaQuery cq = getEntityManager().getCriteriaBuilder().createQuery();</div><div class="line">        cq.select(cq.from(entityClass));</div><div class="line">        <span class="keyword">return</span> getEntityManager().createQuery(cq).getResultList();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> List&lt;T&gt; <span class="title">findRange</span><span class="params">(<span class="keyword">int</span>[] range)</span> </span>&#123;</div><div class="line">        javax.persistence.criteria.CriteriaQuery cq = getEntityManager().getCriteriaBuilder().createQuery();</div><div class="line">        cq.select(cq.from(entityClass));</div><div class="line">        javax.persistence.Query q = getEntityManager().createQuery(cq);</div><div class="line">        q.setMaxResults(range[<span class="number">1</span>] - range[<span class="number">0</span>] + <span class="number">1</span>);</div><div class="line">        q.setFirstResult(range[<span class="number">0</span>]);</div><div class="line">        <span class="keyword">return</span> q.getResultList();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">count</span><span class="params">()</span> </span>&#123;</div><div class="line">        javax.persistence.criteria.CriteriaQuery cq = getEntityManager().getCriteriaBuilder().createQuery();</div><div class="line">        javax.persistence.criteria.Root&lt;T&gt; rt = cq.from(entityClass);</div><div class="line">        cq.select(getEntityManager().getCriteriaBuilder().count(rt));</div><div class="line">        javax.persistence.Query q = getEntityManager().createQuery(cq);</div><div class="line">        <span class="keyword">return</span> ((Long) q.getSingleResult()).intValue();</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　这是一个通用的jax-rs资源类模板，通过继承这一个类，我们能够实现最基本的增删改查，分别对应EntityManager.persist()，EntityManager.remove()，EntityManager.merge()，EntityManager.find()。其中find方法一般只能根据id查找单个实体，如果需要做更复杂的查询还需要用到Query API,后面一节会详细介绍。这里，我们先简单介绍一下EntityManager的状态。</p>
+<p>　　EntityManager管理的实体有4个状态，new,managed,detached,removed。</p>
+<p>　　当我们通过构造函数新创建一个entity对象时，它属于new状态，此时它的数据与数据库是不同步的，是不在persistence context里的。当我们调用persist方法后，它将获得自己的主键，与数据库同步，转化为managed状态，进入persistence context。</p>
+<p>　　如果我们remove某个处于merged状态的entity，则它将变为removed状态。凡是被查找出来的实体，其状态都为managed，其变化与数据库同步，处于persistence context。</p>
+<p>　　所有处于detached状态的entity都游离于persistence context之外。如果我们对某个处于detached状态的实体调用merge方法，则会变成managed状态，其实体里的数据将同步到数据库。</p>
+<p>　　只要实体与数据库同步，我们便真正地实现了ORM。</p>
+<h5 id="Query-API"><a href="#Query-API" class="headerlink" title="Query API"></a>Query API</h5><h6 id="基本语法"><a href="#基本语法" class="headerlink" title="基本语法"></a>基本语法</h6><p>　　我们知道，EntityManager的find方法只能查询某id的一个实体，如果要做复杂的查询则必须用到JPA的Query API。下面先以一段代码来认识一下Query API:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> List&lt;Object[]&gt; findDangerousMessages(<span class="keyword">int</span> page,<span class="keyword">int</span> perPage)&#123;</div><div class="line">       String sql = <span class="string">"(select message1.word,message1.comment_count,message1.transmission_count,message1.id,message1.publish_date,"</span> +</div><div class="line">                       <span class="string">"message2.word,message2.comment_count,message2.transmission_count,message2.id,message2.publish_date,"</span> +</div><div class="line">                       <span class="string">"subscriber1.username,subscriber2.username,subscriber1.id,subscriber2.id,manager.dangerous_message.managed_date,"</span> +</div><div class="line">                       <span class="string">"manager.action.action_name,account.auth_user.name from manager.dangerous_message left outer join "</span> +</div><div class="line">                       <span class="string">"message message1 on(manager.dangerous_message.message_id = message1.id) left outer join account.auth_user "</span> +</div><div class="line">                       <span class="string">"on(manager.dangerous_message.manager_id = account.auth_user.id) left outer join manager.action "</span> +</div><div class="line">                       <span class="string">"on(manager.dangerous_message.action_id = manager.action.id) left outer join message message2 on(message1.reference_id = message2.id)"</span> +</div><div class="line">                       <span class="string">"inner join subscriber subscriber1 on (message1.subscriber_id = subscriber1.id) left outer join subscriber subscriber2 on (message2.subscriber_id = subscriber2.id) "</span> +</div><div class="line">                       <span class="string">"where message1.is_deleted = false and message1.is_blocked = false and message1.is_removed = false)"</span> +                        </div><div class="line">                       <span class="string">"order by 2 desc,5 desc "</span> +</div><div class="line">                       <span class="string">"limit "</span> + perPage + <span class="string">"offset "</span> + (page - <span class="number">1</span>) * <span class="number">10</span>;</div><div class="line">       <span class="keyword">return</span> em.createNativeQuery(sql).getResultList();       </div><div class="line">   &#125;</div><div class="line">   </div><div class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">countDangerousMessage</span><span class="params">()</span></span>&#123;</div><div class="line">       String sql = <span class="string">"select count(manager.dangerous_message.id) from manager.dangerous_message left outer join message "</span></div><div class="line">               + <span class="string">"on(manager.dangerous_message.message_id = message.id) where message.is_deleted = false and "</span></div><div class="line">               + <span class="string">"message.is_blocked = false and message.is_removed = false"</span>;</div><div class="line">       <span class="keyword">return</span> (Long)em.createNativeQuery(sql).getSingleResult();</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
+<p>　　由上面代码看到，我们定义了一段sql的字符串，然后调用EntityManager的createNativeQuery方法，便可以进行数据库查询。如果要返回多个属性或多条记录，可以用getResultList方法来返回;如果只返回一个属性值，可以用getSingleResult方法。这是最基本的Query API与数据库访问方法，非常简单，只要有sql与数据库基础便可以轻松开发。</p>
+<p>　　除了用传统的sql语言作查询外，Query API还有一种面向对象的数据库查询语言JPQL，其语法与sql很相似，它的查询是针对ORM后的Entity class的。以字符串形式存储相应的jpql语句，然后调用createQuery方法进行查询，仍然可以用getResultList以及getSingleResult的方法返回结果。</p>
+<p>　　Query API的更多方法以及JPQL的具体语法可以自行查阅资料，网上资源也很多，这里就不展开赘述了。在开发的时候查查就行，用多了就熟练了，就像sql语言一样。一般大部分sql操作都能用JPQL实现。</p>
+<p>　　我们还能用@NameQuery的形式预先定义好查询语句，例如：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Entity</span></div><div class="line"><span class="meta">@Table</span>(name = <span class="string">"dangerous_message"</span>, catalog = <span class="string">"weibo"</span>, schema = <span class="string">"manager"</span>)</div><div class="line"><span class="meta">@XmlRootElement</span></div><div class="line"><span class="meta">@NamedQueries</span>(&#123;</div><div class="line">    <span class="meta">@NamedQuery</span>(name = <span class="string">"DangerousMessage.findAll"</span>, query = <span class="string">"SELECT d FROM DangerousMessage d"</span>),</div><div class="line">    <span class="meta">@NamedQuery</span>(name = <span class="string">"DangerousMessage.findById"</span>, query = <span class="string">"SELECT d FROM DangerousMessage d WHERE d.id = :id"</span>),</div><div class="line">    <span class="meta">@NamedQuery</span>(name = <span class="string">"DangerousMessage.findByMessageId"</span>, query = <span class="string">"SELECT d FROM DangerousMessage d WHERE d.messageId = :messageId"</span>),</div><div class="line">    <span class="meta">@NamedQuery</span>(name = <span class="string">"DangerousMessage.findByManagerId"</span>, query = <span class="string">"SELECT d FROM DangerousMessage d WHERE d.managerId = :managerId"</span>),</div><div class="line">    <span class="meta">@NamedQuery</span>(name = <span class="string">"DangerousMessage.findByManagedDate"</span>, query = <span class="string">"SELECT d FROM DangerousMessage d WHERE d.managedDate = :managedDate"</span>)&#125;)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DangerousMessage</span> <span class="keyword">implements</span> <span class="title">Serializable</span> </span>&#123;</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Message</span> <span class="keyword">implements</span> <span class="title">Serializable</span> </span>&#123;</div></pre></td></tr></table></figure></p>
+<p>　　上面就是用jpql语法预先定义好一些常用的查询语句。类似的，用sql也可以预先定义查询，此时的标注是@NameNativeQuery。如果在类名前用@NameQuery注解定义好一些查询语句，在代码里需要进行查询时候只需要用name作标识就可以，例如：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">DangerousMessage dangerousMessage = (DangerousMessage)em.createNamedQuery(<span class="string">"DangerousMessage.findByMessageId"</span>).setParameter(<span class="string">"messageId"</span>,id).getSingleResult();</div></pre></td></tr></table></figure></p>
+<h6 id="查询方式的选择"><a href="#查询方式的选择" class="headerlink" title="查询方式的选择"></a>查询方式的选择</h6><p>　　总而言之，我们可以选择sql语句或者jpql语句作为Query API的参数进行数据库查询；确定了语言后我们还可以选择是用标准的查询形式还是预先定义的查询。如果进行复杂的数据库查询，或者一些jpql无法实现的查询，我们优先选择用sql语言实现。而在一般情况下，我们推荐使用JPQL，因为它更贴近面向对象的思想，且其实现与底层的数据库是无关的。换言之，我们可以用一套jpql语法来处理不同数据库的查询工作，如果更换数据库，我们的代码仍然能正常运行，而不用像sql语言一样每个数据库都有自己的一套语法。</p>
+<p>　　如果查询语句是动态变化，不固定的，那么只能用标准的查询方式。否则，推荐采用预先定义的查询。预先定义的查询语句存放在固定的地方，并且有更好的性能。只要进行了一次预定义查询，后面进行的查询就不用再编译，而是运行之前编译好的缓存的查询语句。</p>
+<h4 id="Boundary"><a href="#Boundary" class="headerlink" title="Boundary"></a>Boundary</h4><p>　　JAX-RS的Resource组件类通常便是我们所说的Boudary。我们在Resource里调用Control层的EJB来进行业务逻辑的运算与数据库访问，然后在Boudary层组装查询的结果。如果查询结果正好是Entity对象，则直接将其序列化传输就行；如果需要另外组合，则定义一个POJO类做为数据传输类(DTO)，将其序列化传输。下面是微博评论系统的结构设计：</p>
+<p><img src="/img/system-structure.png" alt="BCE模型结构"></p>
+<p>　　类名里含DTO的都是新定义的作数据传输的POJO类，MessageFacadeREST是Resource组件类，它继承了AbstractFacaceREST。MessageService是EJB类，封装了大部分的数据库访问与业务逻辑。Entity包里都是ORM后的实体对象。</p>
+<p>　　其实，MessageFacadeREST也是EJB实体，因为重组数据也是业务逻辑之一。所以，EJB不一定只属于Control层，Boundary层也是需要的，只是我们为了介绍方便放在Control层里讲述而已。Control层的EJB主要用于数据库访问与一些业务逻辑的运算，我们希望尽可能把JPA标准里绝大多数的业务逻辑都放到Control层内。Boundary层的EJB对象则主要处理数据的再封装，以及一些JAX-RS里对于http response的header与body的一些处理。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>　　这一次主要以BCE模型结构入手，讲述了JPA标准的基本知识，以及其与JAX-RS是怎么联合起来实现一套RESTful API的后台系统的。如果业务逻辑比较简单，我们也可以不严格按照BCE模型，省略了Control层，而把所有业务逻辑以及数据库访问都放在Boundary层的EJB内。如果系统较大，建议尽量用BCE的结构。</p>
+<p>　　</p>
+<p>　　
+　　</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/JPA/" rel="tag">#JPA</a>
+          
+            <a href="/tags/ORM/" rel="tag">#ORM</a>
+          
+            <a href="/tags/数据库/" rel="tag">#数据库</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/08/23/RESTful-API规范补充/" rel="next" title="RESTful API规范补充以及JAX-RS传递参数的方法">
+                <i class="fa fa-chevron-left"></i> RESTful API规范补充以及JAX-RS传递参数的方法
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/08/26/ORM-in-JaveEE——JPA/"
+           data-title="ORM in JaveEE——JPA" data-url="http://yoursite.com/2016/08/26/ORM-in-JaveEE——JPA/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/uploads/avatar.jpg"
+               alt="Gavin Wong" />
+          <p class="site-author-name" itemprop="name">Gavin Wong</p>
+          <p class="site-description motion-element" itemprop="description">广寒宫送千里香，杳杳随风入梦凉。我欲因之凌霄起，嫦娥丹桂尽入囊。</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">4</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#什么是ORM"><span class="nav-number">1.</span> <span class="nav-text">什么是ORM</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#什么是JPA"><span class="nav-number">2.</span> <span class="nav-text">什么是JPA</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JPA与RESTful-API"><span class="nav-number">3.</span> <span class="nav-text">JPA与RESTful API</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#BCE模型"><span class="nav-number">4.</span> <span class="nav-text">BCE模型</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Entity"><span class="nav-number">4.1.</span> <span class="nav-text">Entity</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Control"><span class="nav-number">4.2.</span> <span class="nav-text">Control</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#EJB"><span class="nav-number">4.2.1.</span> <span class="nav-text">EJB</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#EntityManager"><span class="nav-number">4.2.2.</span> <span class="nav-text">EntityManager</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Query-API"><span class="nav-number">4.2.3.</span> <span class="nav-text">Query API</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#基本语法"><span class="nav-number">4.2.3.1.</span> <span class="nav-text">基本语法</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#查询方式的选择"><span class="nav-number">4.2.3.2.</span> <span class="nav-text">查询方式的选择</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Boundary"><span class="nav-number">4.3.</span> <span class="nav-text">Boundary</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gavin Wong</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"wjqwsp"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+       search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+    'use strict';
+    $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+            // get the contents from search data
+            isfetched = true;
+            $('.popup').detach().appendTo('.header-inner');
+            var datas = $( "entry", xmlResponse ).map(function() {
+                return {
+                    title: $( "title", this ).text(),
+                    content: $("content",this).text(),
+                    url: $( "url" , this).text()
+                };
+            }).get();
+            var $input = document.getElementById(search_id);
+            var $resultContent = document.getElementById(content_id);
+            $input.addEventListener('input', function(){
+                var matchcounts = 0;
+                var str='<ul class=\"search-result-list\">';
+                var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                $resultContent.innerHTML = "";
+                if (this.value.trim().length > 1) {
+                // perform local searching
+                datas.forEach(function(data) {
+                    var isMatch = true;
+                    var content_index = [];
+                    var data_title = data.title.trim().toLowerCase();
+                    var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                    var data_url = data.url;
+                    var index_title = -1;
+                    var index_content = -1;
+                    var first_occur = -1;
+                    // only match artiles with not empty titles and contents
+                    if(data_title != '' && data_content != '') {
+                        keywords.forEach(function(keyword, i) {
+                            index_title = data_title.indexOf(keyword);
+                            index_content = data_content.indexOf(keyword);
+                            if( index_title < 0 && index_content < 0 ){
+                                isMatch = false;
+                            } else {
+                                if (index_content < 0) {
+                                    index_content = 0;
+                                }
+                                if (i == 0) {
+                                    first_occur = index_content;
+                                }
+                            }
+                        });
+                    }
+                    // show search results
+                    if (isMatch) {
+                        matchcounts += 1;
+                        str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                        var content = data.content.trim().replace(/<[^>]+>/g,"");
+                        if (first_occur >= 0) {
+                            // cut out 100 characters
+                            var start = first_occur - 20;
+                            var end = first_occur + 80;
+                            if(start < 0){
+                                start = 0;
+                            }
+                            if(start == 0){
+                                end = 50;
+                            }
+                            if(end > content.length){
+                                end = content.length;
+                            }
+                            var match_content = content.substring(start, end);
+                            // highlight all keywords
+                            keywords.forEach(function(keyword){
+                                var regS = new RegExp(keyword, "gi");
+                                match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                            });
+
+                            str += "<p class=\"search-result\">" + match_content +"...</p>"
+                        }
+                        str += "</li>";
+                    }
+                })};
+                str += "</ul>";
+                if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+                if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+                $resultContent.innerHTML = str;
+            });
+            proceedsearch();
+        }
+    });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("EBQKkMtlkhkxwaXmaewHY2c4-gzGzoHsz", "KSypTWMBbTMgIBYw9EuDa73j");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+</body>
+</html>
