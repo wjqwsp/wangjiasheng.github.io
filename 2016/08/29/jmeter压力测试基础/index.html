@@ -1,0 +1,1009 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Lobster Two:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="jmeter,压力测试," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="什么是压力测试　　当我们开发完一个Web系统，实现了需求中的所有功能，此时还不能马上将其上线。我们必须对这个系统进行充分的，全面的测试，最大程度地确保它不会出错。压力测试就是这些测试的一种。压力测试的目的是为系统模拟一个现实的访问场景，建立一堆线程去并发地访问系统，了解这个Web系统能支持多大的并发量，或者说支持多少用户同时在线而不会崩溃。我们通过调整并发的线程数，访问时间等参数，去了解在一定的硬">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JMeter压力测试基础">
+<meta property="og:url" content="http://yoursite.com/2016/08/29/jmeter压力测试基础/index.html">
+<meta property="og:site_name" content="南国倾城">
+<meta property="og:description" content="什么是压力测试　　当我们开发完一个Web系统，实现了需求中的所有功能，此时还不能马上将其上线。我们必须对这个系统进行充分的，全面的测试，最大程度地确保它不会出错。压力测试就是这些测试的一种。压力测试的目的是为系统模拟一个现实的访问场景，建立一堆线程去并发地访问系统，了解这个Web系统能支持多大的并发量，或者说支持多少用户同时在线而不会崩溃。我们通过调整并发的线程数，访问时间等参数，去了解在一定的硬">
+<meta property="og:image" content="http://yoursite.com/img/Test-Plan.jpg">
+<meta property="og:image" content="http://yoursite.com/img/Thread-Group.jpg">
+<meta property="og:image" content="http://yoursite.com/img/http-request-defaults.jpg">
+<meta property="og:image" content="http://yoursite.com/img/http-cookie-manager.jpg">
+<meta property="og:image" content="http://yoursite.com/img/constant-timer.jpg">
+<meta property="og:image" content="http://yoursite.com/img/view-results-tree.jpg">
+<meta property="og:image" content="http://yoursite.com/img/aggregate-report.jpg">
+<meta property="og:image" content="http://yoursite.com/img/login-response.jpg">
+<meta property="og:image" content="http://yoursite.com/img/duration-assertion.jpg">
+<meta property="og:image" content="http://yoursite.com/img/login-test.jpg">
+<meta property="og:image" content="http://yoursite.com/img/counter.png">
+<meta property="og:image" content="http://yoursite.com/img/login-response.jpg">
+<meta property="og:image" content="http://yoursite.com/img/follow.jpg">
+<meta property="og:image" content="http://yoursite.com/img/follow-response.jpg">
+<meta property="og:image" content="http://yoursite.com/img/send-message.jpg">
+<meta property="og:image" content="http://yoursite.com/img/send-message-response.jpg">
+<meta property="og:image" content="http://yoursite.com/img/search-message.jpg">
+<meta property="og:image" content="http://yoursite.com/img/search-message-response.jpg">
+<meta property="og:image" content="http://yoursite.com/img/message-regular.jpg">
+<meta property="og:image" content="http://yoursite.com/img/send-comment.jpg">
+<meta property="og:image" content="http://yoursite.com/img/send-comment-response.jpg">
+<meta property="og:image" content="http://yoursite.com/img/search-comment.jpg">
+<meta property="og:image" content="http://yoursite.com/img/search-comment-response.jpg">
+<meta property="og:image" content="http://yoursite.com/img/comment-regular.jpg">
+<meta property="og:image" content="http://yoursite.com/img/delete-comment.jpg">
+<meta property="og:image" content="http://yoursite.com/img/delete-comment-response.jpg">
+<meta property="og:image" content="http://yoursite.com/img/delete-message.jpg">
+<meta property="og:image" content="http://yoursite.com/img/delete-message-response.jpg">
+<meta property="og:image" content="http://yoursite.com/img/logout.jpg">
+<meta property="og:image" content="http://yoursite.com/img/logout-response.jpg">
+<meta property="og:updated_time" content="2016-08-29T15:36:04.844Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="JMeter压力测试基础">
+<meta name="twitter:description" content="什么是压力测试　　当我们开发完一个Web系统，实现了需求中的所有功能，此时还不能马上将其上线。我们必须对这个系统进行充分的，全面的测试，最大程度地确保它不会出错。压力测试就是这些测试的一种。压力测试的目的是为系统模拟一个现实的访问场景，建立一堆线程去并发地访问系统，了解这个Web系统能支持多大的并发量，或者说支持多少用户同时在线而不会崩溃。我们通过调整并发的线程数，访问时间等参数，去了解在一定的硬">
+<meta name="twitter:image" content="http://yoursite.com/img/Test-Plan.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 6320571070080353000,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/08/29/jmeter压力测试基础/"/>
+
+  <title> JMeter压力测试基础 | 南国倾城 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">南国倾城</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">左手代码，右手年华</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                JMeter压力测试基础
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-08-29T19:22:15+08:00" content="2016-08-29">
+              2016-08-29
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/08/29/jmeter压力测试基础/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/08/29/jmeter压力测试基础/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/08/29/jmeter压力测试基础/" class="leancloud_visitors" data-flag-title="JMeter压力测试基础">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="什么是压力测试"><a href="#什么是压力测试" class="headerlink" title="什么是压力测试"></a>什么是压力测试</h3><p>　　当我们开发完一个Web系统，实现了需求中的所有功能，此时还不能马上将其上线。我们必须对这个系统进行充分的，全面的测试，最大程度地确保它不会出错。压力测试就是这些测试的一种。压力测试的目的是为系统模拟一个现实的访问场景，建立一堆线程去并发地访问系统，了解这个Web系统能支持多大的并发量，或者说支持多少用户同时在线而不会崩溃。我们通过调整并发的线程数，访问时间等参数，去了解在一定的硬件配置下，我们的系统能支持多少线程在多少时间内同时访问。在确定了这些测试数据以后，我们便对这个Web系统的性能有一个比较客观全面的了解，从而可以更好地寻求优化的方案。</p>
+<h3 id="关于JMeter"><a href="#关于JMeter" class="headerlink" title="关于JMeter"></a>关于JMeter</h3><p>　　JMeter是用java实现的开源的压力测试工具，功能强大，使用简单，在压力测试中占据极其重要的地位。这一讲就以JMeter对一个简单的微博系统进行压力测试的实例入手，介绍一下JMeter最基本的一些知识，看看JMeter是怎么对HTTP request进行测试的。虽然是以实例的形式去介绍，但涉及的都是JMeter最基本的内容，更深入的学习还需不断参考JMeter官方文档。<br><a id="more"></a></p>
+<h3 id="微博系统测试任务"><a href="#微博系统测试任务" class="headerlink" title="微博系统测试任务"></a>微博系统测试任务</h3><ol>
+<li>登录</li>
+<li>对某用户进行关注</li>
+<li>对某用户取消关注</li>
+<li>发一条微博</li>
+<li>查找自己的微博列表</li>
+<li>对刚刚发的微博添加一条评论</li>
+<li>查找该微博的评论列表</li>
+<li>删除刚刚添加的评论</li>
+<li>删除刚刚发的微博</li>
+<li>登出</li>
+</ol>
+<p>　　以上测试基本涵盖了我们这个微博系统的所有功能。我们这个微博系统是已经实现好的，后台采用简单的servlet实现。我们只需要根据这个微博系统不同servlet的输入参数和返回内容进行测试即可。其他任何Web系统的压力测试也可以套用或者参考。</p>
+<h3 id="建立线程组"><a href="#建立线程组" class="headerlink" title="建立线程组"></a>建立线程组</h3><p>　　在官网上下载了JMeter以后，便可以运行jmeter.sh，打开JMeter的图形操作界面。此时，我们只看到一个空白的Test Plan，可以修改Test Plan的名字。</p>
+<p><img src="/img/Test-Plan.jpg" alt="Test Plan"></p>
+<p>　　右键点击左边栏的Test Plan，可以新建线程组。线程组就是我们配置线程，模拟并发访问的地方。</p>
+<p><img src="/img/Thread-Group.jpg" alt="Thread Group"></p>
+<ul>
+<li>Number of Threads是一共要启的线程数。</li>
+<li>Ramp-up Period是用多少时间启动线程组。假如Number of Threads我们填了10，Ramp-up Period填了100，那么每10秒会启动一个线程，100秒会启动完所有线程。</li>
+<li>Loop Count是循环运行线程组的次数，默认运行一次，不循环。</li>
+</ul>
+<p>　　在测试过程中，我们要不断修改上面这3个参数，尤其是前两个。我们需要试出合适的参数，启动线程的频率不能太快也不能太慢，太慢往往所有线程都运行成功，且最后一个线程启动时前面的线程有些已经结束，达不到测试的效果，太快则产生一堆错误。使得系统刚好出错的参数配置，就是性能的临界点。</p>
+<h3 id="基本配置"><a href="#基本配置" class="headerlink" title="基本配置"></a>基本配置</h3><h4 id="HTTP-Request-Defaults"><a href="#HTTP-Request-Defaults" class="headerlink" title="HTTP Request Defaults"></a>HTTP Request Defaults</h4><p>　　在线程组下建立HTTP Request Defaults这个配置元素。由于我们需要测试的微博系统其域名或IP地址是固定的，访问的端口号也是固定的。我们进行的所有HTTP Request测试都要填写相同的IP和端口号，十分麻烦，修改也要全部修改。HTTP Request Defaults就是让我们在一个地方填写好基本配置信息，在同一作用域下的所有HTTP Request测试都能应用这个配置。假设我们的微博系统是建立在本机的，端口号采用Tomcat默认的8080,则配置如下：</p>
+<p><img src="/img/http-request-defaults.jpg" alt="Http Request Defaults"></p>
+<h4 id="HTTP-Cookie-Manager"><a href="#HTTP-Cookie-Manager" class="headerlink" title="HTTP Cookie Manager"></a>HTTP Cookie Manager</h4><p>　　很多网站需要用cookie记录用户的登录信息，在用户登录以后，之后的Http Request便带有登录过的cookie信息，进而访问网站资源。没有携带这些cookie数据的需要重新登录。在进行压力测试，模拟并发访问时，登录后的后续测试都需要携带相应的cookie才能正常进行测试。HTTP Cookie Manager便可以让我们的所有Http Request都共用同样的cookie。</p>
+<p><img src="/img/http-cookie-manager.jpg" alt="Http Cookie Manager"></p>
+<h4 id="Constant-Timer"><a href="#Constant-Timer" class="headerlink" title="Constant Timer"></a>Constant Timer</h4><p>　　用户在实际访问网站时，每一个操作之间往往有一定的时间间隔，不可能不间断地进行。为了真实地模拟用户行为，我们需要一个延时的功能，让每个线程启动之间有一定的时延。这个需求Constant Timer可以满足。</p>
+<p><img src="/img/constant-timer.jpg" alt="Constant Timer"></p>
+<p>　　如图所示，Thread Delay便是以毫秒为单位的固定时延数。除了固定时延，还有其他的计时器可以实现时延效果。</p>
+<h3 id="测试报告"><a href="#测试报告" class="headerlink" title="测试报告"></a>测试报告</h3><p>　　我们可以用多种形式来呈现测试结果。下面介绍比较常用的两种，结果树和聚合报告。</p>
+<h4 id="结果树"><a href="#结果树" class="headerlink" title="结果树"></a>结果树</h4><p>　　结果树能顺序地把每一个线程的每个测试的结果列出来，绿色代表成功，红色代表失败，并且可以查看每个测试的具体信息，例如request和response的具体内容，可以知道哪里出错。</p>
+<p><img src="/img/view-results-tree.jpg" alt="View Results Tree"></p>
+<h4 id="聚合报告"><a href="#聚合报告" class="headerlink" title="聚合报告"></a>聚合报告</h4><p>　　结果树能看到具体的测试信息，但缺乏整体的概览。我们希望知道进行了多少测试，失败率多少，平均耗时是多少，聚合报告便能很清晰地提供给我们这些信息。</p>
+<p><img src="/img/aggregate-report.jpg" alt="Aggregate Report"></p>
+<p>　　我们可以把结果树和聚合报告都添加进线程组内，结合两个测试报告去分析我们的结果。</p>
+<h3 id="断言"><a href="#断言" class="headerlink" title="断言"></a>断言</h3><p>　　<br>　　断言用于定义一些判断测试请求是否正确的规则。</p>
+<p>　　默认情况下，如果http response的状态码是200就表示测试正确。但实际情况要复杂很多，response返回200只能表示正常访问到资源，很有可能相应的业务逻辑不正确。下面介绍两种比较常用的判断请求是否正确的手段，都是用断言实现的，分别是Response Assertion和Duration Assertion。</p>
+<h4 id="Response-Assertion"><a href="#Response-Assertion" class="headerlink" title="Response Assertion"></a>Response Assertion</h4><p>　　一般情况下，对于每一个http request，相同的输入参数应该会让http response返回相同的内容。这些内容可能是html页面，也可能是一些返回数据。通过添加Response Assertion到相应的测试Sampler上，如果response的返回包含某些内容就说明正确，不包含就说明失败。</p>
+<p><img src="/img/login-response.jpg" alt="Response Assertion"></p>
+<p>　　如果response返回含有”success”字段，就说明成功；否则失败。</p>
+<p>　　下面进行的测试实例，全部使用Response Assertion。</p>
+<h4 id="Duration-Assertion"><a href="#Duration-Assertion" class="headerlink" title="Duration Assertion"></a>Duration Assertion</h4><p>　　只是返回结果正确，也不能达到测试效果。在实际业务环境中，页面返回的快慢是影响用户体验的致命因素。当并发量大时，用户在进行页面操作时很容易会有时延。因此，在进行压力测试时，我们有理由定义一个延时范围，当超过这个时间还没有response返回说明失败；在延时范围内返回response说明成功。Duration Assetion就是完成这项工作的。</p>
+<p><img src="/img/duration-assertion.jpg" alt="Duration Assertion"></p>
+<p>　　上面就定义了延时范围为5000毫秒。超过5000毫秒还没返回http response视为失败；否则为成功。</p>
+<p>　　下面进行的测试实例，全部使用Duration Assertion，且Duration in milliseconds全部设为5000毫秒，就不一一列举了，在分析时候只列出Response Assertion设置。</p>
+<h3 id="登录测试"><a href="#登录测试" class="headerlink" title="登录测试"></a>登录测试</h3><h4 id="测试配置"><a href="#测试配置" class="headerlink" title="测试配置"></a>测试配置</h4><p>　　JMeter里对HTTP Request的测试是用Sampler里的HTTP Request进行的。我们可以在里面添加HTTP Request的Parameter，以及URI。</p>
+<p>　　登录一般需要用户名和密码。为了测试方便，我预先在微博系统对应的数据库里添加好一定量的用户，他们的用户名与id相同，密码统一为gdzq。id按加一自增长的策略产生。下面是登录测试的配置：</p>
+<p><img src="/img/login-test.jpg" alt="Login Test"></p>
+<p>　　我们的登录功能是用LoginServlet这个serlvet实现的，它接收两个参数，一个是email,相当于用户名；一个是pwd，是密码。这些输入参数是有具体的Web系统确定的，我这个微博系统就是需要这两个。</p>
+<p>　　由于要模拟多用户登录的场景，需要让每个线程的登录用户的不一样。按照上面的数据库里的测试用户的特点，在HTTP Request的参数里让密码固定为gdzq，用户名我们这里引入了一个变量User。</p>
+<p>　　JMeter有很多途径产生变量，我们这里介绍一种很简单的，Counter。</p>
+<p><img src="/img/counter.png" alt="Counter"></p>
+<p>　　Start是变量的起始值，Increment是每次增加的值，Maximum是上限值，Reference Name是变量名。我们让User变量从134开始递增，每启动一个线程就会使用一次User变量，并把它增1，从而达到模拟不同用户访问系统的效果。</p>
+<h4 id="Response-Assertion-1"><a href="#Response-Assertion-1" class="headerlink" title="Response Assertion"></a>Response Assertion</h4><p><img src="/img/login-response.jpg" alt="Login Assertion"></p>
+<h3 id="关注某个人"><a href="#关注某个人" class="headerlink" title="关注某个人"></a>关注某个人</h3><h4 id="测试配置-1"><a href="#测试配置-1" class="headerlink" title="测试配置"></a>测试配置</h4><p><img src="/img/follow.jpg" alt="Follow"></p>
+<p>　　两个参数，一个是关注者id，一个是被关注者id。被关注者我们固定为22，关注者按照登录测试的逻辑，用User变量表示，模拟多用户并发关注同一个用户的情景。</p>
+<h4 id="Response-Assertion-2"><a href="#Response-Assertion-2" class="headerlink" title="Response Assertion"></a>Response Assertion</h4><p><img src="/img/follow-response.jpg" alt="Follow Assertion"></p>
+<h3 id="取消关注某个人"><a href="#取消关注某个人" class="headerlink" title="取消关注某个人"></a>取消关注某个人</h3><p>　　取消关注操作与关注操作的request参数和response返回都是一样的，就不另行分析了。</p>
+<h3 id="发送微博"><a href="#发送微博" class="headerlink" title="发送微博"></a>发送微博</h3><h4 id="测试配置-2"><a href="#测试配置-2" class="headerlink" title="测试配置"></a>测试配置</h4><p><img src="/img/send-message.jpg" alt="Send Message"></p>
+<p>　　http request需要两个参数，id代表发送微博的用户的id，message代表微博内容。这里我们两个参数都使用User变量，每一个线程都代表不同的用户，不同的用户都发送一条微博，微博内容就是他们的用户id号。</p>
+<h4 id="Response-Assertion-3"><a href="#Response-Assertion-3" class="headerlink" title="Response Assertion"></a>Response Assertion</h4><p><img src="/img/send-message-response.jpg" alt="Send Message Response"></p>
+<h3 id="查找微博列表"><a href="#查找微博列表" class="headerlink" title="查找微博列表"></a>查找微博列表</h3><h4 id="测试配置-3"><a href="#测试配置-3" class="headerlink" title="测试配置"></a>测试配置</h4><p><img src="/img/search-message.jpg" alt="Search Message"></p>
+<p>　　http request接收三个参数，id代表要查找哪个用户的微博列表，这里仍然使用User变量；因为微博可能很多，需要分页，page代表要查找的微博列表的页数，这里固定为第一页；type代表查找类型，我设计的这个微博系统允许三种类型的查找，分别是全部，个人和最热微博。全部就是查找用户自己发表的微博以及用户关注的人发表的所有微博；个人就只是用户自己发表的微博；最热微博则是查找全系统评论数最高的10条微博。这里type固定为”single”代表只查找用户自己发表的微博。由于我数据库用于测试的用户本身并没有微博数据，仅有的微博就是上一个操作发送的那条微博，因此查找结果应该只含一条微博。</p>
+<h4 id="Response-Assertion-4"><a href="#Response-Assertion-4" class="headerlink" title="Response Assertion"></a>Response Assertion</h4><p><img src="/img/search-message-response.jpg" alt="Search Message Response"></p>
+<p>　　如果访问正确，应该返回m1id字段。我这个SearchMessageServlet的response返回的是微博列表，格式是json。json里包含着m1id字段，代表是查找出来的微博id。由于测试用户只有一条刚刚测试时发表的微博，所以只有一个m1id字段出现。</p>
+<h4 id="Post-Processors中的正则表达式提取器"><a href="#Post-Processors中的正则表达式提取器" class="headerlink" title="Post-Processors中的正则表达式提取器"></a>Post-Processors中的正则表达式提取器</h4><p>　　Post-Processors是Sampler运行完后会触发的一项组件，一般用于提取Sampler返回的一些数据。类似的还有Pre-Processors，是Sampler运行之前会触发的一项组件。正则表达式提取器便是Post-Processors其中一种，用于按正则表达式的语法提取response里包含的一些数据。</p>
+<p>　　由于我们的测试后续需要测试往微博添加评论，查找评论，删除评论以及删除微博这些功能，都需要刚刚测试时用户发表的微博的id作为http request的输入参数。因此我们在查找微博的Sampler上添加一个正则表达式提取器，提取查找出来的第一条微博的id。这条微博就是测试时发表的微博。</p>
+<p><img src="/img/message-regular.jpg" alt="Message Regular"></p>
+<p>　　我们用正则表达式提取器产生引用名为messageid的变量，用于后续测试引用。因为我们的返回是json格式的数据，所以正则表达式为(.<em>“m1id”:(.</em>?),)，提取json的key为m1id的数据。</p>
+<p>　　Template代表我们希望提取第几个捕捉项，一般用括号括起来的作为一个捕捉项，上面的正则表达式只有一个。$1$代表提取第一个捕捉项。</p>
+<p>　　Match No.代表我们希望提取第几个匹配组。由于我们在response里可能提取到一组满足正则表达式的匹配字符串，我们需要选一个或者几个出来作为我们的输出。0表示随机选择一个，-1表示选择全部。这里我们选1，代表提取第一个匹配到的匹配项。实际上，由于我们的测试用户只有一条微博数据，也只能匹配到一个。</p>
+<h3 id="发表评论"><a href="#发表评论" class="headerlink" title="发表评论"></a>发表评论</h3><h4 id="测试配置-4"><a href="#测试配置-4" class="headerlink" title="测试配置"></a>测试配置</h4><p><img src="/img/send-comment.jpg" alt="Send Comment"></p>
+<p>　　http request接收3个参数，messageId代表发表评论在哪个微博上，这里用之前正则表达式提取器提取的messageid变量作为值；sendId代表发表评论的用户id，这里仍然用User变量；comment代表评论的内容，这里为了方便，直接用User变量作为评论的内容。</p>
+<h4 id="Response-Assertion-5"><a href="#Response-Assertion-5" class="headerlink" title="Response Assertion"></a>Response Assertion</h4><p><img src="/img/send-comment-response.jpg" alt="Send Comment Response"></p>
+<h3 id="查找评论列表"><a href="#查找评论列表" class="headerlink" title="查找评论列表"></a>查找评论列表</h3><h4 id="测试配置-5"><a href="#测试配置-5" class="headerlink" title="测试配置"></a>测试配置</h4><p><img src="/img/search-comment.jpg" alt="Search Comment"></p>
+<p>　　http request接收2个参数，id代表查找哪个微博的评论，这里仍然用messageid变量；page代表页码，因为评论列表也是需要翻页的，这里固定为第一页。</p>
+<h4 id="Response-Assertion-6"><a href="#Response-Assertion-6" class="headerlink" title="Response Assertion"></a>Response Assertion</h4><p><img src="/img/search-comment-response.jpg" alt="Search Comment Response"></p>
+<p>　　response会返回json格式的数据，comment_id是json里的key，代表对应的评论的id。通过判断response是否含有comment_id字段，可以判断测试是否正确。</p>
+<h4 id="正则表达式提取器"><a href="#正则表达式提取器" class="headerlink" title="正则表达式提取器"></a>正则表达式提取器</h4><p><img src="/img/comment-regular.jpg" alt="Comment Regular"></p>
+<p>　　与查找微博列表一样，查找评论列表也需要设置一个正则表达式提取器，提取返回的评论列表的第一条评论的id。由于测试用户只有一条微博一条评论，这条评论id就是刚刚发表的评论的id。这个id继续作为下面删除评论测试的输入参数。</p>
+<h3 id="删除评论"><a href="#删除评论" class="headerlink" title="删除评论"></a>删除评论</h3><h4 id="测试配置-6"><a href="#测试配置-6" class="headerlink" title="测试配置"></a>测试配置</h4><p><img src="/img/delete-comment.jpg" alt="Delete Comment"></p>
+<p>　　http request接收1个参数，commentId就是上面正则表达式提取器产生的变量，代表评论id。只要把评论id作为DeleteCommentServlet的参数，就能实现删除评论的功能。</p>
+<h4 id="Response-Assertion-7"><a href="#Response-Assertion-7" class="headerlink" title="Response Assertion"></a>Response Assertion</h4><p><img src="/img/delete-comment-response.jpg" alt="Delete Comment Response"></p>
+<h3 id="删除微博"><a href="#删除微博" class="headerlink" title="删除微博"></a>删除微博</h3><h4 id="测试配置-7"><a href="#测试配置-7" class="headerlink" title="测试配置"></a>测试配置</h4><p><img src="/img/delete-message.jpg" alt="Delete Message"></p>
+<p>　　http request接收1个参数，messageId就是上面正则表达式提取器产生的变量，代表微博id。只要把微博id作为DeleteMessageServlet的参数，就能实现删除微博的功能。</p>
+<h4 id="Response-Assertion-8"><a href="#Response-Assertion-8" class="headerlink" title="Response Assertion"></a>Response Assertion</h4><p><img src="/img/delete-message-response.jpg" alt="Delete Message Response"></p>
+<h3 id="登出测试"><a href="#登出测试" class="headerlink" title="登出测试"></a>登出测试</h3><h4 id="测试配置-8"><a href="#测试配置-8" class="headerlink" title="测试配置"></a>测试配置</h4><p><img src="/img/logout.jpg" alt="Logout Test"></p>
+<p>　　http request接收一个参数，id代表要登出的用户id，这里用User变量。</p>
+<h4 id="Response-Assertion-9"><a href="#Response-Assertion-9" class="headerlink" title="Response Assertion"></a>Response Assertion</h4><p><img src="/img/logout-response.jpg" alt="Logout Response"></p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>　　上面的实例通过具体的微博系统的测试，引出了一些JMeter的一些最基本最常用的组件。学会使用这些组件，就能搭建一个基本的测试系统，完成基本的压力测试任务。上面的具体测试细节可以不用关注，但要关注从这些实例引申出来的Sampler,HTTP Request Defaults,HTTP Cookie Manager,Assertion,测试报告，断言，变量，正则表达式提取器以及Post-Processors和Pre-Processors等概念。</p>
+<p>　　在完成了上述配置以后，只要不断地试验、修改启动的线程数，启动时间等参数，便可以得出Web系统在并发访问下的性能临界点，由此作出可行的优化。</p>
+<p>　　</p>
+<p>　　</p>
+<p>　　</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/jmeter/" rel="tag">#jmeter</a>
+          
+            <a href="/tags/压力测试/" rel="tag">#压力测试</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/08/26/ORM-in-JaveEE——JPA/" rel="next" title="ORM in JaveEE——JPA">
+                <i class="fa fa-chevron-left"></i> ORM in JaveEE——JPA
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/08/29/jmeter压力测试基础/"
+           data-title="JMeter压力测试基础" data-url="http://yoursite.com/2016/08/29/jmeter压力测试基础/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/uploads/avatar.jpg"
+               alt="Gavin Wong" />
+          <p class="site-author-name" itemprop="name">Gavin Wong</p>
+          <p class="site-description motion-element" itemprop="description">广寒宫送千里香，杳杳随风入梦凉。我欲因之凌霄起，嫦娥丹桂尽入囊。</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">5</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#什么是压力测试"><span class="nav-number">1.</span> <span class="nav-text">什么是压力测试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#关于JMeter"><span class="nav-number">2.</span> <span class="nav-text">关于JMeter</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#微博系统测试任务"><span class="nav-number">3.</span> <span class="nav-text">微博系统测试任务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#建立线程组"><span class="nav-number">4.</span> <span class="nav-text">建立线程组</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#基本配置"><span class="nav-number">5.</span> <span class="nav-text">基本配置</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#HTTP-Request-Defaults"><span class="nav-number">5.1.</span> <span class="nav-text">HTTP Request Defaults</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#HTTP-Cookie-Manager"><span class="nav-number">5.2.</span> <span class="nav-text">HTTP Cookie Manager</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Constant-Timer"><span class="nav-number">5.3.</span> <span class="nav-text">Constant Timer</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试报告"><span class="nav-number">6.</span> <span class="nav-text">测试报告</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#结果树"><span class="nav-number">6.1.</span> <span class="nav-text">结果树</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#聚合报告"><span class="nav-number">6.2.</span> <span class="nav-text">聚合报告</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#断言"><span class="nav-number">7.</span> <span class="nav-text">断言</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Response-Assertion"><span class="nav-number">7.1.</span> <span class="nav-text">Response Assertion</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Duration-Assertion"><span class="nav-number">7.2.</span> <span class="nav-text">Duration Assertion</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#登录测试"><span class="nav-number">8.</span> <span class="nav-text">登录测试</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#测试配置"><span class="nav-number">8.1.</span> <span class="nav-text">测试配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Response-Assertion-1"><span class="nav-number">8.2.</span> <span class="nav-text">Response Assertion</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#关注某个人"><span class="nav-number">9.</span> <span class="nav-text">关注某个人</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#测试配置-1"><span class="nav-number">9.1.</span> <span class="nav-text">测试配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Response-Assertion-2"><span class="nav-number">9.2.</span> <span class="nav-text">Response Assertion</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#取消关注某个人"><span class="nav-number">10.</span> <span class="nav-text">取消关注某个人</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#发送微博"><span class="nav-number">11.</span> <span class="nav-text">发送微博</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#测试配置-2"><span class="nav-number">11.1.</span> <span class="nav-text">测试配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Response-Assertion-3"><span class="nav-number">11.2.</span> <span class="nav-text">Response Assertion</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#查找微博列表"><span class="nav-number">12.</span> <span class="nav-text">查找微博列表</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#测试配置-3"><span class="nav-number">12.1.</span> <span class="nav-text">测试配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Response-Assertion-4"><span class="nav-number">12.2.</span> <span class="nav-text">Response Assertion</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Post-Processors中的正则表达式提取器"><span class="nav-number">12.3.</span> <span class="nav-text">Post-Processors中的正则表达式提取器</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#发表评论"><span class="nav-number">13.</span> <span class="nav-text">发表评论</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#测试配置-4"><span class="nav-number">13.1.</span> <span class="nav-text">测试配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Response-Assertion-5"><span class="nav-number">13.2.</span> <span class="nav-text">Response Assertion</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#查找评论列表"><span class="nav-number">14.</span> <span class="nav-text">查找评论列表</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#测试配置-5"><span class="nav-number">14.1.</span> <span class="nav-text">测试配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Response-Assertion-6"><span class="nav-number">14.2.</span> <span class="nav-text">Response Assertion</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#正则表达式提取器"><span class="nav-number">14.3.</span> <span class="nav-text">正则表达式提取器</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#删除评论"><span class="nav-number">15.</span> <span class="nav-text">删除评论</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#测试配置-6"><span class="nav-number">15.1.</span> <span class="nav-text">测试配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Response-Assertion-7"><span class="nav-number">15.2.</span> <span class="nav-text">Response Assertion</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#删除微博"><span class="nav-number">16.</span> <span class="nav-text">删除微博</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#测试配置-7"><span class="nav-number">16.1.</span> <span class="nav-text">测试配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Response-Assertion-8"><span class="nav-number">16.2.</span> <span class="nav-text">Response Assertion</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#登出测试"><span class="nav-number">17.</span> <span class="nav-text">登出测试</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#测试配置-8"><span class="nav-number">17.1.</span> <span class="nav-text">测试配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Response-Assertion-9"><span class="nav-number">17.2.</span> <span class="nav-text">Response Assertion</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">18.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gavin Wong</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"wjqwsp"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+       search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+    'use strict';
+    $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+            // get the contents from search data
+            isfetched = true;
+            $('.popup').detach().appendTo('.header-inner');
+            var datas = $( "entry", xmlResponse ).map(function() {
+                return {
+                    title: $( "title", this ).text(),
+                    content: $("content",this).text(),
+                    url: $( "url" , this).text()
+                };
+            }).get();
+            var $input = document.getElementById(search_id);
+            var $resultContent = document.getElementById(content_id);
+            $input.addEventListener('input', function(){
+                var matchcounts = 0;
+                var str='<ul class=\"search-result-list\">';
+                var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                $resultContent.innerHTML = "";
+                if (this.value.trim().length > 1) {
+                // perform local searching
+                datas.forEach(function(data) {
+                    var isMatch = true;
+                    var content_index = [];
+                    var data_title = data.title.trim().toLowerCase();
+                    var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                    var data_url = data.url;
+                    var index_title = -1;
+                    var index_content = -1;
+                    var first_occur = -1;
+                    // only match artiles with not empty titles and contents
+                    if(data_title != '' && data_content != '') {
+                        keywords.forEach(function(keyword, i) {
+                            index_title = data_title.indexOf(keyword);
+                            index_content = data_content.indexOf(keyword);
+                            if( index_title < 0 && index_content < 0 ){
+                                isMatch = false;
+                            } else {
+                                if (index_content < 0) {
+                                    index_content = 0;
+                                }
+                                if (i == 0) {
+                                    first_occur = index_content;
+                                }
+                            }
+                        });
+                    }
+                    // show search results
+                    if (isMatch) {
+                        matchcounts += 1;
+                        str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                        var content = data.content.trim().replace(/<[^>]+>/g,"");
+                        if (first_occur >= 0) {
+                            // cut out 100 characters
+                            var start = first_occur - 20;
+                            var end = first_occur + 80;
+                            if(start < 0){
+                                start = 0;
+                            }
+                            if(start == 0){
+                                end = 50;
+                            }
+                            if(end > content.length){
+                                end = content.length;
+                            }
+                            var match_content = content.substring(start, end);
+                            // highlight all keywords
+                            keywords.forEach(function(keyword){
+                                var regS = new RegExp(keyword, "gi");
+                                match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                            });
+
+                            str += "<p class=\"search-result\">" + match_content +"...</p>"
+                        }
+                        str += "</li>";
+                    }
+                })};
+                str += "</ul>";
+                if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+                if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+                $resultContent.innerHTML = str;
+            });
+            proceedsearch();
+        }
+    });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("EBQKkMtlkhkxwaXmaewHY2c4-gzGzoHsz", "KSypTWMBbTMgIBYw9EuDa73j");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+</body>
+</html>
