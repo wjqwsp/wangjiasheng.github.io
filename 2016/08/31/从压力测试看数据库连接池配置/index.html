@@ -1,0 +1,962 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Lobster Two:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="压力测试,数据库,连接池," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="什么是数据库连接池　　写过后台的都知道，在操作数据库之前，先要获得数据库连接，然后用数据库连接去进行数据库的增删改查等操作。建立连接和销毁连接都是一笔很大的性能开销，因此产生了连接池的技术。连接池与线程池一样，都是一种资源池，专门用于处理共享资源的。它可以维护一定数量的连接不销毁，当有连接申请时，从池中取出供客户使用；使用完毕则释放归还池中；当池中连接的数量不足时，还可以创建一部分连接。
+使用连接">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从压力测试看数据库连接池配置">
+<meta property="og:url" content="http://yoursite.com/2016/08/31/从压力测试看数据库连接池配置/index.html">
+<meta property="og:site_name" content="南国倾城">
+<meta property="og:description" content="什么是数据库连接池　　写过后台的都知道，在操作数据库之前，先要获得数据库连接，然后用数据库连接去进行数据库的增删改查等操作。建立连接和销毁连接都是一笔很大的性能开销，因此产生了连接池的技术。连接池与线程池一样，都是一种资源池，专门用于处理共享资源的。它可以维护一定数量的连接不销毁，当有连接申请时，从池中取出供客户使用；使用完毕则释放归还池中；当池中连接的数量不足时，还可以创建一部分连接。
+使用连接">
+<meta property="og:image" content="http://yoursite.com/img/压力测试1秒100.png">
+<meta property="og:image" content="http://yoursite.com/img/压力测试1秒200.png">
+<meta property="og:image" content="http://yoursite.com/img/压力测试1秒250.png">
+<meta property="og:image" content="http://yoursite.com/img/压力测试1秒300.png">
+<meta property="og:image" content="http://yoursite.com/img/连接拒绝异常.png">
+<meta property="og:image" content="http://yoursite.com/img/压力测试1秒200-too-many.png">
+<meta property="og:image" content="http://yoursite.com/img/too-many-clients.png">
+<meta property="og:image" content="http://yoursite.com/img/压力测试1秒250-pool.png">
+<meta property="og:image" content="http://yoursite.com/img/压力测试1秒300-pool.png">
+<meta property="og:image" content="http://yoursite.com/img/压力测试1秒400-pool.png">
+<meta property="og:image" content="http://yoursite.com/img/压力测试1秒450-pool.png">
+<meta property="og:image" content="http://yoursite.com/img/timeout-wating-for-idle.png">
+<meta property="og:image" content="http://yoursite.com/img/1秒启400.png">
+<meta property="og:image" content="http://yoursite.com/img/1秒启500.png">
+<meta property="og:image" content="http://yoursite.com/img/1秒启700.png">
+<meta property="og:image" content="http://yoursite.com/img/1秒启1000.png">
+<meta property="og:image" content="http://yoursite.com/img/1秒150-time.png">
+<meta property="og:image" content="http://yoursite.com/img/1秒200-time.png">
+<meta property="og:image" content="http://yoursite.com/img/1秒250-time.png">
+<meta property="og:updated_time" content="2016-08-31T14:18:42.868Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="从压力测试看数据库连接池配置">
+<meta name="twitter:description" content="什么是数据库连接池　　写过后台的都知道，在操作数据库之前，先要获得数据库连接，然后用数据库连接去进行数据库的增删改查等操作。建立连接和销毁连接都是一笔很大的性能开销，因此产生了连接池的技术。连接池与线程池一样，都是一种资源池，专门用于处理共享资源的。它可以维护一定数量的连接不销毁，当有连接申请时，从池中取出供客户使用；使用完毕则释放归还池中；当池中连接的数量不足时，还可以创建一部分连接。
+使用连接">
+<meta name="twitter:image" content="http://yoursite.com/img/压力测试1秒100.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 6320571070080353000,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/08/31/从压力测试看数据库连接池配置/"/>
+
+  <title> 从压力测试看数据库连接池配置 | 南国倾城 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">南国倾城</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">左手代码，右手年华</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                从压力测试看数据库连接池配置
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-08-31T19:46:24+08:00" content="2016-08-31">
+              2016-08-31
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/08/31/从压力测试看数据库连接池配置/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/08/31/从压力测试看数据库连接池配置/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/08/31/从压力测试看数据库连接池配置/" class="leancloud_visitors" data-flag-title="从压力测试看数据库连接池配置">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="什么是数据库连接池"><a href="#什么是数据库连接池" class="headerlink" title="什么是数据库连接池"></a>什么是数据库连接池</h3><p>　　写过后台的都知道，在操作数据库之前，先要获得数据库连接，然后用数据库连接去进行数据库的增删改查等操作。建立连接和销毁连接都是一笔很大的性能开销，因此产生了连接池的技术。连接池与线程池一样，都是一种资源池，专门用于处理共享资源的。它可以维护一定数量的连接不销毁，当有连接申请时，从池中取出供客户使用；使用完毕则释放归还池中；当池中连接的数量不足时，还可以创建一部分连接。</p>
+<h3 id="使用连接池的优点"><a href="#使用连接池的优点" class="headerlink" title="使用连接池的优点"></a>使用连接池的优点</h3><ol>
+<li>减少建立连接与销毁连接的性能开销，避免频繁进行连接的建立与销毁，提升系统性能。</li>
+<li>限制客户端向数据库发起的数据库访问，避免系统宕机，也避免过多的连接被直接拒绝。</li>
+</ol>
+<h3 id="数据库连接池的配置"><a href="#数据库连接池的配置" class="headerlink" title="数据库连接池的配置"></a>数据库连接池的配置</h3><p>　　目前有很多连接池框架，使用这些框架非常简单，最主要就是对一些参数进行配置。这些参数包括最大连接数，最小连接数等，参数取值不同，对应用的性能与稳定性会造成不同的影响。下面我就以Tomcat自带的DHCP数据库连接池为例，通过对一个微博Web系统的同一条微博进行并发的疯狂评论操作作压力测试，去看看数据库连接池的参数配置对系统会产生什么样的影响。相信通过下面的压力测试分析，读者们可以体会到上述使用连接池的优点，同时也可以结合上一讲对压力测试的介绍，加深对压力测试的理解，了解到压力测试在系统优化中起到什么样的作用。<br><a id="more"></a></p>
+<h3 id="测试前的配置与代码准备"><a href="#测试前的配置与代码准备" class="headerlink" title="测试前的配置与代码准备"></a>测试前的配置与代码准备</h3><h4 id="Tomcat的DHCP配置文件"><a href="#Tomcat的DHCP配置文件" class="headerlink" title="Tomcat的DHCP配置文件"></a>Tomcat的DHCP配置文件</h4><p>　　如果Web应用是部署在Tomcat上的，其参数配置全在context.xml文件里。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version='1.0' encoding='utf-8'?&gt;</div><div class="line"><span class="comment">&lt;!--</span></div><div class="line">  Licensed to the Apache Software Foundation (ASF) under one or more</div><div class="line">  contributor license agreements.  See the NOTICE file distributed with</div><div class="line">  this work for additional information regarding copyright ownership.</div><div class="line">  The ASF licenses this file to You under the Apache License, Version 2.0</div><div class="line">  (the "License"); you may not use this file except in compliance with</div><div class="line">  the License.  You may obtain a copy of the License at</div><div class="line"></div><div class="line">      http://www.apache.org/licenses/LICENSE-2.0</div><div class="line"></div><div class="line">  Unless required by applicable law or agreed to in writing, software</div><div class="line">  distributed under the License is distributed on an "AS IS" BASIS,</div><div class="line">  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</div><div class="line">  See the License for the specific language governing permissions and</div><div class="line">  limitations under the License.</div><div class="line">--&gt;</div><div class="line"><span class="comment">&lt;!-- The contents of this file will be loaded for each web application --&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">Context</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">Resource</span></span></div><div class="line">      <span class="attr">name</span>=<span class="string">"jdbc/drp"</span></div><div class="line">      <span class="attr">type</span>=<span class="string">"javax.sql.DataSource"</span></div><div class="line">      <span class="attr">driverClassName</span>=<span class="string">"org.postgresql.Driver"</span></div><div class="line">      <span class="attr">maxIdle</span>=<span class="string">"100"</span></div><div class="line">	  <span class="attr">minIdle</span>=<span class="string">"100"</span></div><div class="line">      <span class="attr">maxWait</span>=<span class="string">"-1"</span></div><div class="line">      <span class="attr">username</span>=<span class="string">"postgres"</span></div><div class="line">      <span class="attr">password</span>=<span class="string">"gdzqzxwjs95"</span></div><div class="line">      <span class="attr">url</span>=<span class="string">"jdbc:postgresql://localhost:5432/weibo"</span></div><div class="line">      <span class="attr">maxActive</span>=<span class="string">"100"</span>/&gt;</div><div class="line">    <span class="comment">&lt;!-- Default set of monitored resources --&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">WatchedResource</span>&gt;</span>WEB-INF/web.xml<span class="tag">&lt;/<span class="name">WatchedResource</span>&gt;</span></div><div class="line"></div><div class="line">    <span class="comment">&lt;!-- Uncomment this to disable session persistence across Tomcat restarts --&gt;</span></div><div class="line">    <span class="comment">&lt;!--</span></div><div class="line">    &lt;Manager pathname="" /&gt;</div><div class="line">    --&gt;</div><div class="line"></div><div class="line">    <span class="comment">&lt;!-- Uncomment this to enable Comet connection tacking (provides events</span></div><div class="line">         on session expiration as well as webapp lifecycle) --&gt;</div><div class="line">    <span class="comment">&lt;!--</span></div><div class="line">    &lt;Valve className="org.apache.catalina.valves.CometConnectionManagerValve" /&gt;</div><div class="line">    --&gt;</div><div class="line"></div><div class="line"><span class="tag">&lt;/<span class="name">Context</span>&gt;</span></div></pre></td></tr></table></figure>
+<ul>
+<li>name是连接池的名称，后台调用数据库连接是需要引用这个名称。</li>
+<li>type数据源类型，因为后台用java搭建，这里用java的数据源类。</li>
+<li>driverClassName是数据库的驱动，这里用的是postgresql数据库。</li>
+<li>maxIdle代表最大空闲连接数，0代表没有限制。</li>
+<li>minIdle代表最小空闲连接数。</li>
+<li>maxWait代表最大等待时间，-1代表没有限制。</li>
+<li>username是数据库的用户名。</li>
+<li>password是数据库的密码。</li>
+<li>url用于定位数据库。</li>
+<li>maxActive代表最大连接数，0代表没有限制。</li>
+</ul>
+<p>　　下面的测试，我们主要围绕maxIdle,minIdle,maxWait和maxAcitve展开。</p>
+<p>　　minIdle是数据库能维持的最小的空闲连接，当Web应用启动时，会自动创建连接到minIdle这个数目，此后minIdle便没有意义。</p>
+<p>　　maxIdle代表数据库能维持的最大空闲连接，当minIdle数目的连接不够用时，连接池会继续创建连接。当总连接没有超过maxIdle时，新创建的连接如果被释放不会被销毁，仍然归还池中；当总连接数超过maxIdle时，如果有连接被释放那么这些连接会被销毁，直到使连接池的连接数量达到maxIdle。此后，数据库的总连接数不会少于maxIdle。</p>
+<p>　　maxActive代表数据库能维持的最大连接数。当maxIdle数目的数据库连接仍然不够用时，连接池会继续创建连接，直到连接数达到maxActive。这些新创建的连接被释放时直接销毁，不归还池中。如果数据库连接池的总连接数达到maxAcitve，但仍然有连接申请，则这些连接会等待。一般maxIdle与maxAcitve的值应尽量接近，可以取maxIdle=maxActive。这样可以避免高负荷系统频繁创建与销毁连接。</p>
+<p>　　maxWait是最大等待时间。前面说过，当数据库连接数达到maxActive,其余的连接申请会等待，而等待的最大时间就是maxWait。当等待时间超过maxWait，但仍然没有连接被释放时，则这些等待中的连接会被拒绝。</p>
+<h4 id="后台获取和释放数据库连接代码"><a href="#后台获取和释放数据库连接代码" class="headerlink" title="后台获取和释放数据库连接代码"></a>后台获取和释放数据库连接代码</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">Context ctx=<span class="keyword">new</span> InitialContext();</div><div class="line">DataSource ds=(DataSource)ctx.lookup(<span class="string">"java:comp/env/jdbc/drp"</span>);</div><div class="line">Connection conn = ds.getConnection();</div></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">try</span> &#123;</div><div class="line">                <span class="keyword">if</span> (conn != <span class="keyword">null</span>) &#123;</div><div class="line">                    conn.close();</div><div class="line">                &#125;</div><div class="line">            &#125;<span class="keyword">catch</span> (Exception err1)&#123;</div><div class="line">                err1.printStackTrace();</div><div class="line">            &#125;</div></pre></td></tr></table></figure>
+<p>　　代码很简单，连接释放还是直接用close方法，底层会由连接池实现连接归还而不销毁。</p>
+<h3 id="压力测试"><a href="#压力测试" class="headerlink" title="压力测试"></a>压力测试</h3><h4 id="测试任务"><a href="#测试任务" class="headerlink" title="测试任务"></a>测试任务</h4><p>　　利用JMeter作测试工具，对同一条微博作高并发的疯狂评论，对数据库而言就是对评论表作高并发的插入操作，同时并发更新微博表同一条记录的评论数属性。</p>
+<h4 id="不用连接池"><a href="#不用连接池" class="headerlink" title="不用连接池"></a>不用连接池</h4><h5 id="1秒内启100个线程"><a href="#1秒内启100个线程" class="headerlink" title="1秒内启100个线程"></a>1秒内启100个线程</h5><p><img src="/img/压力测试1秒100.png" alt="压力测试1秒100"></p>
+<h5 id="1秒内启200个线程"><a href="#1秒内启200个线程" class="headerlink" title="1秒内启200个线程"></a>1秒内启200个线程</h5><p><img src="/img/压力测试1秒200.png" alt="压力测试1秒200"></p>
+<h5 id="1秒内启250个线程"><a href="#1秒内启250个线程" class="headerlink" title="1秒内启250个线程"></a>1秒内启250个线程</h5><p><img src="/img/压力测试1秒250.png" alt="压力测试1秒250"></p>
+<h5 id="1秒内启300个线程"><a href="#1秒内启300个线程" class="headerlink" title="1秒内启300个线程"></a>1秒内启300个线程</h5><p><img src="/img/压力测试1秒300.png" alt="压力测试1秒300"></p>
+<h5 id="错误及分析"><a href="#错误及分析" class="headerlink" title="错误及分析"></a>错误及分析</h5><p><img src="/img/连接拒绝异常.png" alt="连接拒绝异常"></p>
+<p>　　以上测试从1秒启100个线程开始，不断增加测试的线程数，直到1秒内启动250个线程的时候开始出错。且启动线程的密集程度越高，错误率越高。此时后台抛出连接拒绝异常。</p>
+<p>　　产生此异常，是因为数据库允许的连接数往往是有限的。以postgresql数据库为例，默认的数据库最大允许连接数为100，当同时占用的连接数超过100个时，便会把超过的连接直接拒绝掉，同时抛出连接拒绝异常。之所以1秒产生250个线程才出错，是因为如果机器运行足够快，前面启动的一部分线程已经运行完了可以被释放，以供后续产生的线程使用。总之，只要同时占用的连接数不超过100个，就不会拒绝连接；反之多余的连接会被拒绝。</p>
+<h4 id="使用连接池，且maxActive超过100"><a href="#使用连接池，且maxActive超过100" class="headerlink" title="使用连接池，且maxActive超过100"></a>使用连接池，且maxActive超过100</h4><h5 id="配置maxActive-maxIdle-200，maxWait-1，1秒内启200个线程。"><a href="#配置maxActive-maxIdle-200，maxWait-1，1秒内启200个线程。" class="headerlink" title="配置maxActive = maxIdle = 200，maxWait = -1，1秒内启200个线程。"></a>配置maxActive = maxIdle = 200，maxWait = -1，1秒内启200个线程。</h5><p> <img src="/img/压力测试1秒200-too-many.png" alt="压力测试1秒200_too_many"></p>
+<h5 id="错误及分析-1"><a href="#错误及分析-1" class="headerlink" title="错误及分析"></a>错误及分析</h5><p> <img src="/img/too-many-clients.png" alt="too_many_clients"></p>
+<p>　　postgresql里默认的最大连接数是100，如果连接池数目超过数据库的连接数限制，则会抛出上述异常。因此maxActive参数不能超过数据库的连接数限制。特别注意的是，即便maxActive设为100，但如果除了此程序还有其他程序访问同一数据库，那么其他程序也会占用数据库连接数，使数据库可用连接小于100，从而使此程序抛出上述异常！因此，准确来说，连接池的maxActive参数应该是不能大于数据库最大的可用连接数！</p>
+<h4 id="使用连接池，maxActive-100，maxWait设为5秒"><a href="#使用连接池，maxActive-100，maxWait设为5秒" class="headerlink" title="使用连接池，maxActive=100，maxWait设为5秒"></a>使用连接池，maxActive=100，maxWait设为5秒</h4><h5 id="设置maxIdle-maxActive-100-maxWait-5000，1秒内启250个线程"><a href="#设置maxIdle-maxActive-100-maxWait-5000，1秒内启250个线程" class="headerlink" title="设置maxIdle = maxActive = 100,maxWait = 5000，1秒内启250个线程"></a>设置maxIdle = maxActive = 100,maxWait = 5000，1秒内启250个线程</h5><p><img src="/img/压力测试1秒250-pool.png" alt="压力测试1秒250_pool"></p>
+<h5 id="设置maxIdle-maxActive-100-maxWait-5000，1秒内启300个线程"><a href="#设置maxIdle-maxActive-100-maxWait-5000，1秒内启300个线程" class="headerlink" title="设置maxIdle = maxActive = 100,maxWait = 5000，1秒内启300个线程"></a>设置maxIdle = maxActive = 100,maxWait = 5000，1秒内启300个线程</h5><p><img src="/img/压力测试1秒300-pool.png" alt="压力测试1秒300_pool"></p>
+<h5 id="设置maxIdle-maxActive-100-maxWait-5000，1秒内启400个线程"><a href="#设置maxIdle-maxActive-100-maxWait-5000，1秒内启400个线程" class="headerlink" title="设置maxIdle = maxActive = 100,maxWait = 5000，1秒内启400个线程"></a>设置maxIdle = maxActive = 100,maxWait = 5000，1秒内启400个线程</h5><p><img src="/img/压力测试1秒400-pool.png" alt="压力测试1秒400_pool"></p>
+<h5 id="设置maxIdle-maxActive-100-maxWait-5000，1秒内启450个线程"><a href="#设置maxIdle-maxActive-100-maxWait-5000，1秒内启450个线程" class="headerlink" title="设置maxIdle = maxActive = 100,maxWait = 5000，1秒内启450个线程"></a>设置maxIdle = maxActive = 100,maxWait = 5000，1秒内启450个线程</h5><p><img src="/img/压力测试1秒450-pool.png" alt="压力测试1秒450_pool"></p>
+<h5 id="错误及分析-2"><a href="#错误及分析-2" class="headerlink" title="错误及分析"></a>错误及分析</h5><p><img src="/img/timeout-wating-for-idle.png" alt="timeout_wating_for_idle"></p>
+<p>　　当1秒启400个线程以上时，后台会抛出上述异常。</p>
+<p>　　因为上面的测试maxWait设为5秒，当请求的连接数大于maxActive时，连接池不会再创建新的连接，而是等待已有的连接变为空闲。当等待的时间超过maxWait设定的时间，则会抛出上述异常。</p>
+<h4 id="maxWait无限制"><a href="#maxWait无限制" class="headerlink" title="maxWait无限制"></a>maxWait无限制</h4><h5 id="设置maxIdle-maxActive-100，maxWait-1，1秒内启400个线程"><a href="#设置maxIdle-maxActive-100，maxWait-1，1秒内启400个线程" class="headerlink" title="设置maxIdle = maxActive = 100，maxWait = -1，1秒内启400个线程"></a>设置maxIdle = maxActive = 100，maxWait = -1，1秒内启400个线程</h5><p><img src="/img/1秒启400.png" alt="1秒启400"></p>
+<h5 id="设置maxIdle-maxActive-100，maxWait-1，1秒内启500个线程"><a href="#设置maxIdle-maxActive-100，maxWait-1，1秒内启500个线程" class="headerlink" title="设置maxIdle = maxActive = 100，maxWait = -1，1秒内启500个线程"></a>设置maxIdle = maxActive = 100，maxWait = -1，1秒内启500个线程</h5><p><img src="/img/1秒启500.png" alt="1秒启500"></p>
+<h5 id="设置maxIdle-maxActive-100-maxWait-1，1秒内启700个线程"><a href="#设置maxIdle-maxActive-100-maxWait-1，1秒内启700个线程" class="headerlink" title="设置maxIdle = maxActive = 100,maxWait = -1，1秒内启700个线程"></a>设置maxIdle = maxActive = 100,maxWait = -1，1秒内启700个线程</h5><p><img src="/img/1秒启700.png" alt="1秒启700"></p>
+<h5 id="设置maxIdle-maxActive-100-maxWait-1，1秒内启1000个线程"><a href="#设置maxIdle-maxActive-100-maxWait-1，1秒内启1000个线程" class="headerlink" title="设置maxIdle = maxActive = 100,maxWait = -1，1秒内启1000个线程"></a>设置maxIdle = maxActive = 100,maxWait = -1，1秒内启1000个线程</h5><p><img src="/img/1秒启1000.png" alt="1秒启1000"></p>
+<h5 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h5><p>　　只要maxWait不加限制，且连接池设置的最大连接数不超过数据库允许的最大连接数，无论有多少的连接请求，都不会抛出异常，不会有错误。但是由于内存的限制，过多的请求必然导致响应时间变长，用户体验变差。为了测试方便，上面的压力测试我是没有用Duration Assertion的，只通过Response Assertion对http response的返回内容作断言判断是否正确返回。下面，我就对压力测试加上Duration Assertion，对登录响应限制为5秒，对评论微博的响应限制为10秒，继续进行测试。</p>
+<h4 id="设置Duration-Assertion"><a href="#设置Duration-Assertion" class="headerlink" title="设置Duration Assertion"></a>设置Duration Assertion</h4><h5 id="设置maxIdle-maxActive-100，maxWait-1，1秒内启150个线程"><a href="#设置maxIdle-maxActive-100，maxWait-1，1秒内启150个线程" class="headerlink" title="设置maxIdle = maxActive = 100，maxWait = -1，1秒内启150个线程"></a>设置maxIdle = maxActive = 100，maxWait = -1，1秒内启150个线程</h5><p><img src="/img/1秒150-time.png" alt="1秒150_time"></p>
+<h5 id="设置maxIdle-maxActive-100，maxWait-1，1秒内启200个线程"><a href="#设置maxIdle-maxActive-100，maxWait-1，1秒内启200个线程" class="headerlink" title="设置maxIdle = maxActive = 100，maxWait = -1，1秒内启200个线程"></a>设置maxIdle = maxActive = 100，maxWait = -1，1秒内启200个线程</h5><p><img src="/img/1秒200-time.png" alt="1秒200_time"></p>
+<h5 id="设置maxIdle-maxActive-100，maxWait-1，1秒内启250个线程"><a href="#设置maxIdle-maxActive-100，maxWait-1，1秒内启250个线程" class="headerlink" title="设置maxIdle = maxActive = 100，maxWait = -1，1秒内启250个线程"></a>设置maxIdle = maxActive = 100，maxWait = -1，1秒内启250个线程</h5><p><img src="/img/1秒250-time.png" alt="1秒250_time"></p>
+<h5 id="错误及分析-3"><a href="#错误及分析-3" class="headerlink" title="错误及分析"></a>错误及分析</h5><p>　　综上，只要将连接池的最大等待时间不加限制，无论有多大的并发访问都不会因为异常而使数据库操作失败，从而导致错误。主要的性能瓶颈来自于机器内存，过多的请求会使响应时间急剧恶化，严重降低用户体验。这也是根据压力测试的结果能作出的软件上的最大优化。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>　　建议所有后台的数据库连接都采用连接池技术。上面的压力测试暴露的问题全是出自数据库连接上，其实像疯狂评论这样的并发操作，特别容易产生数据库死锁或者序列化并发更新异常等更难解决的错误。后面我还会再对数据库的锁机制做一些总结，分析一下为什么上面的压力测试不会出现死锁等更严重的错误，以及这些错误是怎么产生的。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/压力测试/" rel="tag">#压力测试</a>
+          
+            <a href="/tags/数据库/" rel="tag">#数据库</a>
+          
+            <a href="/tags/连接池/" rel="tag">#连接池</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/08/29/jmeter压力测试基础/" rel="next" title="JMeter压力测试基础">
+                <i class="fa fa-chevron-left"></i> JMeter压力测试基础
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/08/31/从压力测试看数据库连接池配置/"
+           data-title="从压力测试看数据库连接池配置" data-url="http://yoursite.com/2016/08/31/从压力测试看数据库连接池配置/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/uploads/avatar.jpg"
+               alt="Gavin Wong" />
+          <p class="site-author-name" itemprop="name">Gavin Wong</p>
+          <p class="site-description motion-element" itemprop="description">广寒宫送千里香，杳杳随风入梦凉。我欲因之凌霄起，嫦娥丹桂尽入囊。</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">6</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">9</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#什么是数据库连接池"><span class="nav-number">1.</span> <span class="nav-text">什么是数据库连接池</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用连接池的优点"><span class="nav-number">2.</span> <span class="nav-text">使用连接池的优点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据库连接池的配置"><span class="nav-number">3.</span> <span class="nav-text">数据库连接池的配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试前的配置与代码准备"><span class="nav-number">4.</span> <span class="nav-text">测试前的配置与代码准备</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Tomcat的DHCP配置文件"><span class="nav-number">4.1.</span> <span class="nav-text">Tomcat的DHCP配置文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#后台获取和释放数据库连接代码"><span class="nav-number">4.2.</span> <span class="nav-text">后台获取和释放数据库连接代码</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#压力测试"><span class="nav-number">5.</span> <span class="nav-text">压力测试</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#测试任务"><span class="nav-number">5.1.</span> <span class="nav-text">测试任务</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#不用连接池"><span class="nav-number">5.2.</span> <span class="nav-text">不用连接池</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1秒内启100个线程"><span class="nav-number">5.2.1.</span> <span class="nav-text">1秒内启100个线程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1秒内启200个线程"><span class="nav-number">5.2.2.</span> <span class="nav-text">1秒内启200个线程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1秒内启250个线程"><span class="nav-number">5.2.3.</span> <span class="nav-text">1秒内启250个线程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1秒内启300个线程"><span class="nav-number">5.2.4.</span> <span class="nav-text">1秒内启300个线程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#错误及分析"><span class="nav-number">5.2.5.</span> <span class="nav-text">错误及分析</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用连接池，且maxActive超过100"><span class="nav-number">5.3.</span> <span class="nav-text">使用连接池，且maxActive超过100</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#配置maxActive-maxIdle-200，maxWait-1，1秒内启200个线程。"><span class="nav-number">5.3.1.</span> <span class="nav-text">配置maxActive = maxIdle = 200，maxWait = -1，1秒内启200个线程。</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#错误及分析-1"><span class="nav-number">5.3.2.</span> <span class="nav-text">错误及分析</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用连接池，maxActive-100，maxWait设为5秒"><span class="nav-number">5.4.</span> <span class="nav-text">使用连接池，maxActive=100，maxWait设为5秒</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#设置maxIdle-maxActive-100-maxWait-5000，1秒内启250个线程"><span class="nav-number">5.4.1.</span> <span class="nav-text">设置maxIdle = maxActive = 100,maxWait = 5000，1秒内启250个线程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#设置maxIdle-maxActive-100-maxWait-5000，1秒内启300个线程"><span class="nav-number">5.4.2.</span> <span class="nav-text">设置maxIdle = maxActive = 100,maxWait = 5000，1秒内启300个线程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#设置maxIdle-maxActive-100-maxWait-5000，1秒内启400个线程"><span class="nav-number">5.4.3.</span> <span class="nav-text">设置maxIdle = maxActive = 100,maxWait = 5000，1秒内启400个线程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#设置maxIdle-maxActive-100-maxWait-5000，1秒内启450个线程"><span class="nav-number">5.4.4.</span> <span class="nav-text">设置maxIdle = maxActive = 100,maxWait = 5000，1秒内启450个线程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#错误及分析-2"><span class="nav-number">5.4.5.</span> <span class="nav-text">错误及分析</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#maxWait无限制"><span class="nav-number">5.5.</span> <span class="nav-text">maxWait无限制</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#设置maxIdle-maxActive-100，maxWait-1，1秒内启400个线程"><span class="nav-number">5.5.1.</span> <span class="nav-text">设置maxIdle = maxActive = 100，maxWait = -1，1秒内启400个线程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#设置maxIdle-maxActive-100，maxWait-1，1秒内启500个线程"><span class="nav-number">5.5.2.</span> <span class="nav-text">设置maxIdle = maxActive = 100，maxWait = -1，1秒内启500个线程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#设置maxIdle-maxActive-100-maxWait-1，1秒内启700个线程"><span class="nav-number">5.5.3.</span> <span class="nav-text">设置maxIdle = maxActive = 100,maxWait = -1，1秒内启700个线程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#设置maxIdle-maxActive-100-maxWait-1，1秒内启1000个线程"><span class="nav-number">5.5.4.</span> <span class="nav-text">设置maxIdle = maxActive = 100,maxWait = -1，1秒内启1000个线程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#分析"><span class="nav-number">5.5.5.</span> <span class="nav-text">分析</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设置Duration-Assertion"><span class="nav-number">5.6.</span> <span class="nav-text">设置Duration Assertion</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#设置maxIdle-maxActive-100，maxWait-1，1秒内启150个线程"><span class="nav-number">5.6.1.</span> <span class="nav-text">设置maxIdle = maxActive = 100，maxWait = -1，1秒内启150个线程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#设置maxIdle-maxActive-100，maxWait-1，1秒内启200个线程"><span class="nav-number">5.6.2.</span> <span class="nav-text">设置maxIdle = maxActive = 100，maxWait = -1，1秒内启200个线程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#设置maxIdle-maxActive-100，maxWait-1，1秒内启250个线程"><span class="nav-number">5.6.3.</span> <span class="nav-text">设置maxIdle = maxActive = 100，maxWait = -1，1秒内启250个线程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#错误及分析-3"><span class="nav-number">5.6.4.</span> <span class="nav-text">错误及分析</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gavin Wong</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"wjqwsp"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+       search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+    'use strict';
+    $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+            // get the contents from search data
+            isfetched = true;
+            $('.popup').detach().appendTo('.header-inner');
+            var datas = $( "entry", xmlResponse ).map(function() {
+                return {
+                    title: $( "title", this ).text(),
+                    content: $("content",this).text(),
+                    url: $( "url" , this).text()
+                };
+            }).get();
+            var $input = document.getElementById(search_id);
+            var $resultContent = document.getElementById(content_id);
+            $input.addEventListener('input', function(){
+                var matchcounts = 0;
+                var str='<ul class=\"search-result-list\">';
+                var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                $resultContent.innerHTML = "";
+                if (this.value.trim().length > 1) {
+                // perform local searching
+                datas.forEach(function(data) {
+                    var isMatch = true;
+                    var content_index = [];
+                    var data_title = data.title.trim().toLowerCase();
+                    var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                    var data_url = data.url;
+                    var index_title = -1;
+                    var index_content = -1;
+                    var first_occur = -1;
+                    // only match artiles with not empty titles and contents
+                    if(data_title != '' && data_content != '') {
+                        keywords.forEach(function(keyword, i) {
+                            index_title = data_title.indexOf(keyword);
+                            index_content = data_content.indexOf(keyword);
+                            if( index_title < 0 && index_content < 0 ){
+                                isMatch = false;
+                            } else {
+                                if (index_content < 0) {
+                                    index_content = 0;
+                                }
+                                if (i == 0) {
+                                    first_occur = index_content;
+                                }
+                            }
+                        });
+                    }
+                    // show search results
+                    if (isMatch) {
+                        matchcounts += 1;
+                        str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                        var content = data.content.trim().replace(/<[^>]+>/g,"");
+                        if (first_occur >= 0) {
+                            // cut out 100 characters
+                            var start = first_occur - 20;
+                            var end = first_occur + 80;
+                            if(start < 0){
+                                start = 0;
+                            }
+                            if(start == 0){
+                                end = 50;
+                            }
+                            if(end > content.length){
+                                end = content.length;
+                            }
+                            var match_content = content.substring(start, end);
+                            // highlight all keywords
+                            keywords.forEach(function(keyword){
+                                var regS = new RegExp(keyword, "gi");
+                                match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                            });
+
+                            str += "<p class=\"search-result\">" + match_content +"...</p>"
+                        }
+                        str += "</li>";
+                    }
+                })};
+                str += "</ul>";
+                if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+                if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+                $resultContent.innerHTML = str;
+            });
+            proceedsearch();
+        }
+    });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("EBQKkMtlkhkxwaXmaewHY2c4-gzGzoHsz", "KSypTWMBbTMgIBYw9EuDa73j");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+</body>
+</html>
