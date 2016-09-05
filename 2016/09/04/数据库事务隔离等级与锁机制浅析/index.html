@@ -112,7 +112,7 @@
 <meta property="og:description" content="写在前面　　数据库并发处理是一个非常重要的问题，其实现本质上同应用程序一级的并发控制原理是一致的，也是通过加锁解决。而事务隔离级别相当于一段独立的代码块，具有原子性、一致性、隔离性、持久性4个特征。本来想自己写一篇总结，但看到有一篇文章总结得非常好，就直接转载过来。
 　　以下内容转载自：宋杰的站点 » 【转载】数据库事务隔离级别和锁实现机制
 　　原文的版式我修改了一下，有些跟核心内容无关的我删去了">
-<meta property="og:updated_time" content="2016-09-04T06:32:04.335Z">
+<meta property="og:updated_time" content="2016-09-04T06:39:50.286Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="数据库事务隔离级别与锁机制实现（转载）">
 <meta name="twitter:description" content="写在前面　　数据库并发处理是一个非常重要的问题，其实现本质上同应用程序一级的并发控制原理是一致的，也是通过加锁解决。而事务隔离级别相当于一段独立的代码块，具有原子性、一致性、隔离性、持久性4个特征。本来想自己写一篇总结，但看到有一篇文章总结得非常好，就直接转载过来。
@@ -371,7 +371,7 @@
 </tbody>
 </table>
 <p>最后x=300</p>
-<p>两个不同事物同时获得相同数据，然后在各自事务中同时修改了该数据，那么先提交的事务更新会被后提交事务的更新给覆盖掉，这种情况事务A的更新就被覆盖掉了、丢失了。</p>
+<p>两个不同事务同时获得相同数据，然后在各自事务中同时修改了该数据，那么先提交的事务更新会被后提交事务的更新给覆盖掉，这种情况事务A的更新就被覆盖掉了、丢失了。</p>
 <h4 id="脏读（未提交读）"><a href="#脏读（未提交读）" class="headerlink" title="脏读（未提交读）"></a>脏读（未提交读）</h4><p>防止一个事务读到另一个事务还没有提交的记录。 如：</p>
 <table>
 <thead>
@@ -533,6 +533,10 @@
 
           <div class="post-nav-prev post-nav-item">
             
+              <a href="/2016/09/05/PostgreSQL-MVCC机制浅析/" rel="prev" title="PostgreSQL MVCC机制浅析">
+                PostgreSQL MVCC机制浅析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
           </div>
         </div>
       
@@ -603,7 +607,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">7</span>
+              <span class="site-state-item-count">8</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -613,7 +617,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">10</span>
+                <span class="site-state-item-count">12</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
