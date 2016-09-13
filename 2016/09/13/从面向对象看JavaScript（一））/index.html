@@ -1,0 +1,935 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Lobster Two:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="JavaScript,前端," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="前言　　JavaScript作为一种脚本语言，语法简单（求其），易上手，适合开发；同时，作为当今前端编程方面占据垄断地位，甚至逐步向后端发展的强势语言，它的前景十分美好，功能足够强大。既然是脚本语言，自然没有c,c++,Java等传统语言的严谨，但是利用它仍然可以基本覆盖其他语言能做到的高级功能。
+　　下面我就从面向对象的角度，整合JavaScript里函数，对象，引用类型，原型，闭包，作用域链等">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从面向对象看JavaScript（一）">
+<meta property="og:url" content="http://yoursite.com/2016/09/13/从面向对象看JavaScript（一））/index.html">
+<meta property="og:site_name" content="南国倾城">
+<meta property="og:description" content="前言　　JavaScript作为一种脚本语言，语法简单（求其），易上手，适合开发；同时，作为当今前端编程方面占据垄断地位，甚至逐步向后端发展的强势语言，它的前景十分美好，功能足够强大。既然是脚本语言，自然没有c,c++,Java等传统语言的严谨，但是利用它仍然可以基本覆盖其他语言能做到的高级功能。
+　　下面我就从面向对象的角度，整合JavaScript里函数，对象，引用类型，原型，闭包，作用域链等">
+<meta property="og:image" content="http://yoursite.com/img/prototype.jpg">
+<meta property="og:updated_time" content="2016-09-13T08:49:52.967Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="从面向对象看JavaScript（一）">
+<meta name="twitter:description" content="前言　　JavaScript作为一种脚本语言，语法简单（求其），易上手，适合开发；同时，作为当今前端编程方面占据垄断地位，甚至逐步向后端发展的强势语言，它的前景十分美好，功能足够强大。既然是脚本语言，自然没有c,c++,Java等传统语言的严谨，但是利用它仍然可以基本覆盖其他语言能做到的高级功能。
+　　下面我就从面向对象的角度，整合JavaScript里函数，对象，引用类型，原型，闭包，作用域链等">
+<meta name="twitter:image" content="http://yoursite.com/img/prototype.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 6320571070080353000,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/09/13/从面向对象看JavaScript（一））/"/>
+
+  <title> 从面向对象看JavaScript（一） | 南国倾城 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">南国倾城</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">左手代码，右手年华</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                从面向对象看JavaScript（一）
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-09-13T11:15:38+08:00" content="2016-09-13">
+              2016-09-13
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/09/13/从面向对象看JavaScript（一））/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/13/从面向对象看JavaScript（一））/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/09/13/从面向对象看JavaScript（一））/" class="leancloud_visitors" data-flag-title="从面向对象看JavaScript（一）">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　JavaScript作为一种脚本语言，语法简单（求其），易上手，适合开发；同时，作为当今前端编程方面占据垄断地位，甚至逐步向后端发展的强势语言，它的前景十分美好，功能足够强大。既然是脚本语言，自然没有c,c++,Java等传统语言的严谨，但是利用它仍然可以基本覆盖其他语言能做到的高级功能。</p>
+<p>　　下面我就从面向对象的角度，整合JavaScript里函数，对象，引用类型，原型，闭包，作用域链等知识点，去探讨JavaScript是如何定义对象，构造类，设置属性和函数的私有公有权限，实现继承，利用作用域以及管理内存的。下面的代码例子基本都出自《JavaScript高级程序设计》。<br><a id="more"></a></p>
+<h3 id="创建单个对象"><a href="#创建单个对象" class="headerlink" title="创建单个对象"></a>创建单个对象</h3><p>　　与Java类似，JavaScript的所有对象都继承自Object类，我们可以在Object类的基础上扩展对象的属性与函数，从而创建出一个新的对象：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> person = <span class="keyword">new</span> <span class="built_in">Object</span>();</div><div class="line">person.name = <span class="string">"Nicholas"</span>;</div><div class="line">person.age = <span class="number">29</span>;</div><div class="line">person.job = <span class="string">"Software Engineer"</span>;</div><div class="line"></div><div class="line">person.sayName() = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    alert(<span class="keyword">this</span>.name);</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>　　对象包含属性与函数，可以直接在Object类对象上扩展。</p>
+<p>　　用对象字面量的方式，可以更简单地定义对象：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> person = &#123;</div><div class="line">    name: <span class="string">"Nicholas"</span>,</div><div class="line">    age: <span class="number">29</span>,</div><div class="line">    job: <span class="string">"Software Engineer"</span></div><div class="line"></div><div class="line">    sayName: <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">        alert(<span class="keyword">this</span>.name);</div><div class="line">    &#125;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<h4 id="对象属性"><a href="#对象属性" class="headerlink" title="对象属性"></a>对象属性</h4><p>　　对象包含属性与函数，其中函数在JavaScript里也可以视为一种特殊的属性，会在下一节重点讲述。这里先总结一下属性，属性可以分为数据属性与构造器属性。</p>
+<h5 id="数据属性"><a href="#数据属性" class="headerlink" title="数据属性"></a>数据属性</h5><p>　　JavaScript里的每一个属性都有一些特征，相当于是属性的属性，用于JavaScript底层维护属性。数据属性有4个特性，分别是Configurable,Enumerable,Writable与Value，规范里记为[[Configurable],[[Enumerable]],[[Writable]],[[Value]]。这些特性是不能直接访问的。</p>
+<ul>
+<li>[[Configurable]]：能否通过delete删除属性，能否修改属性特性，能否把属性修改为访问器属性。如果像上面直接在对象上创建属性，则默认为true。</li>
+<li>[[Enumerable]]：能否通过for-in语法循环返回属性，默认为true。</li>
+<li>[[Writable]]：能否修改属性的值，默认为true。</li>
+<li>[[Value]]：属性的数据值，默认为undefined，像上面创建属性后就保存属性的值。</li>
+</ul>
+<p>　　除了直接在对象上创建属性以外，还可以通过Object.defineProperty()方法创建属性。这个方法接收3个参数，分别是属性所在对象，属性的名字，以及一个描述符对象。描述符对象的属性必须是configurable,enmuerable,writable和value。通过这个描述符对象，则可以定义属性的一或多个特性。在这种情况下，configurable,enumerable和writable默认为false。</p>
+<p>　　这里要注意一点是，当把configurable设置为false，则不能再设置属性的特性，包括不能将configuralble重新设为true。</p>
+<h5 id="访问器属性"><a href="#访问器属性" class="headerlink" title="访问器属性"></a>访问器属性</h5><p>　　访问器属性也具有[[Configurable]]和[[Enumerable]]特性，但没有[[Writable]]和[[Value]]，而替换为[[Get]],[[Set]]。[[Get]]和[[Set]]保存相应的函数，默认为undefined。当用一般的JavaSript读写该属性时，则会分别调用[[Get]]和[[Set]]里保存的函数，从而返回或写入相应的值。这就相当于Java里的getter和setter方法。只定义getter则不能写，只定义setter则不能读。访问器属性只能通过Object.defineProperty方法定义。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> book = &#123;</div><div class="line">    _year: <span class="number">2004</span>,</div><div class="line">    edition: <span class="number">1</span></div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="built_in">Object</span>.defineProperty(book, <span class="string">"year"</span>, &#123;</div><div class="line">    get: <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">this</span>._year;</div><div class="line">    &#125;,</div><div class="line">    set: <span class="function"><span class="keyword">function</span>(<span class="params">newValue</span>)</span>&#123;</div><div class="line">        <span class="keyword">if</span>(newValue &gt; <span class="number">2004</span>)&#123;</div><div class="line">            <span class="keyword">this</span>._year = newValue;</div><div class="line">            <span class="keyword">this</span>.edition += newValue - <span class="number">2004</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;);</div><div class="line"></div><div class="line">book.year = <span class="number">2005</span>;</div><div class="line">alert(book.year);</div></pre></td></tr></table></figure>
+<p>　　第一次访问book.year是写数据，调用setter方法，第二次访问book.year是读数据，调用getter方法。在Java里，getter和setter往往是针对私有属性的，用于向外界提供访问私有属性的一个公共接口，但访问器属性我觉得并不是为了这个目的而产生的。访问器属性，往往与一个数据属性相关联，例如这里的_year。这里_year前面的下划线是一种规范，用于表示与某个访问器属性相关联的数据属性。访问器属性是用于在设置一个属性的同时，导致其他属性的变化，这是它的最主要作用。至于私有公有属性的权限设定，则是由另外的技术实现的，这我也将会在后面几讲阐述。</p>
+<h5 id="同时定义多个属性"><a href="#同时定义多个属性" class="headerlink" title="同时定义多个属性"></a>同时定义多个属性</h5><p>　　可以用Object.defineProperties()方法，这个方法接收两个对象参数，一个是要添加和修改其属性的对象，另一个对象包含多个对象属性，每个属性与要添加或修改的属性一一对应，这些对象属性里的属性则是要定义的属性特性。</p>
+<h5 id="读取属性的特性"><a href="#读取属性的特性" class="headerlink" title="读取属性的特性"></a>读取属性的特性</h5><p>　　用Object.getOwnPropertyDescriptor()方法可以获取给定属性的描述符，这个描述符对象的属性则是相应属性的特性。这个方法接收两个参数，分别是属性所在的对象和其描述符的属性名称。</p>
+<p>　　这个描述符对象的属性便是原对象对应属性的特性。
+　　</p>
+<h3 id="构造类"><a href="#构造类" class="headerlink" title="构造类"></a>构造类</h3><h4 id="简易生产对象——工厂模式"><a href="#简易生产对象——工厂模式" class="headerlink" title="简易生产对象——工厂模式"></a>简易生产对象——工厂模式</h4><p>　　如果按照上面创建对象的方法，那么每次创建具有相同属性和方法的对象，都需要手动写一遍重复的代码。我们希望像其他面向对象语言一样，有“类”的概念，可以通过一个封装好的方法，批量地生成同一类型的对象。例如：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">createPerson</span>(<span class="params">name,age,job</span>)</span>&#123;</div><div class="line">    <span class="keyword">var</span> o = <span class="keyword">new</span> <span class="built_in">Object</span>();</div><div class="line">    o.name = name;</div><div class="line">    o.age = age;</div><div class="line">    o.job = job;</div><div class="line">    o.sayName = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">        alert(<span class="keyword">this</span>.name);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> o;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">var</span> person1 = createPerson(<span class="string">"Nicholas"</span>,<span class="number">29</span>,<span class="string">"Software Engineer"</span>);</div><div class="line"><span class="keyword">var</span> person2 = createPerson(<span class="string">"Greg"</span>,<span class="number">27</span>,<span class="string">"Doctor"</span>);</div></pre></td></tr></table></figure>
+<p>　　creatPerson就是一个工厂方法，封装了创建对象的代码，使得批量生产对象变得十分简单。</p>
+<p>　　但是，工厂模式存在两个主要的问题。第一个是虽然能够封装创建对象的代码，但是仍然不能将这个对象称为“类”，无法识别这些具有相同属性类型和方法的对象是属于同一个类的；第二个是，一般的面向对象语言，属于同一类的对象共享同一套方法，但属性则各有不同。具体到内存里，以java为例，它的类里的实例方法都是存储在代码区的，同一类的不同对象是共享代码区的相同方法的，而属性则存储在堆栈或堆里，各个对象不同。</p>
+<p>　　JavaScript作为成熟的面向对象语言，这两个问题当然是可以解决的。下面我们分别来分析一下。</p>
+<h4 id="构造函数模式"><a href="#构造函数模式" class="headerlink" title="构造函数模式"></a>构造函数模式</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">Person</span>(<span class="params">name,age,job</span>)</span>&#123;</div><div class="line">    <span class="keyword">this</span>.name = name;</div><div class="line">    <span class="keyword">this</span>.age = age;</div><div class="line">    <span class="keyword">this</span>.job = job;</div><div class="line">    <span class="keyword">this</span>.sayName = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">        alert(<span class="keyword">this</span>.name);</div><div class="line">    &#125;;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">var</span> person1 = createPerson(<span class="string">"Nicholas"</span>,<span class="number">29</span>,<span class="string">"Software Engineer"</span>);</div><div class="line"><span class="keyword">var</span> person2 = createPerson(<span class="string">"Greg"</span>,<span class="number">27</span>,<span class="string">"Doctor"</span>);</div></pre></td></tr></table></figure>
+<p>　　构造函数本身与普通函数是没有区别的。按照惯例，构造函数一般以大写字母开头，普通函数则以小写字母开头。如果不用new操作符，则调用构造函数与调用普通函数没有任何区别。如果调用了new操作符，且构造函数内部没有return，则会经历以下四个步骤：</p>
+<ol>
+<li>创建一个新对象。</li>
+<li>将构造函数的作用域赋给新对象。（this指向新对象）</li>
+<li>执行构造函数中的代码。</li>
+<li>返回新对象</li>
+</ol>
+<p>　　<br>　　利用构造函数生成的对象，都有一个constructor属性，指向Person函数。我们可以用这个属性来作为类判别的依据。但更可靠的做法是用instanceof操作符，如：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">alert(person1 <span class="keyword">instanceof</span> <span class="built_in">Object</span>);  <span class="comment">//true</span></div><div class="line">alert(person1 <span class="keyword">instanceof</span> Person);  <span class="comment">//true</span></div></pre></td></tr></table></figure>
+<p>　　由于Person类继承自Object类，因此person1既可以说是Object类的对象，也可以说是Person类的对象。</p>
+<h4 id="动态原型模式"><a href="#动态原型模式" class="headerlink" title="动态原型模式"></a>动态原型模式</h4><p>　　每当创建一个新函数，该函数都自动获得一个prototype属性，该属性指向函数的原型对象。这个原型对象本身与普通的实例对象没有任何区别。通过构造函数创建的对象，都会含有一个内部属性[[prototype]]，这个内部属性不能直接访问，其指向构造函数的原型对象。显然，所有通过该构造函数创建的对象，都有这么一个指针指向同一个原型对象。我们访问实例对象的属性和方法，会先看看实例对象有没有相应的属性或方法，没有的话再从原型对象上找。因此，我们可以把类里的实例方法以及共有的属性都定义在原型对象上，而把每个实例对象都不同的属性定义在实例上。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">Person</span>(<span class="params">name,age,job</span>)</span>&#123;</div><div class="line">    <span class="keyword">this</span>.name = name;</div><div class="line">    <span class="keyword">this</span>.age = age;</div><div class="line">    <span class="keyword">this</span>.job = job;</div><div class="line">    <span class="keyword">if</span>(<span class="keyword">typeof</span> <span class="keyword">this</span>.sayName != <span class="string">"function"</span>)&#123;</div><div class="line">        Person.prototype.sayName = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">            alert(<span class="keyword">this</span>.name);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">var</span> friend = <span class="keyword">new</span> Person(<span class="string">"Nicholas"</span>,<span class="number">29</span>,<span class="string">"Software Engineer"</span>);</div><div class="line">friend.sayName();</div></pre></td></tr></table></figure>
+<p>　　sayName方法定义在原型对象上，其他属性则直接定义在实例对象上。为了更好地封装代码，动态原型模式把原型的属性和方法定义都包含在构造函数里，而没有放在构造函数外面进行。但这样存在一个问题，就是每创建一个实例，都会定义一个新的函数，因此我们需要通过一个判断语句，来判断sayName函数是否已被初始化。如果有多个函数定义在原型对象上，我们也只需要判断一个函数有没有被初始化就可以了，因为初始化都是一起进行的，一个函数初始化了说明其他函数也被初始化。</p>
+<p>　　原型对象，实例对象，构造函数的关系：</p>
+<p><img src="/img/prototype.jpg" alt="prototype"></p>
+<p>　　由于访问对象的方法和属性时，是按照先实例对象再原型对象进行的，因此在实例对象上创建的同名属性或方法可以覆盖原型对象上的属性或方法。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>　　面向对象语言的最基本特点就是有对象，有类，类里面定义了属性和方法。这一讲简单地介绍了怎么创建对象，怎么构造类，以及引入了原型的概念，总结了怎么利用原型与构造函数来定义实例属性，实例方法和共享属性。关于JavaScript的面向对象设计部分，还有很多内容，预知后事如何，请看下回分解。
+　　
+　　</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/JavaScript/" rel="tag">#JavaScript</a>
+          
+            <a href="/tags/前端/" rel="tag">#前端</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/09/05/PostgreSQL-MVCC机制浅析/" rel="next" title="PostgreSQL MVCC机制浅析">
+                <i class="fa fa-chevron-left"></i> PostgreSQL MVCC机制浅析
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/09/13/从面向对象看JavaScript（一））/"
+           data-title="从面向对象看JavaScript（一）" data-url="http://yoursite.com/2016/09/13/从面向对象看JavaScript（一））/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/uploads/avatar.jpg"
+               alt="Gavin Wong" />
+          <p class="site-author-name" itemprop="name">Gavin Wong</p>
+          <p class="site-description motion-element" itemprop="description">广寒宫送千里香，杳杳随风入梦凉。我欲因之凌霄起，嫦娥丹桂尽入囊。</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">9</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">14</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建单个对象"><span class="nav-number">2.</span> <span class="nav-text">创建单个对象</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#对象属性"><span class="nav-number">2.1.</span> <span class="nav-text">对象属性</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#数据属性"><span class="nav-number">2.1.1.</span> <span class="nav-text">数据属性</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#访问器属性"><span class="nav-number">2.1.2.</span> <span class="nav-text">访问器属性</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#同时定义多个属性"><span class="nav-number">2.1.3.</span> <span class="nav-text">同时定义多个属性</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#读取属性的特性"><span class="nav-number">2.1.4.</span> <span class="nav-text">读取属性的特性</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#构造类"><span class="nav-number">3.</span> <span class="nav-text">构造类</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#简易生产对象——工厂模式"><span class="nav-number">3.1.</span> <span class="nav-text">简易生产对象——工厂模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#构造函数模式"><span class="nav-number">3.2.</span> <span class="nav-text">构造函数模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#动态原型模式"><span class="nav-number">3.3.</span> <span class="nav-text">动态原型模式</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gavin Wong</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"wjqwsp"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+       search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+    'use strict';
+    $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+            // get the contents from search data
+            isfetched = true;
+            $('.popup').detach().appendTo('.header-inner');
+            var datas = $( "entry", xmlResponse ).map(function() {
+                return {
+                    title: $( "title", this ).text(),
+                    content: $("content",this).text(),
+                    url: $( "url" , this).text()
+                };
+            }).get();
+            var $input = document.getElementById(search_id);
+            var $resultContent = document.getElementById(content_id);
+            $input.addEventListener('input', function(){
+                var matchcounts = 0;
+                var str='<ul class=\"search-result-list\">';
+                var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                $resultContent.innerHTML = "";
+                if (this.value.trim().length > 1) {
+                // perform local searching
+                datas.forEach(function(data) {
+                    var isMatch = true;
+                    var content_index = [];
+                    var data_title = data.title.trim().toLowerCase();
+                    var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                    var data_url = data.url;
+                    var index_title = -1;
+                    var index_content = -1;
+                    var first_occur = -1;
+                    // only match artiles with not empty titles and contents
+                    if(data_title != '' && data_content != '') {
+                        keywords.forEach(function(keyword, i) {
+                            index_title = data_title.indexOf(keyword);
+                            index_content = data_content.indexOf(keyword);
+                            if( index_title < 0 && index_content < 0 ){
+                                isMatch = false;
+                            } else {
+                                if (index_content < 0) {
+                                    index_content = 0;
+                                }
+                                if (i == 0) {
+                                    first_occur = index_content;
+                                }
+                            }
+                        });
+                    }
+                    // show search results
+                    if (isMatch) {
+                        matchcounts += 1;
+                        str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                        var content = data.content.trim().replace(/<[^>]+>/g,"");
+                        if (first_occur >= 0) {
+                            // cut out 100 characters
+                            var start = first_occur - 20;
+                            var end = first_occur + 80;
+                            if(start < 0){
+                                start = 0;
+                            }
+                            if(start == 0){
+                                end = 50;
+                            }
+                            if(end > content.length){
+                                end = content.length;
+                            }
+                            var match_content = content.substring(start, end);
+                            // highlight all keywords
+                            keywords.forEach(function(keyword){
+                                var regS = new RegExp(keyword, "gi");
+                                match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                            });
+
+                            str += "<p class=\"search-result\">" + match_content +"...</p>"
+                        }
+                        str += "</li>";
+                    }
+                })};
+                str += "</ul>";
+                if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+                if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+                $resultContent.innerHTML = str;
+            });
+            proceedsearch();
+        }
+    });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("EBQKkMtlkhkxwaXmaewHY2c4-gzGzoHsz", "KSypTWMBbTMgIBYw9EuDa73j");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+</body>
+</html>
