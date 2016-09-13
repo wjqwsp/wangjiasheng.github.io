@@ -86,7 +86,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="jmeter,压力测试," />
+  <meta name="keywords" content="压力测试,jmeter," />
 
 
 
@@ -105,44 +105,44 @@
 <meta name="description" content="什么是压力测试　　当我们开发完一个Web系统，实现了需求中的所有功能，此时还不能马上将其上线。我们必须对这个系统进行充分的，全面的测试，最大程度地确保它不会出错。压力测试就是这些测试的一种。压力测试的目的是为系统模拟一个现实的访问场景，建立一堆线程去并发地访问系统，了解这个Web系统能支持多大的并发量，或者说支持多少用户同时在线而不会崩溃。我们通过调整并发的线程数，访问时间等参数，去了解在一定的硬">
 <meta property="og:type" content="article">
 <meta property="og:title" content="JMeter压力测试基础">
-<meta property="og:url" content="http://yoursite.com/2016/08/29/jmeter压力测试基础/index.html">
+<meta property="og:url" content="http://wjqwsp.github.io/2016/08/29/jmeter压力测试基础/index.html">
 <meta property="og:site_name" content="南国倾城">
 <meta property="og:description" content="什么是压力测试　　当我们开发完一个Web系统，实现了需求中的所有功能，此时还不能马上将其上线。我们必须对这个系统进行充分的，全面的测试，最大程度地确保它不会出错。压力测试就是这些测试的一种。压力测试的目的是为系统模拟一个现实的访问场景，建立一堆线程去并发地访问系统，了解这个Web系统能支持多大的并发量，或者说支持多少用户同时在线而不会崩溃。我们通过调整并发的线程数，访问时间等参数，去了解在一定的硬">
-<meta property="og:image" content="http://yoursite.com/img/Test-Plan.jpg">
-<meta property="og:image" content="http://yoursite.com/img/Thread-Group.jpg">
-<meta property="og:image" content="http://yoursite.com/img/http-request-defaults.jpg">
-<meta property="og:image" content="http://yoursite.com/img/http-cookie-manager.jpg">
-<meta property="og:image" content="http://yoursite.com/img/constant-timer.jpg">
-<meta property="og:image" content="http://yoursite.com/img/view-results-tree.jpg">
-<meta property="og:image" content="http://yoursite.com/img/aggregate-report.jpg">
-<meta property="og:image" content="http://yoursite.com/img/login-response.jpg">
-<meta property="og:image" content="http://yoursite.com/img/duration-assertion.jpg">
-<meta property="og:image" content="http://yoursite.com/img/login-test.jpg">
-<meta property="og:image" content="http://yoursite.com/img/counter.png">
-<meta property="og:image" content="http://yoursite.com/img/login-response.jpg">
-<meta property="og:image" content="http://yoursite.com/img/follow.jpg">
-<meta property="og:image" content="http://yoursite.com/img/follow-response.jpg">
-<meta property="og:image" content="http://yoursite.com/img/send-message.jpg">
-<meta property="og:image" content="http://yoursite.com/img/send-message-response.jpg">
-<meta property="og:image" content="http://yoursite.com/img/search-message.jpg">
-<meta property="og:image" content="http://yoursite.com/img/search-message-response.jpg">
-<meta property="og:image" content="http://yoursite.com/img/message-regular.jpg">
-<meta property="og:image" content="http://yoursite.com/img/send-comment.jpg">
-<meta property="og:image" content="http://yoursite.com/img/send-comment-response.jpg">
-<meta property="og:image" content="http://yoursite.com/img/search-comment.jpg">
-<meta property="og:image" content="http://yoursite.com/img/search-comment-response.jpg">
-<meta property="og:image" content="http://yoursite.com/img/comment-regular.jpg">
-<meta property="og:image" content="http://yoursite.com/img/delete-comment.jpg">
-<meta property="og:image" content="http://yoursite.com/img/delete-comment-response.jpg">
-<meta property="og:image" content="http://yoursite.com/img/delete-message.jpg">
-<meta property="og:image" content="http://yoursite.com/img/delete-message-response.jpg">
-<meta property="og:image" content="http://yoursite.com/img/logout.jpg">
-<meta property="og:image" content="http://yoursite.com/img/logout-response.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/Test-Plan.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/Thread-Group.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/http-request-defaults.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/http-cookie-manager.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/constant-timer.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/view-results-tree.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/aggregate-report.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/login-response.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/duration-assertion.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/login-test.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/counter.png">
+<meta property="og:image" content="http://wjqwsp.github.io/img/login-response.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/follow.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/follow-response.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/send-message.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/send-message-response.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/search-message.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/search-message-response.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/message-regular.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/send-comment.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/send-comment-response.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/search-comment.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/search-comment-response.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/comment-regular.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/delete-comment.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/delete-comment-response.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/delete-message.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/delete-message-response.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/logout.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/logout-response.jpg">
 <meta property="og:updated_time" content="2016-08-29T15:36:04.844Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="JMeter压力测试基础">
 <meta name="twitter:description" content="什么是压力测试　　当我们开发完一个Web系统，实现了需求中的所有功能，此时还不能马上将其上线。我们必须对这个系统进行充分的，全面的测试，最大程度地确保它不会出错。压力测试就是这些测试的一种。压力测试的目的是为系统模拟一个现实的访问场景，建立一堆线程去并发地访问系统，了解这个Web系统能支持多大的并发量，或者说支持多少用户同时在线而不会崩溃。我们通过调整并发的线程数，访问时间等参数，去了解在一定的硬">
-<meta name="twitter:image" content="http://yoursite.com/img/Test-Plan.jpg">
+<meta name="twitter:image" content="http://wjqwsp.github.io/img/Test-Plan.jpg">
 
 
 
@@ -163,7 +163,7 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2016/08/29/jmeter压力测试基础/"/>
+  <link rel="canonical" href="http://wjqwsp.github.io/2016/08/29/jmeter压力测试基础/"/>
 
   <title> JMeter压力测试基础 | 南国倾城 </title>
 </head>
@@ -483,9 +483,9 @@
       
         <div class="post-tags">
           
-            <a href="/tags/jmeter/" rel="tag">#jmeter</a>
-          
             <a href="/tags/压力测试/" rel="tag">#压力测试</a>
+          
+            <a href="/tags/jmeter/" rel="tag">#jmeter</a>
           
         </div>
       
@@ -531,7 +531,7 @@
   <div class="comments" id="comments">
     
       <div class="ds-thread" data-thread-key="2016/08/29/jmeter压力测试基础/"
-           data-title="JMeter压力测试基础" data-url="http://yoursite.com/2016/08/29/jmeter压力测试基础/">
+           data-title="JMeter压力测试基础" data-url="http://wjqwsp.github.io/2016/08/29/jmeter压力测试基础/">
       </div>
     
   </div>

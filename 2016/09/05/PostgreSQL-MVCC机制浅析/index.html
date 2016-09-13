@@ -86,7 +86,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="数据库,PostgreSQL,并发,MVCC," />
+  <meta name="keywords" content="PostgreSQL,数据库,并发,MVCC," />
 
 
 
@@ -106,31 +106,31 @@
 悲观锁与乐观锁　　对于某一特定的业务需求，如果实现该需求需要并发地更新数据库的同一记录，就有可能发生冲突">
 <meta property="og:type" content="article">
 <meta property="og:title" content="PostgreSQL MVCC机制浅析">
-<meta property="og:url" content="http://yoursite.com/2016/09/05/PostgreSQL-MVCC机制浅析/index.html">
+<meta property="og:url" content="http://wjqwsp.github.io/2016/09/05/PostgreSQL-MVCC机制浅析/index.html">
 <meta property="og:site_name" content="南国倾城">
 <meta property="og:description" content="从丢失更新说起　　上一讲提到了数据并发在数据库中的四大问题，其中一个便是丢失更新。丢失更新的产生是当两个事务同时读某一记录时，A事务先修改该记录，B事务再修改的时候把A的修改覆盖掉，导致A事务的更新丢失了。更具体的例子可以参考上一讲。数据库处理丢失更新有两种方法，分别是悲观锁方法与乐观锁方法。
 悲观锁与乐观锁　　对于某一特定的业务需求，如果实现该需求需要并发地更新数据库的同一记录，就有可能发生冲突">
-<meta property="og:image" content="http://yoursite.com/img/mytab.png">
-<meta property="og:image" content="http://yoursite.com/img/transactionA.jpg">
-<meta property="og:image" content="http://yoursite.com/img/transactionB.jpg">
-<meta property="og:image" content="http://yoursite.com/img/transactionA-commit.jpg">
-<meta property="og:image" content="http://yoursite.com/img/test-init.png">
-<meta property="og:image" content="http://yoursite.com/img/test-a-2-insert.jpg">
-<meta property="og:image" content="http://yoursite.com/img/test-b-2-insert.jpg">
-<meta property="og:image" content="http://yoursite.com/img/test-a-2-update.jpg">
-<meta property="og:image" content="http://yoursite.com/img/test-b-2-update.jpg">
-<meta property="og:image" content="http://yoursite.com/img/test-a-2-commit.jpg">
-<meta property="og:image" content="http://yoursite.com/img/test-b-2-commit.jpg">
-<meta property="og:image" content="http://yoursite.com/img/transaction-cd-begin.jpg">
-<meta property="og:image" content="http://yoursite.com/img/transaction-cd-begin.jpg">
-<meta property="og:image" content="http://yoursite.com/img/test-c.jpg">
-<meta property="og:image" content="http://yoursite.com/img/test-d.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/mytab.png">
+<meta property="og:image" content="http://wjqwsp.github.io/img/transactionA.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/transactionB.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/transactionA-commit.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/test-init.png">
+<meta property="og:image" content="http://wjqwsp.github.io/img/test-a-2-insert.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/test-b-2-insert.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/test-a-2-update.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/test-b-2-update.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/test-a-2-commit.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/test-b-2-commit.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/transaction-cd-begin.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/transaction-cd-begin.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/test-c.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/img/test-d.jpg">
 <meta property="og:updated_time" content="2016-09-05T14:08:03.629Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="PostgreSQL MVCC机制浅析">
 <meta name="twitter:description" content="从丢失更新说起　　上一讲提到了数据并发在数据库中的四大问题，其中一个便是丢失更新。丢失更新的产生是当两个事务同时读某一记录时，A事务先修改该记录，B事务再修改的时候把A的修改覆盖掉，导致A事务的更新丢失了。更具体的例子可以参考上一讲。数据库处理丢失更新有两种方法，分别是悲观锁方法与乐观锁方法。
 悲观锁与乐观锁　　对于某一特定的业务需求，如果实现该需求需要并发地更新数据库的同一记录，就有可能发生冲突">
-<meta name="twitter:image" content="http://yoursite.com/img/mytab.png">
+<meta name="twitter:image" content="http://wjqwsp.github.io/img/mytab.png">
 
 
 
@@ -151,7 +151,7 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2016/09/05/PostgreSQL-MVCC机制浅析/"/>
+  <link rel="canonical" href="http://wjqwsp.github.io/2016/09/05/PostgreSQL-MVCC机制浅析/"/>
 
   <title> PostgreSQL MVCC机制浅析 | 南国倾城 </title>
 </head>
@@ -493,9 +493,9 @@
       
         <div class="post-tags">
           
-            <a href="/tags/数据库/" rel="tag">#数据库</a>
-          
             <a href="/tags/PostgreSQL/" rel="tag">#PostgreSQL</a>
+          
+            <a href="/tags/数据库/" rel="tag">#数据库</a>
           
             <a href="/tags/并发/" rel="tag">#并发</a>
           
@@ -545,7 +545,7 @@
   <div class="comments" id="comments">
     
       <div class="ds-thread" data-thread-key="2016/09/05/PostgreSQL-MVCC机制浅析/"
-           data-title="PostgreSQL MVCC机制浅析" data-url="http://yoursite.com/2016/09/05/PostgreSQL-MVCC机制浅析/">
+           data-title="PostgreSQL MVCC机制浅析" data-url="http://wjqwsp.github.io/2016/09/05/PostgreSQL-MVCC机制浅析/">
       </div>
     
   </div>
