@@ -4,6 +4,31 @@
   
     
     <entry>
+      <title><![CDATA[从面向对象看JavaScript（四）—— 内存管理]]></title>
+      <url>http://wjqwsp.github.io/2016/09/14/%E4%BB%8E%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%9C%8BJavaScript%EF%BC%88%E5%9B%9B%EF%BC%89%E2%80%94%E2%80%94-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/</url>
+      <content type="html"><![CDATA[<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　与java类似，JavaScript也有两种垃圾回收方式，分别是标记清除和引用计数。目前基本上都是使用标记清除的方式，引用计数存在循环引用的问题，实际中很少使用，但IE中的BOM和DOM对象却是用引用计数方式来做垃圾回收，非常容易造成内存泄漏。<br><a id="more"></a></p>
+<h3 id="标记清除"><a href="#标记清除" class="headerlink" title="标记清除"></a>标记清除</h3><p>　　垃圾回收器会给所有存储在内存中的变量都打上标记，然后去掉所有在执行环境中的变量，以及被环境中的变量所引用的变量的标记。剩下还有标记的变量就是垃圾回收器将会回收的变量。</p>
+<p>　　对比java中的标记清除策略，java会从堆栈和静态存储区开始，遍历所有引用，对每一个引用，再追踪它引用的每个对象，然后对每个对象再追踪它引用的下一层对象。如此层层深入，最终能遍历所有“活”的对象，其余对象则在下一次垃圾回收器工作时被回收。</p>
+<p>　　不难看出，这两种语言的标记清除策略是一回事。JavaScript执行环境中的变量就相当于java堆栈和静态存储区的变量。</p>
+<p>　　如果采用这种回收策略，我们基本不用担心内存泄漏的问题。因为只要函数作用域结束了，自然会退出执行环境。只要变量不在执行环境中，即便存在循环引用，也会被垃圾回收器回收。只有全局环境下的变量和函数在程序运行的整个周期都不会被回收，如果不用的话，需要手动设为null。另外，闭包由于会保留其上级函数的变量对象，使得垃圾回收器无法清除相关的变量和函数，因此会占用较多的内存，所以使用闭包时要注意。</p>
+<h3 id="引用计数"><a href="#引用计数" class="headerlink" title="引用计数"></a>引用计数</h3><p>　　对内存中的每一个对象都记录其引用数，只要其引用数为0，则会被垃圾回收。但是如果存在循环引用，则会造成内存泄漏：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">problem</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    <span class="keyword">var</span> objectA = <span class="keyword">new</span> <span class="built_in">Object</span>();</div><div class="line">    <span class="keyword">var</span> objectB = <span class="keyword">new</span> <span class="built_in">Object</span>();</div><div class="line">    objectA.someOtherObject = objectB;</div><div class="line">    objectB.anotherObject = objectA;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　我们记problem函数里定义的两个对象为对象A和对象B。如果调用problem函数，则在函数结束前，对象A和对象B的引用数均为2。在执行结束后，objectA和objectB这两个引用由于存在堆栈里，会马上被释放。但对象A仍然被对象B的anotherObject属性引用；对象B也仍然被对象A的someOtherObject属性引用。所以这两个对象将永远不会被释放。</p>
+<p>　　如果大量调用problem函数，那么将会导致大量内存不能被回收。</p>
+<p>　　值得开心的事，这种引用计数方式已经基本不被采用。但IE的BOM和DOM对象仍然是用这种策略来进行垃圾回收的。因此使用BOM和DOM对象时要加倍小心，防止循环引用的发生。下面看一个例子：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> element = <span class="built_in">document</span>.getElementById(<span class="string">"some_element"</span>);</div><div class="line"><span class="keyword">var</span> myObject = <span class="keyword">new</span> <span class="built_in">Object</span>();</div><div class="line">myObject.element = element;</div><div class="line">element.someObject = myObject;</div></pre></td></tr></table></figure>
+<p>　　element是DOM元素，它和myObject存在循环引用问题。在使用完毕DOM或BOM对象后，要记住将它们的引用设为null。</p>
+<h3 id="闭包的循环引用问题"><a href="#闭包的循环引用问题" class="headerlink" title="闭包的循环引用问题"></a>闭包的循环引用问题</h3><p>　　如果同时使用闭包和DOM或BOM对象，那么更加要留心循环引用的问题了。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">assignHandler</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    <span class="keyword">var</span> element = <span class="built_in">document</span>.getElementById(<span class="string">"someElement"</span>);</div><div class="line">    element.onclick = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">        alert(element.id);</div><div class="line">    &#125;；</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　元素的点击事件函数的内存属性[[scope]]指向的作用域链里保存了assignHandler的活动对象，该活动对象里存在element的引用。同时。element的onclick属性也引用了点击事件函数。不难看出，闭包的循环引用往往是由其作用域链产生的。</p>
+<p>　　我们可以这样修改代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">assignHandler</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    <span class="keyword">var</span> element = <span class="built_in">document</span>.getElementById(<span class="string">"someElement"</span>);</div><div class="line">    <span class="keyword">var</span> id = element.id;</div><div class="line">    element.onclick = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">        alert(id);</div><div class="line">    &#125;；</div><div class="line">    element = <span class="literal">null</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　谨记及时将DOM或BOM的引用手动设为null。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>　　关于JavaScript的内存管理，只需要掌握两种垃圾回收策略即可。特别要注意闭包和DOM,BOM对象，注意循环引用。及时手动切断引用与DOM,BOM对象，全局环境下的对象的联系。</p>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[从面向对象看JavaScript（三）—— 属性权限管理]]></title>
       <url>http://wjqwsp.github.io/2016/09/14/%E4%BB%8E%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%9C%8BJavaScript%EF%BC%88%E4%B8%89%E2%80%94%EF%BC%89%E2%80%94%E2%80%94-%E5%B1%9E%E6%80%A7%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86/</url>
       <content type="html"><![CDATA[<h3 id="对象的私有成员"><a href="#对象的私有成员" class="headerlink" title="对象的私有成员"></a>对象的私有成员</h3><p>　　原文再续，书接上一回。第一讲里我们提到怎么定义类，怎么创建对象。但在这些对象上创建的属性与方法，都是能被直接访问的，JavaScript并没有提供private,public,protected等属性的权限管理机制。但是，利用闭包我们完全可以实现对象属性和方法的私有化管理。<br><a id="more"></a></p>
