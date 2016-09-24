@@ -279,6 +279,119 @@
             
               
                 
+                <a class="post-title-link" href="/2016/09/05/PostgreSQL-MVCC机制浅析/" itemprop="url">
+                  PostgreSQL MVCC机制浅析
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-09-05T21:58:49+08:00" content="2016-09-05">
+              2016-09-05
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/09/05/PostgreSQL-MVCC机制浅析/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/05/PostgreSQL-MVCC机制浅析/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/09/05/PostgreSQL-MVCC机制浅析/" class="leancloud_visitors" data-flag-title="PostgreSQL MVCC机制浅析">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="从丢失更新说起"><a href="#从丢失更新说起" class="headerlink" title="从丢失更新说起"></a>从丢失更新说起</h3><p>　　上一讲提到了数据并发在数据库中的四大问题，其中一个便是丢失更新。丢失更新的产生是当两个事务同时读某一记录时，A事务先修改该记录，B事务再修改的时候把A的修改覆盖掉，导致A事务的更新丢失了。更具体的例子可以参考上一讲。数据库处理丢失更新有两种方法，分别是悲观锁方法与乐观锁方法。</p>
+<h3 id="悲观锁与乐观锁"><a href="#悲观锁与乐观锁" class="headerlink" title="悲观锁与乐观锁"></a>悲观锁与乐观锁</h3><p>　　对于某一特定的业务需求，如果实现该需求需要并发地更新数据库的同一记录，就有可能发生冲突。解决这种冲突可以选择两种办法，分别是悲观锁与乐观锁。<br>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/09/05/PostgreSQL-MVCC机制浅析/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2016/09/04/数据库事务隔离等级与锁机制浅析/" itemprop="url">
                   数据库事务隔离级别与锁机制实现（转载）
                 </a>
@@ -1106,7 +1219,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">17</span>
+              <span class="site-state-item-count">18</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>

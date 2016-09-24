@@ -102,25 +102,28 @@
 
 
 
-<meta name="description" content="题目　　Remove all elements from a linked list of integers that have value val.
-　　Example
-　　Given: 1 –&amp;gt; 2 –&amp;gt; 6 –&amp;gt; 3 –&amp;gt; 4 –&amp;gt; 5 –&amp;gt; 6, val = 6
-　　Return: 1 –&amp;gt; 2 –&amp;gt; 3 –&amp;gt; 4 –&amp;gt; 5">
+<meta name="description" content="题目　　Write a program to find the node at which the intersection of two singly linked lists begins.
+　　Notes:
+
+If the two linked lists have no intersection at all, return null.
+The linked lists must reta">
 <meta property="og:type" content="article">
-<meta property="og:title" content="LeetCode 203 Remove Linked List Elements 题解">
-<meta property="og:url" content="http://wjqwsp.github.io/2016/09/24/LeetCode-203-Remove-Linked-List-Elements-题解/index.html">
+<meta property="og:title" content="LeetCode 160 Intersection of Two Linked Lists 题解">
+<meta property="og:url" content="http://wjqwsp.github.io/2016/09/24/LeetCode-160-Intersection-of-Two-Linked-Lists-题解/index.html">
 <meta property="og:site_name" content="南国倾城">
-<meta property="og:description" content="题目　　Remove all elements from a linked list of integers that have value val.
-　　Example
-　　Given: 1 –&amp;gt; 2 –&amp;gt; 6 –&amp;gt; 3 –&amp;gt; 4 –&amp;gt; 5 –&amp;gt; 6, val = 6
-　　Return: 1 –&amp;gt; 2 –&amp;gt; 3 –&amp;gt; 4 –&amp;gt; 5">
-<meta property="og:updated_time" content="2016-09-24T12:36:27.029Z">
+<meta property="og:description" content="题目　　Write a program to find the node at which the intersection of two singly linked lists begins.
+　　Notes:
+
+If the two linked lists have no intersection at all, return null.
+The linked lists must reta">
+<meta property="og:updated_time" content="2016-09-24T14:22:48.222Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="LeetCode 203 Remove Linked List Elements 题解">
-<meta name="twitter:description" content="题目　　Remove all elements from a linked list of integers that have value val.
-　　Example
-　　Given: 1 –&amp;gt; 2 –&amp;gt; 6 –&amp;gt; 3 –&amp;gt; 4 –&amp;gt; 5 –&amp;gt; 6, val = 6
-　　Return: 1 –&amp;gt; 2 –&amp;gt; 3 –&amp;gt; 4 –&amp;gt; 5">
+<meta name="twitter:title" content="LeetCode 160 Intersection of Two Linked Lists 题解">
+<meta name="twitter:description" content="题目　　Write a program to find the node at which the intersection of two singly linked lists begins.
+　　Notes:
+
+If the two linked lists have no intersection at all, return null.
+The linked lists must reta">
 
 
 
@@ -141,9 +144,9 @@
 
 
 
-  <link rel="canonical" href="http://wjqwsp.github.io/2016/09/24/LeetCode-203-Remove-Linked-List-Elements-题解/"/>
+  <link rel="canonical" href="http://wjqwsp.github.io/2016/09/24/LeetCode-160-Intersection-of-Two-Linked-Lists-题解/"/>
 
-  <title> LeetCode 203 Remove Linked List Elements 题解 | 南国倾城 </title>
+  <title> LeetCode 160 Intersection of Two Linked Lists 题解 | 南国倾城 </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -286,7 +289,7 @@
             
             
               
-                LeetCode 203 Remove Linked List Elements 题解
+                LeetCode 160 Intersection of Two Linked Lists 题解
               
             
           </h1>
@@ -298,7 +301,7 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-24T20:28:51+08:00" content="2016-09-24">
+            <time itemprop="dateCreated" datetime="2016-09-24T21:40:53+08:00" content="2016-09-24">
               2016-09-24
             </time>
           </span>
@@ -309,8 +312,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/2016/09/24/LeetCode-203-Remove-Linked-List-Elements-题解/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/24/LeetCode-203-Remove-Linked-List-Elements-题解/" itemprop="commentsCount"></span>
+                <a href="/2016/09/24/LeetCode-160-Intersection-of-Two-Linked-Lists-题解/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/24/LeetCode-160-Intersection-of-Two-Linked-Lists-题解/" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -320,7 +323,7 @@
 
           
           
-             <span id="/2016/09/24/LeetCode-203-Remove-Linked-List-Elements-题解/" class="leancloud_visitors" data-flag-title="LeetCode 203 Remove Linked List Elements 题解">
+             <span id="/2016/09/24/LeetCode-160-Intersection-of-Two-Linked-Lists-题解/" class="leancloud_visitors" data-flag-title="LeetCode 160 Intersection of Two Linked Lists 题解">
                &nbsp; | &nbsp;
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -342,14 +345,24 @@
       
 
       
-        <h3 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h3><p>　　Remove all elements from a linked list of integers that have value val.</p>
-<p>　　Example</p>
-<p>　　Given: 1 –&gt; 2 –&gt; 6 –&gt; 3 –&gt; 4 –&gt; 5 –&gt; 6, val = 6</p>
-<p>　　Return: 1 –&gt; 2 –&gt; 3 –&gt; 4 –&gt; 5<br><a id="more"></a></p>
-<h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><p>　　这道题非常简单，但很好地体现了单链表的特点。单链表每个结点只能引用下一个结点，因此删除结点时，也只能立足于一个不需要被删除的结点，去判断是否需要删除下一个结点。</p>
-<p>　　由于删除时候需要遍历链表，但遍历的开始必须是头结点，而头结点如果要删除就要额外处理了。这里我们在头结点之前再插入一个临时结点，以统一处理整个链表。</p>
-<h3 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * Definition for singly-linked list.</div><div class="line"> * public class ListNode &#123;</div><div class="line"> *     int val;</div><div class="line"> *     ListNode next;</div><div class="line"> *     ListNode(int x) &#123; val = x; &#125;</div><div class="line"> * &#125;</div><div class="line"> */</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> ListNode <span class="title">removeElements</span><span class="params">(ListNode head, <span class="keyword">int</span> val)</span> </span>&#123;</div><div class="line">        ListNode dummy = <span class="keyword">new</span> ListNode(<span class="number">0</span>);</div><div class="line">        dummy.next = head;</div><div class="line">        head = dummy;</div><div class="line">        <span class="keyword">while</span>(head.next != <span class="keyword">null</span>)&#123;</div><div class="line">            <span class="keyword">if</span>(head.next.val == val)&#123;</div><div class="line">                head.next = head.next.next;</div><div class="line">            &#125;<span class="keyword">else</span>&#123;</div><div class="line">                head = head.next;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> dummy.next;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>　　代码里删除只针对紧邻的下一个结点。当下一个结点的值是需要删除的值时，则删除下一个结点，再判断新的下一个结点是否需要删除；如果下一个结点不需要删除，则移动到下一个结点，再观察后面的结点是否需要删除。</p>
+        <h3 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h3><p>　　Write a program to find the node at which the intersection of two singly linked lists begins.</p>
+<p>　　Notes:</p>
+<ul>
+<li>If the two linked lists have no intersection at all, return null.</li>
+<li>The linked lists must retain their original structure after the function returns.</li>
+<li>You may assume there are no cycles anywhere in the entire linked structure.</li>
+<li>Your code should preferably run in O(n) time and use only O(1) memory.</li>
+</ul>
+<h3 id="解法一"><a href="#解法一" class="headerlink" title="解法一"></a>解法一</h3><h4 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h4><p>　　由于两个链表在尾部可能存在相同的部分，如果将其中一条链表的尾部连到另一条链表的头部，那么就可以构造一个环。题目就转化为求环的入口结点。下面先对环的几个概念作出分析。</p>
+<h5 id="单链表是否存在环？"><a href="#单链表是否存在环？" class="headerlink" title="单链表是否存在环？"></a>单链表是否存在环？</h5><p>　　解答这个问题，只需要设置快慢指针即可。慢指针一次走一步，快指针一次走两步。如果存在环，那么快指针终会赶上慢指针。设想一下，假如快指针追到慢指针身后一步，那么慢指针走一步，快指针走两步后，下一次就会相遇。如果快指针落后慢指针两步或者三步，再多走一次或两次两者就会达到只差一步的情况。所以两个指针终将相遇。</p>
+<h5 id="求环的长度。"><a href="#求环的长度。" class="headerlink" title="求环的长度。"></a>求环的长度。</h5><p>　　从快慢指针相遇结点开始，让一个指针每次走一步，那么下次回到这个结点所走过的路程，就是环的长度。</p>
+<h5 id="求存在环的单链表的环的入口结点。"><a href="#求存在环的单链表的环的入口结点。" class="headerlink" title="求存在环的单链表的环的入口结点。"></a>求存在环的单链表的环的入口结点。</h5><p>　　设单链表头结点到入口结点的距离为ａ，入口结点到快慢指针相遇结点的距离为ｘ，单链表总长度为L，环长为r。当快慢指针相遇时，设慢指针走的步数是s，则快指针走的步数是2s。</p>
+<p><pre><code><br>s = a + x;<br>2s = s + nr;<br>a + x = nr = (n-1)r + r = (n-1)r + L - a;<br>a = (n-1)r + L - a - x;<br></code></pre><br>　　所以，设置两个指针，起点分别是链表头结点和快慢指针相遇结点，同时前进，每次走一步。那么总会相遇在入口结点处。</p>
+<h4 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * Definition for singly-linked list.</div><div class="line"> * public class ListNode &#123;</div><div class="line"> *     int val;</div><div class="line"> *     ListNode next;</div><div class="line"> *     ListNode(int x) &#123;</div><div class="line"> *         val = x;</div><div class="line"> *         next = null;</div><div class="line"> *     &#125;</div><div class="line"> * &#125;</div><div class="line"> */</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> ListNode <span class="title">getIntersectionNode</span><span class="params">(ListNode headA, ListNode headB)</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span>(headA == <span class="keyword">null</span> || headB == <span class="keyword">null</span>)&#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">        &#125;</div><div class="line">        ListNode temp = headA;</div><div class="line">        <span class="keyword">while</span>(temp.next != <span class="keyword">null</span>)&#123;</div><div class="line">            temp = temp.next;</div><div class="line">        &#125;</div><div class="line">        temp.next = headB;</div><div class="line">        ListNode slow = headA;</div><div class="line">        ListNode fast = headA;</div><div class="line">        do&#123;</div><div class="line">            <span class="keyword">if</span>(fast != <span class="keyword">null</span> &amp;&amp; fast.next != <span class="keyword">null</span>)&#123;</div><div class="line">                slow = slow.next;</div><div class="line">                fast = fast.next.next;</div><div class="line">            &#125;<span class="keyword">else</span>&#123;</div><div class="line">                temp.next = <span class="keyword">null</span>;</div><div class="line">                <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">            &#125;</div><div class="line">        &#125;<span class="keyword">while</span>(slow != fast);</div><div class="line">        slow = headA;</div><div class="line">        <span class="keyword">while</span>(slow != fast)&#123;</div><div class="line">            slow = slow.next;</div><div class="line">            fast = fast.next;</div><div class="line">        &#125;</div><div class="line">        temp.next = <span class="keyword">null</span>;</div><div class="line">        <span class="keyword">return</span> slow;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　这个解法实际上就是求存在环的单链表的环的入口结点。</p>
+<h3 id="解法二"><a href="#解法二" class="headerlink" title="解法二"></a>解法二</h3><p>　　这两个链表有一个特点，就是相同的地方必定在尾部。但是由于两条链表长度不一定相等，如果同时遍历的话，很难让相同的结点对齐。因此，这个解法用了一个小技巧，让两个链表在按顺序从头到尾遍历的时候，能够做到尾部对齐。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * Definition for singly-linked list.</div><div class="line"> * public class ListNode &#123;</div><div class="line"> *     int val;</div><div class="line"> *     ListNode next;</div><div class="line"> *     ListNode(int x) &#123;</div><div class="line"> *         val = x;</div><div class="line"> *         next = null;</div><div class="line"> *     &#125;</div><div class="line"> * &#125;</div><div class="line"> */</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> ListNode <span class="title">getIntersectionNode</span><span class="params">(ListNode headA, ListNode headB)</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span>(headA == <span class="keyword">null</span> || headB == <span class="keyword">null</span>)&#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">        &#125;</div><div class="line">        ListNode p1 = headA;</div><div class="line">        ListNode p2 = headB;</div><div class="line">        <span class="keyword">boolean</span> flagA = <span class="keyword">false</span>;</div><div class="line">        <span class="keyword">boolean</span> flagB = <span class="keyword">false</span>;</div><div class="line">        <span class="keyword">while</span>(p1 != p2)&#123;</div><div class="line">            p1 = p1.next;</div><div class="line">            p2 = p2.next;</div><div class="line">            <span class="keyword">if</span>(p1 == <span class="keyword">null</span>)&#123;</div><div class="line">                <span class="keyword">if</span>(flagA == <span class="keyword">true</span> &amp;&amp; flagB == <span class="keyword">true</span>)&#123;</div><div class="line">                    <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">                &#125;<span class="keyword">else</span>&#123;</div><div class="line">                    flagA = <span class="keyword">true</span>;</div><div class="line">                &#125;</div><div class="line">                p1 = headB;</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">if</span>(p2 == <span class="keyword">null</span>)&#123;</div><div class="line">                p2 = headA;</div><div class="line">                flagB = <span class="keyword">true</span>;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> p1;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　一开始仍然让两链表从头开始遍历，每次走一步。链表A遍历到末端回到链表B的头部，链表B遍历到末端也回到链表A的头部。这样当两个遍历指针都到达另一个链表的时候，恰好可以让尾部对齐，消除掉长度差的影响。</p>
 
       
     </div>
@@ -383,17 +396,13 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2016/09/24/LeetCode-234-Palindrome-Linked-List-题解/" rel="next" title="LeetCode 234 Palindrome Linked List 题解">
-                <i class="fa fa-chevron-left"></i> LeetCode 234 Palindrome Linked List 题解
+              <a href="/2016/09/24/LeetCode-203-Remove-Linked-List-Elements-题解/" rel="next" title="LeetCode 203 Remove Linked List Elements 题解">
+                <i class="fa fa-chevron-left"></i> LeetCode 203 Remove Linked List Elements 题解
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2016/09/24/LeetCode-160-Intersection-of-Two-Linked-Lists-题解/" rel="prev" title="LeetCode 160 Intersection of Two Linked Lists 题解">
-                LeetCode 160 Intersection of Two Linked Lists 题解 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -419,8 +428,8 @@
           
   <div class="comments" id="comments">
     
-      <div class="ds-thread" data-thread-key="2016/09/24/LeetCode-203-Remove-Linked-List-Elements-题解/"
-           data-title="LeetCode 203 Remove Linked List Elements 题解" data-url="http://wjqwsp.github.io/2016/09/24/LeetCode-203-Remove-Linked-List-Elements-题解/">
+      <div class="ds-thread" data-thread-key="2016/09/24/LeetCode-160-Intersection-of-Two-Linked-Lists-题解/"
+           data-title="LeetCode 160 Intersection of Two Linked Lists 题解" data-url="http://wjqwsp.github.io/2016/09/24/LeetCode-160-Intersection-of-Two-Linked-Lists-题解/">
       </div>
     
   </div>
@@ -504,7 +513,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#题目"><span class="nav-number">1.</span> <span class="nav-text">题目</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#思路"><span class="nav-number">2.</span> <span class="nav-text">思路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码"><span class="nav-number">3.</span> <span class="nav-text">代码</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#题目"><span class="nav-number">1.</span> <span class="nav-text">题目</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解法一"><span class="nav-number">2.</span> <span class="nav-text">解法一</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#思路"><span class="nav-number">2.1.</span> <span class="nav-text">思路</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#单链表是否存在环？"><span class="nav-number">2.1.1.</span> <span class="nav-text">单链表是否存在环？</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#求环的长度。"><span class="nav-number">2.1.2.</span> <span class="nav-text">求环的长度。</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#求存在环的单链表的环的入口结点。"><span class="nav-number">2.1.3.</span> <span class="nav-text">求存在环的单链表的环的入口结点。</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#代码"><span class="nav-number">2.2.</span> <span class="nav-text">代码</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解法二"><span class="nav-number">3.</span> <span class="nav-text">解法二</span></a></li></ol></div>
             
           </div>
         </section>
