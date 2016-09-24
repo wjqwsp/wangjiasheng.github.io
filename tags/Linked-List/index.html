@@ -86,7 +86,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="JavaScript,前端,闭包,内存管理," />
+  <meta name="keywords" content="Hexo, NexT" />
 
 
 
@@ -102,16 +102,15 @@
 
 
 
-<meta name="description" content="前言　　与java类似，JavaScript也有两种垃圾回收方式，分别是标记清除和引用计数。目前基本上都是使用标记清除的方式，引用计数存在循环引用的问题，实际中很少使用，但IE中的BOM和DOM对象却是用引用计数方式来做垃圾回收，非常容易造成内存泄漏。">
-<meta property="og:type" content="article">
-<meta property="og:title" content="从面向对象看JavaScript（四）—— 内存管理">
-<meta property="og:url" content="http://wjqwsp.github.io/2016/09/14/从面向对象看JavaScript（四）——-内存管理/index.html">
+<meta name="description" content="广寒宫送千里香，杳杳随风入梦凉。我欲因之凌霄起，嫦娥丹桂尽入囊。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="南国倾城">
+<meta property="og:url" content="http://wjqwsp.github.io/tags/Linked-List/index.html">
 <meta property="og:site_name" content="南国倾城">
-<meta property="og:description" content="前言　　与java类似，JavaScript也有两种垃圾回收方式，分别是标记清除和引用计数。目前基本上都是使用标记清除的方式，引用计数存在循环引用的问题，实际中很少使用，但IE中的BOM和DOM对象却是用引用计数方式来做垃圾回收，非常容易造成内存泄漏。">
-<meta property="og:updated_time" content="2016-09-14T08:45:01.009Z">
+<meta property="og:description" content="广寒宫送千里香，杳杳随风入梦凉。我欲因之凌霄起，嫦娥丹桂尽入囊。">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="从面向对象看JavaScript（四）—— 内存管理">
-<meta name="twitter:description" content="前言　　与java类似，JavaScript也有两种垃圾回收方式，分别是标记清除和引用计数。目前基本上都是使用标记清除的方式，引用计数存在循环引用的问题，实际中很少使用，但IE中的BOM和DOM对象却是用引用计数方式来做垃圾回收，非常容易造成内存泄漏。">
+<meta name="twitter:title" content="南国倾城">
+<meta name="twitter:description" content="广寒宫送千里香，杳杳随风入梦凉。我欲因之凌霄起，嫦娥丹桂尽入囊。">
 
 
 
@@ -132,9 +131,9 @@
 
 
 
-  <link rel="canonical" href="http://wjqwsp.github.io/2016/09/14/从面向对象看JavaScript（四）——-内存管理/"/>
+  <link rel="canonical" href="http://wjqwsp.github.io/tags/Linked-List/"/>
 
-  <title> 从面向对象看JavaScript（四）—— 内存管理 | 南国倾城 </title>
+  <title> 标签: Linked List | 南国倾城 </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -155,7 +154,7 @@
     
   
 
-  <div class="container one-collumn sidebar-position-left page-post-detail ">
+  <div class="container one-collumn sidebar-position-left  ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -256,166 +255,46 @@
           <div id="content" class="content">
             
 
-  <div id="posts" class="posts-expand">
-    
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <div id="posts" class="posts-collapse">
+    <div class="collection-title">
+      <h2 >
+        Linked List
+        <small>标签</small>
+      </h2>
+    </div>
 
     
-      <header class="post-header">
+      
 
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      <h1 class="post-title">
         
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
+            <a class="post-title-link" href="/2016/09/24/LeetCode-237-Delete-Node-in-a-LinkedList-题解/" itemprop="url">
               
-                从面向对象看JavaScript（四）—— 内存管理
+                <span itemprop="name">LeetCode 237 Delete Node in a LinkedList 题解</span>
               
-            
-          </h1>
+            </a>
         
+      </h1>
 
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-14T15:01:43+08:00" content="2016-09-14">
-              2016-09-14
-            </time>
-          </span>
+      <div class="post-meta">
+        <time class="post-time" itemprop="dateCreated"
+              datetime="2016-09-24T16:41:40+08:00"
+              content="2016-09-24" >
+          09-24
+        </time>
+      </div>
 
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/09/14/从面向对象看JavaScript（四）——-内存管理/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/14/从面向对象看JavaScript（四）——-内存管理/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-             <span id="/2016/09/14/从面向对象看JavaScript（四）——-内存管理/" class="leancloud_visitors" data-flag-title="从面向对象看JavaScript（四）—— 内存管理">
-               &nbsp; | &nbsp;
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　与java类似，JavaScript也有两种垃圾回收方式，分别是标记清除和引用计数。目前基本上都是使用标记清除的方式，引用计数存在循环引用的问题，实际中很少使用，但IE中的BOM和DOM对象却是用引用计数方式来做垃圾回收，非常容易造成内存泄漏。<br><a id="more"></a></p>
-<h3 id="标记清除"><a href="#标记清除" class="headerlink" title="标记清除"></a>标记清除</h3><p>　　垃圾回收器会给所有存储在内存中的变量都打上标记，然后去掉所有在执行环境中的变量，以及被环境中的变量所引用的变量的标记。剩下还有标记的变量就是垃圾回收器将会回收的变量。</p>
-<p>　　对比java中的标记清除策略，java会从堆栈和静态存储区开始，遍历所有引用，对每一个引用，再追踪它引用的每个对象，然后对每个对象再追踪它引用的下一层对象。如此层层深入，最终能遍历所有“活”的对象，其余对象则在下一次垃圾回收器工作时被回收。</p>
-<p>　　不难看出，这两种语言的标记清除策略是一回事。JavaScript执行环境中的变量就相当于java堆栈和静态存储区的变量。</p>
-<p>　　如果采用这种回收策略，我们基本不用担心内存泄漏的问题。因为只要函数作用域结束了，自然会退出执行环境。只要变量不在执行环境中，即便存在循环引用，也会被垃圾回收器回收。只有全局环境下的变量和函数在程序运行的整个周期都不会被回收，如果不用的话，需要手动设为null。另外，闭包由于会保留其上级函数的变量对象，使得垃圾回收器无法清除相关的变量和函数，因此会占用较多的内存，所以使用闭包时要注意。</p>
-<h3 id="引用计数"><a href="#引用计数" class="headerlink" title="引用计数"></a>引用计数</h3><p>　　对内存中的每一个对象都记录其引用数，只要其引用数为0，则会被垃圾回收。但是如果存在循环引用，则会造成内存泄漏：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">problem</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    <span class="keyword">var</span> objectA = <span class="keyword">new</span> <span class="built_in">Object</span>();</div><div class="line">    <span class="keyword">var</span> objectB = <span class="keyword">new</span> <span class="built_in">Object</span>();</div><div class="line">    objectA.someOtherObject = objectB;</div><div class="line">    objectB.anotherObject = objectA;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>　　我们记problem函数里定义的两个对象为对象A和对象B。如果调用problem函数，则在函数结束前，对象A和对象B的引用数均为2。在执行结束后，objectA和objectB这两个引用由于存在堆栈里，会马上被释放。但对象A仍然被对象B的anotherObject属性引用；对象B也仍然被对象A的someOtherObject属性引用。所以这两个对象将永远不会被释放。</p>
-<p>　　如果大量调用problem函数，那么将会导致大量内存不能被回收。</p>
-<p>　　值得开心的事，这种引用计数方式已经基本不被采用。但IE的BOM和DOM对象仍然是用这种策略来进行垃圾回收的。因此使用BOM和DOM对象时要加倍小心，防止循环引用的发生。下面看一个例子：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> element = <span class="built_in">document</span>.getElementById(<span class="string">"some_element"</span>);</div><div class="line"><span class="keyword">var</span> myObject = <span class="keyword">new</span> <span class="built_in">Object</span>();</div><div class="line">myObject.element = element;</div><div class="line">element.someObject = myObject;</div></pre></td></tr></table></figure>
-<p>　　element是DOM元素，它和myObject存在循环引用问题。在使用完毕DOM或BOM对象后，要记住将它们的引用设为null。</p>
-<h3 id="闭包的循环引用问题"><a href="#闭包的循环引用问题" class="headerlink" title="闭包的循环引用问题"></a>闭包的循环引用问题</h3><p>　　如果同时使用闭包和DOM或BOM对象，那么更加要留心循环引用的问题了。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">assignHandler</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    <span class="keyword">var</span> element = <span class="built_in">document</span>.getElementById(<span class="string">"someElement"</span>);</div><div class="line">    element.onclick = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">        alert(element.id);</div><div class="line">    &#125;；</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>　　元素的点击事件函数的内存属性[[scope]]指向的作用域链里保存了assignHandler的活动对象，该活动对象里存在element的引用。同时。element的onclick属性也引用了点击事件函数。不难看出，闭包的循环引用往往是由其作用域链产生的。</p>
-<p>　　我们可以这样修改代码：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">assignHandler</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    <span class="keyword">var</span> element = <span class="built_in">document</span>.getElementById(<span class="string">"someElement"</span>);</div><div class="line">    <span class="keyword">var</span> id = element.id;</div><div class="line">    element.onclick = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">        alert(id);</div><div class="line">    &#125;；</div><div class="line">    element = <span class="literal">null</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>　　谨记及时将DOM或BOM的引用手动设为null。</p>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>　　关于JavaScript的内存管理，只需要掌握两种垃圾回收策略即可。特别要注意闭包和DOM,BOM对象，注意循环引用。及时手动切断引用与DOM,BOM对象，全局环境下的对象的联系。</p>
-
-      
-    </div>
-
-    <div>
-      
-        
-
-      
-    </div>
-
-    <div>
-      
-        
-
-      
-    </div>
-
-    <footer class="post-footer">
-      
-        <div class="post-tags">
-          
-            <a href="/tags/JavaScript/" rel="tag">#JavaScript</a>
-          
-            <a href="/tags/前端/" rel="tag">#前端</a>
-          
-            <a href="/tags/闭包/" rel="tag">#闭包</a>
-          
-            <a href="/tags/内存管理/" rel="tag">#内存管理</a>
-          
-        </div>
-      
-
-      
-        <div class="post-nav">
-          <div class="post-nav-next post-nav-item">
-            
-              <a href="/2016/09/14/从面向对象看JavaScript（三—）——-属性权限管理/" rel="next" title="从面向对象看JavaScript（三）—— 属性权限管理">
-                <i class="fa fa-chevron-left"></i> 从面向对象看JavaScript（三）—— 属性权限管理
-              </a>
-            
-          </div>
-
-          <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2016/09/14/从面向对象看JavaScript（五）——-继承/" rel="prev" title="从面向对象看JavaScript（五）—— 继承">
-                从面向对象看JavaScript（五）—— 继承 <i class="fa fa-chevron-right"></i>
-              </a>
-            
-          </div>
-        </div>
-      
-
-      
-      
-    </footer>
+    </header>
   </article>
 
 
-
-    <div class="post-spread">
-      
-    </div>
+    
   </div>
+
+  
 
 
           </div>
@@ -423,14 +302,6 @@
 
 
           
-  <div class="comments" id="comments">
-    
-      <div class="ds-thread" data-thread-key="2016/09/14/从面向对象看JavaScript（四）——-内存管理/"
-           data-title="从面向对象看JavaScript（四）—— 内存管理" data-url="http://wjqwsp.github.io/2016/09/14/从面向对象看JavaScript（四）——-内存管理/">
-      </div>
-    
-  </div>
-
 
         </div>
         
@@ -450,17 +321,8 @@
       
 
       
-        <ul class="sidebar-nav motion-element">
-          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
-            文章目录
-          </li>
-          <li class="sidebar-nav-overview" data-target="site-overview">
-            站点概览
-          </li>
-        </ul>
-      
 
-      <section class="site-overview sidebar-panel ">
+      <section class="site-overview sidebar-panel  sidebar-panel-active ">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/uploads/avatar.jpg"
@@ -503,17 +365,6 @@
 
       </section>
 
-      
-        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
-          <div class="post-toc">
-            
-              
-            
-            
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#标记清除"><span class="nav-number">2.</span> <span class="nav-text">标记清除</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#引用计数"><span class="nav-number">3.</span> <span class="nav-text">引用计数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#闭包的循环引用问题"><span class="nav-number">4.</span> <span class="nav-text">闭包的循环引用问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
-            
-          </div>
-        </section>
       
 
     </div>
@@ -617,10 +468,6 @@
 
 
   
-  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
-<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
-
-
 
   
 
