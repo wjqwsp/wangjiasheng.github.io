@@ -86,7 +86,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="JavaScript,前端," />
+  <meta name="keywords" content="LeetCode,Linked List," />
 
 
 
@@ -102,16 +102,34 @@
 
 
 
-<meta name="description" content="继承的本质　　继承的初衷是复用。即已经有一个原始的类，希望在保留原始类的所有属性和方法的前提下，进行扩展或修改，以最大限度地降低开发成本。JavaScript实现继承，也是源自这个思想，即想办法让新的引用类型能够访问别的引用类型的所有属性和函数。">
+<meta name="description" content="题目　　Given a singly linked list, determine if it is a palindrome.
+　　Follow up:
+　　Could you do it in O(n) time and O(1) space?
+题意分析　　判断一个链表是否是回文链表。
+　　所谓回文，即从左往右和从右往左读都是一样的。例如：
+　　“abcdefgfedcba”
+　　1-&amp;gt;">
 <meta property="og:type" content="article">
-<meta property="og:title" content="从面向对象看JavaScript（五）—— 继承">
-<meta property="og:url" content="http://wjqwsp.github.io/2016/09/14/从面向对象看JavaScript（五）——-继承/index.html">
+<meta property="og:title" content="LeetCode 234 Palindrome Linked List 题解">
+<meta property="og:url" content="http://wjqwsp.github.io/2016/09/24/LeetCode-234-Palindrome-Linked-List-题解/index.html">
 <meta property="og:site_name" content="南国倾城">
-<meta property="og:description" content="继承的本质　　继承的初衷是复用。即已经有一个原始的类，希望在保留原始类的所有属性和方法的前提下，进行扩展或修改，以最大限度地降低开发成本。JavaScript实现继承，也是源自这个思想，即想办法让新的引用类型能够访问别的引用类型的所有属性和函数。">
-<meta property="og:updated_time" content="2016-09-14T14:44:04.149Z">
+<meta property="og:description" content="题目　　Given a singly linked list, determine if it is a palindrome.
+　　Follow up:
+　　Could you do it in O(n) time and O(1) space?
+题意分析　　判断一个链表是否是回文链表。
+　　所谓回文，即从左往右和从右往左读都是一样的。例如：
+　　“abcdefgfedcba”
+　　1-&amp;gt;">
+<meta property="og:updated_time" content="2016-09-24T12:05:39.821Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="从面向对象看JavaScript（五）—— 继承">
-<meta name="twitter:description" content="继承的本质　　继承的初衷是复用。即已经有一个原始的类，希望在保留原始类的所有属性和方法的前提下，进行扩展或修改，以最大限度地降低开发成本。JavaScript实现继承，也是源自这个思想，即想办法让新的引用类型能够访问别的引用类型的所有属性和函数。">
+<meta name="twitter:title" content="LeetCode 234 Palindrome Linked List 题解">
+<meta name="twitter:description" content="题目　　Given a singly linked list, determine if it is a palindrome.
+　　Follow up:
+　　Could you do it in O(n) time and O(1) space?
+题意分析　　判断一个链表是否是回文链表。
+　　所谓回文，即从左往右和从右往左读都是一样的。例如：
+　　“abcdefgfedcba”
+　　1-&amp;gt;">
 
 
 
@@ -132,9 +150,9 @@
 
 
 
-  <link rel="canonical" href="http://wjqwsp.github.io/2016/09/14/从面向对象看JavaScript（五）——-继承/"/>
+  <link rel="canonical" href="http://wjqwsp.github.io/2016/09/24/LeetCode-234-Palindrome-Linked-List-题解/"/>
 
-  <title> 从面向对象看JavaScript（五）—— 继承 | 南国倾城 </title>
+  <title> LeetCode 234 Palindrome Linked List 题解 | 南国倾城 </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -277,7 +295,7 @@
             
             
               
-                从面向对象看JavaScript（五）—— 继承
+                LeetCode 234 Palindrome Linked List 题解
               
             
           </h1>
@@ -289,8 +307,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-14T21:03:38+08:00" content="2016-09-14">
-              2016-09-14
+            <time itemprop="dateCreated" datetime="2016-09-24T17:00:13+08:00" content="2016-09-24">
+              2016-09-24
             </time>
           </span>
 
@@ -300,8 +318,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/2016/09/14/从面向对象看JavaScript（五）——-继承/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/14/从面向对象看JavaScript（五）——-继承/" itemprop="commentsCount"></span>
+                <a href="/2016/09/24/LeetCode-234-Palindrome-Linked-List-题解/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/24/LeetCode-234-Palindrome-Linked-List-题解/" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -311,7 +329,7 @@
 
           
           
-             <span id="/2016/09/14/从面向对象看JavaScript（五）——-继承/" class="leancloud_visitors" data-flag-title="从面向对象看JavaScript（五）—— 继承">
+             <span id="/2016/09/24/LeetCode-234-Palindrome-Linked-List-题解/" class="leancloud_visitors" data-flag-title="LeetCode 234 Palindrome Linked List 题解">
                &nbsp; | &nbsp;
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -333,19 +351,39 @@
       
 
       
-        <h3 id="继承的本质"><a href="#继承的本质" class="headerlink" title="继承的本质"></a>继承的本质</h3><p>　　继承的初衷是复用。即已经有一个原始的类，希望在保留原始类的所有属性和方法的前提下，进行扩展或修改，以最大限度地降低开发成本。JavaScript实现继承，也是源自这个思想，即想办法让新的引用类型能够访问别的引用类型的所有属性和函数。<br><a id="more"></a></p>
-<h3 id="原型链实现继承"><a href="#原型链实现继承" class="headerlink" title="原型链实现继承"></a>原型链实现继承</h3><p>　　回顾一下原型对象。原型对象与普通对象本质上没有任何区别，只是可以被对应实例对象的[[prototype]]指针指向，从而让所有实例对象都可以访问原型对象的属性和函数。而正是这一个特点，与继承的本质完全一致。换一个角度看，我们可以认为，实例对象继承了原型对象，所以可以访问它的所有属性和函数。</p>
-<p>　　所以，我们甚至可以说，对象与对象的原型关系，就是继承关系。</p>
-<p>　　那么，怎么让某一个新定义的引用类型继承另一个已经定义好的引用类型呢？很简单，只需要让他们建立原型关系。下面看一个例子：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">SuperType</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    <span class="keyword">this</span>.property = <span class="literal">true</span>;</div><div class="line">&#125;</div><div class="line">SuperType.prototype.getSuperValue = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">this</span>.property;</div><div class="line">&#125;;</div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">SubType</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    <span class="keyword">this</span>.subproperty = <span class="literal">false</span>;</div><div class="line">&#125;</div><div class="line">SubType.prototype = <span class="keyword">new</span> SuperType();</div><div class="line">SubType.prototype.getSubValue = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">this</span>.subproperty;</div><div class="line">&#125;;</div><div class="line"><span class="keyword">var</span> instance = <span class="keyword">new</span> SubType();</div><div class="line">alert(instance.getSuperValue());</div></pre></td></tr></table></figure>
-<p>　　当调用SubType构造函数以后，会创建一个SubType实例对象，它存有SubType原型对象的指针，该原型对象默认是一个不含属性和函数的空对象。现在我们手动修改SubType构造函数的prototype指针，让它指向一个创建好的SuperType实例对象，从而通过SubType构造函数创建的实例对象的原型对象都是一个SuperType的实例对象，因此所有SubType实例对象都可以访问同一个SuperType实例对象的实例属性和方法，以及SuperType实例对象的原型对象的属性和方法。SubType原型对象的原型，就是SuperType的原型。继承就是这样实现的。</p>
-<p>　　之前我们说过，所有引用类型都继承Object类型，JavaScript原生又是怎么实现这个继承关系的呢？跟上面的继承方式一样。在创建函数的时候，都会创建一个原型对象，这个原型对象初始是空白的，没有任何属性和函数，但是它却有[[prototype]]这个内部属性，指向同一个Object对象。所以，所有原型对象默认的原型都是Object。</p>
-<p>　　这种原型的原型，就构成了原型链。通过不断延伸原型链，我们便可以实现多重继承。只要能够沿着原型链找到的引用类型，都可以通过instanceof操作符返回true，从而判断对象的类型。</p>
-<h3 id="分离实例属性与原型属性"><a href="#分离实例属性与原型属性" class="headerlink" title="分离实例属性与原型属性"></a>分离实例属性与原型属性</h3><p>　　继承实际上是让原型对象的[[prototype]]指向下一个原型对象。回到前面几讲，我们希望让所有公共的属性与函数，都放在原型上，让所有各不相同的属性都定义在实例上。在进行原型链的构造时，为了满足这个需求，我们需要对实例属性和原型属性进行分离。下面给出继承的一般方式：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">object</span>(<span class="params">o</span>)</span>&#123;</div><div class="line">    <span class="function"><span class="keyword">function</span> <span class="title">F</span>(<span class="params"></span>)</span>&#123;&#125;</div><div class="line">    F.prototype = o;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">new</span> F();</div><div class="line">&#125;</div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">inheritPrototype</span>(<span class="params">subType,superType</span>)</span>&#123;</div><div class="line">    <span class="keyword">var</span> prototype  = object(superType.prototype);</div><div class="line">    prototype.constructor = subType;</div><div class="line">    subType.prototype = prototype;</div><div class="line">&#125;</div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">SuperType</span>(<span class="params">name</span>)</span>&#123;</div><div class="line">    <span class="keyword">this</span>.name = name;</div><div class="line">    <span class="keyword">this</span>.color = [<span class="string">"red"</span>,<span class="string">"blue"</span>,<span class="string">"green"</span>];</div><div class="line">&#125;</div><div class="line">SuperType.prototype.sayName = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    alert(<span class="keyword">this</span>.name);</div><div class="line">&#125;</div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">SubType</span>(<span class="params">name,age</span>)</span>&#123;</div><div class="line">    SuperType.call(<span class="keyword">this</span>,name);</div><div class="line">    <span class="keyword">this</span>.age = age;</div><div class="line">&#125;</div><div class="line">inheritPrototype(SubType,SuperType);</div><div class="line">SubType.prototype.sayAge = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    alert(<span class="keyword">this</span>.age);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>　　我们构造一个对象让它继承SuperType.prototype,然后让这个对象作为SubType的原型，从而构造了一条原型链。而让原来在SuperType实例上定义的所有属性都定义在SubType的实例上，而方法则全部定义在原型上，从而实现了实例属性与原型属性的分离。</p>
-<h3 id="再看垃圾回收机制的标志清除策略"><a href="#再看垃圾回收机制的标志清除策略" class="headerlink" title="再看垃圾回收机制的标志清除策略"></a>再看垃圾回收机制的标志清除策略</h3><p>　　我们介绍了两条链，一条作用域链，一条原型链。回顾标志清除策略，其实搜索对象就是分别沿着这两条链寻找。通过作用域链，找到执行环境中的所有变量与函数。而通过原型链，则找到执行环境中的变量引用的所有变量与函数。</p>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>　　实现继承，关键在于让被继承的引用类型的原型对象插入到原型链中。继承关系，实质上就是一个原型对象到另一个原型对象通过[[prototype]]指针的连接关系。</p>
+        <h3 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h3><p>　　Given a singly linked list, determine if it is a palindrome.</p>
+<p>　　Follow up:</p>
+<p>　　Could you do it in O(n) time and O(1) space?</p>
+<h3 id="题意分析"><a href="#题意分析" class="headerlink" title="题意分析"></a>题意分析</h3><p>　　判断一个链表是否是回文链表。</p>
+<p>　　所谓回文，即从左往右和从右往左读都是一样的。例如：</p>
+<p>　　“abcdefgfedcba”</p>
+<p>　　1-&gt;2-&gt;3-&gt;3-&gt;2-&gt;1</p>
+<p>　　我们现在要做的，就是判断给定的链表是否满足这个特性。</p>
+<p>　　这题还有一个难点，就是时间复杂度与空间复杂度的限制。特别是空间复杂度限制太严格了。<br><a id="more"></a></p>
+<h3 id="思路与代码"><a href="#思路与代码" class="headerlink" title="思路与代码"></a>思路与代码</h3><h4 id="递归"><a href="#递归" class="headerlink" title="递归"></a>递归</h4><p>　　这题我第一反应是开辟一个数组，把链表倒着存进去，然后逐一和原链表的的值比对，看是否都一致。但这种思路需要的空间复杂度是o(n)。</p>
+<p>　　因此，我就想怎么能节省空间复杂度呢？就想到用递归。其实递归有点作弊的意思，因为虽然局部变量的空间复杂度只有o(1)，但程序运行时的函数调用栈需要消耗的栈空间是o(n)，这与直接在局部变量定义一个栈来做是一样的，只是会逃过空间复杂度的检查。</p>
+<p>　　下面是递归的思路：</p>
+<ol>
+<li>求链表的中点。</li>
+<li>递归的终止条件是到达链表的中点返回，如果没有到达中点则继续寻找下一个结点。</li>
+<li>假设有链表：n1-&gt;n2-&gt;n3…-&gt;nk-&gt;nl…-&gt;nm-&gt;nn…-&gt;ny-&gt;nz。假如链表nl…nm是回文的，那么nk到nn回文当且仅当nk.val == nn.val。</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> length = <span class="number">0</span>;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> mid = <span class="number">0</span>;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isPalindrome</span><span class="params">(ListNode head)</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span>(head == <span class="keyword">null</span>)&#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">int</span> length = <span class="number">0</span>;</div><div class="line">        ListNode temp = head;</div><div class="line">        <span class="keyword">while</span>(temp != <span class="keyword">null</span>)&#123;</div><div class="line">            length++;</div><div class="line">            temp = temp.next;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">int</span> mid = (length+<span class="number">1</span>) / <span class="number">2</span>;</div><div class="line">        <span class="keyword">this</span>.length = length;</div><div class="line">        <span class="keyword">this</span>.mid = mid;</div><div class="line">        ListNode result = isEqual(head,<span class="number">1</span>);</div><div class="line">        <span class="keyword">if</span>(result != <span class="keyword">null</span>)&#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">        &#125;<span class="keyword">else</span>&#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">private</span> ListNode <span class="title">isEqual</span><span class="params">(ListNode node,<span class="keyword">int</span> index)</span></span>&#123;</div><div class="line">        <span class="keyword">if</span>(mid == index &amp;&amp; length % <span class="number">2</span> == <span class="number">1</span>)&#123;</div><div class="line">             <span class="keyword">if</span>(node.next != <span class="keyword">null</span>)&#123;</div><div class="line">                <span class="keyword">return</span> node.next;</div><div class="line">            &#125;<span class="keyword">else</span>&#123;</div><div class="line">                <span class="keyword">return</span> node;</div><div class="line">            &#125;</div><div class="line">        &#125;<span class="keyword">else</span> <span class="keyword">if</span>(mid == index &amp;&amp; length % <span class="number">2</span> == <span class="number">0</span>)&#123;</div><div class="line">                <span class="keyword">if</span>(node.val == node.next.val)&#123;</div><div class="line">                    <span class="keyword">if</span>(node.next.next != <span class="keyword">null</span>)&#123;</div><div class="line">                        <span class="keyword">return</span> node.next.next;</div><div class="line">                    &#125;<span class="keyword">else</span>&#123;</div><div class="line">                        <span class="keyword">return</span> node.next;</div><div class="line">                    &#125;</div><div class="line">                &#125;<span class="keyword">else</span>&#123;</div><div class="line">                    <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">                &#125;</div><div class="line">        &#125;<span class="keyword">else</span>&#123;</div><div class="line">            ListNode result = isEqual(node.next,(index+<span class="number">1</span>));</div><div class="line">            <span class="keyword">if</span>(result == <span class="keyword">null</span>)&#123;</div><div class="line">                <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">            &#125;<span class="keyword">else</span> <span class="keyword">if</span>(node.val == result.val)&#123;</div><div class="line">                <span class="keyword">if</span>(result.next != <span class="keyword">null</span>)&#123;</div><div class="line">                    <span class="keyword">return</span> result.next;</div><div class="line">                &#125;<span class="keyword">else</span>&#123;</div><div class="line">                    <span class="keyword">return</span> result;</div><div class="line">                &#125;</div><div class="line">            &#125;<span class="keyword">else</span>&#123;</div><div class="line">                <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　这里找中点直接用了遍历这个链表的方法。在递归算法里，如果子链表是回文的，则返回子链表最后一个结点的引用。子链表返回的引用的下一个结点就是父链表的最后一个结点。此时判断父链表的第一个结点与最后一个结点的值是否相等就可以判断父链表是否是回文的了。</p>
+<h4 id="解法二"><a href="#解法二" class="headerlink" title="解法二"></a>解法二</h4><p>　　这个解法我觉得比递归的好很多，是网上比较权威的一个解法，这里记录一下。</p>
+<p>　　单链表最令人郁闷的，就是只能引用下一个结点，不能引用上一个结点，遍历路径是单向的。但很多时候，我们希望遍历的顺序往往是反着的。像这题这个判断回文，如果能反着遍历链表，就很容易判断了。于是，很自然的，我们就想着能不能将链表逆转。后面的逆转链表算法，十分经典，非常值得借鉴。</p>
+<p>　　解法步骤：</p>
+<ol>
+<li>获得链表中点的结点。</li>
+<li>将后半段链表逆转。</li>
+<li>分别遍历前半段和后半段链表，逐个比较每个结点的值，如果全部相等，则是回文的；有一个不相等，则不是回文的。</li>
+</ol>
+<p>　　其中寻找中点的算法，是判断链表是否有环算法的变形，用到了快慢指针，也非常经典。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * Definition for singly-linked list.</div><div class="line"> * public class ListNode &#123;</div><div class="line"> *     int val;</div><div class="line"> *     ListNode next;</div><div class="line"> *     ListNode(int x) &#123; val = x; &#125;</div><div class="line"> * &#125;</div><div class="line"> */</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isPalindrome</span><span class="params">(ListNode head)</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span>(head == <span class="keyword">null</span>)&#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">        &#125;</div><div class="line">        ListNode mid = findMiddle(head);</div><div class="line">        mid.next = revert(mid.next);</div><div class="line">        ListNode p1 = head;</div><div class="line">        ListNode p2 = mid.next;</div><div class="line">        <span class="keyword">while</span>(p2 != <span class="keyword">null</span> &amp;&amp; p1.val == p2.val)&#123;</div><div class="line">            p1 = p1.next;</div><div class="line">            p2 = p2.next;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> p2 == <span class="keyword">null</span>;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">private</span> ListNode <span class="title">findMiddle</span><span class="params">(ListNode head)</span></span>&#123;</div><div class="line">        ListNode slow = head;</div><div class="line">        ListNode fast = head.next;</div><div class="line">        <span class="keyword">while</span>(fast != <span class="keyword">null</span> &amp;&amp; fast.next != <span class="keyword">null</span>)&#123;</div><div class="line">            slow = slow.next;</div><div class="line">            fast = fast.next.next;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> slow;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">private</span> ListNode <span class="title">revert</span><span class="params">(ListNode head)</span></span>&#123;</div><div class="line">        ListNode prev = <span class="keyword">null</span>;</div><div class="line">        <span class="keyword">while</span>(head != <span class="keyword">null</span>)&#123;</div><div class="line">            ListNode temp = head.next;</div><div class="line">            head.next = prev;</div><div class="line">            prev = head;</div><div class="line">            head = temp;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> prev;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　找单链表中点算法，主要是设置了一个慢指针，一个快指针。慢指针每次循环前进一步，快指针则前进两步。不难看出，在整个循环过程中，快指针的位置始终是慢指针的两倍，那么当快指针将要跑出链表时，慢指针则刚好在中点位置。</p>
+<p>　　逆转链表算法就非常简单了，只是单纯的遍历。维护前后两个链表，每次循环把后链表的一个结点给前链表，前链表是已经逆转的链表，后链表则还保持原来的顺序。当遍历到最后一个结点时，则整个链表都被逆转了。</p>
+<p>　　
+　　</p>
 <p>　　</p>
 
       
@@ -369,9 +407,9 @@
       
         <div class="post-tags">
           
-            <a href="/tags/JavaScript/" rel="tag">#JavaScript</a>
+            <a href="/tags/LeetCode/" rel="tag">#LeetCode</a>
           
-            <a href="/tags/前端/" rel="tag">#前端</a>
+            <a href="/tags/Linked-List/" rel="tag">#Linked List</a>
           
         </div>
       
@@ -380,17 +418,13 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2016/09/14/从面向对象看JavaScript（四）——-内存管理/" rel="next" title="从面向对象看JavaScript（四）—— 内存管理">
-                <i class="fa fa-chevron-left"></i> 从面向对象看JavaScript（四）—— 内存管理
+              <a href="/2016/09/24/LeetCode-237-Delete-Node-in-a-LinkedList-题解/" rel="next" title="LeetCode 237 Delete Node in a LinkedList 题解">
+                <i class="fa fa-chevron-left"></i> LeetCode 237 Delete Node in a LinkedList 题解
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2016/09/22/Java异常处理总结/" rel="prev" title="Java异常处理总结">
-                Java异常处理总结 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -416,8 +450,8 @@
           
   <div class="comments" id="comments">
     
-      <div class="ds-thread" data-thread-key="2016/09/14/从面向对象看JavaScript（五）——-继承/"
-           data-title="从面向对象看JavaScript（五）—— 继承" data-url="http://wjqwsp.github.io/2016/09/14/从面向对象看JavaScript（五）——-继承/">
+      <div class="ds-thread" data-thread-key="2016/09/24/LeetCode-234-Palindrome-Linked-List-题解/"
+           data-title="LeetCode 234 Palindrome Linked List 题解" data-url="http://wjqwsp.github.io/2016/09/24/LeetCode-234-Palindrome-Linked-List-题解/">
       </div>
     
   </div>
@@ -501,7 +535,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#继承的本质"><span class="nav-number">1.</span> <span class="nav-text">继承的本质</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#原型链实现继承"><span class="nav-number">2.</span> <span class="nav-text">原型链实现继承</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分离实例属性与原型属性"><span class="nav-number">3.</span> <span class="nav-text">分离实例属性与原型属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#再看垃圾回收机制的标志清除策略"><span class="nav-number">4.</span> <span class="nav-text">再看垃圾回收机制的标志清除策略</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#题目"><span class="nav-number">1.</span> <span class="nav-text">题目</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#题意分析"><span class="nav-number">2.</span> <span class="nav-text">题意分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#思路与代码"><span class="nav-number">3.</span> <span class="nav-text">思路与代码</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#递归"><span class="nav-number">3.1.</span> <span class="nav-text">递归</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#解法二"><span class="nav-number">3.2.</span> <span class="nav-text">解法二</span></a></li></ol></li></ol></div>
             
           </div>
         </section>
