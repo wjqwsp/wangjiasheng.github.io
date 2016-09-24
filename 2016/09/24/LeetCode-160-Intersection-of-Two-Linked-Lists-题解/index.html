@@ -116,7 +116,7 @@ The linked lists must reta">
 
 If the two linked lists have no intersection at all, return null.
 The linked lists must reta">
-<meta property="og:updated_time" content="2016-09-24T14:22:48.222Z">
+<meta property="og:updated_time" content="2016-09-24T14:34:32.588Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="LeetCode 160 Intersection of Two Linked Lists 题解">
 <meta name="twitter:description" content="题目　　Write a program to find the node at which the intersection of two singly linked lists begins.
@@ -351,7 +351,8 @@ The linked lists must reta">
 <li>If the two linked lists have no intersection at all, return null.</li>
 <li>The linked lists must retain their original structure after the function returns.</li>
 <li>You may assume there are no cycles anywhere in the entire linked structure.</li>
-<li>Your code should preferably run in O(n) time and use only O(1) memory.</li>
+<li>Your code should preferably run in O(n) time and use only O(1) memory.<a id="more"></a>
+</li>
 </ul>
 <h3 id="解法一"><a href="#解法一" class="headerlink" title="解法一"></a>解法一</h3><h4 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h4><p>　　由于两个链表在尾部可能存在相同的部分，如果将其中一条链表的尾部连到另一条链表的头部，那么就可以构造一个环。题目就转化为求环的入口结点。下面先对环的几个概念作出分析。</p>
 <h5 id="单链表是否存在环？"><a href="#单链表是否存在环？" class="headerlink" title="单链表是否存在环？"></a>单链表是否存在环？</h5><p>　　解答这个问题，只需要设置快慢指针即可。慢指针一次走一步，快指针一次走两步。如果存在环，那么快指针终会赶上慢指针。设想一下，假如快指针追到慢指针身后一步，那么慢指针走一步，快指针走两步后，下一次就会相遇。如果快指针落后慢指针两步或者三步，再多走一次或两次两者就会达到只差一步的情况。所以两个指针终将相遇。</p>
