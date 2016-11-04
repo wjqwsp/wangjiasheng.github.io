@@ -4,7 +4,7 @@
   
     
     <entry>
-      <title><![CDATA[Gitlab扩展环境配置流程]]></title>
+      <title><![CDATA[Gitlab扩展--开发，打包，部署配置指南及注意事项]]></title>
       <url>http://wjqwsp.github.io/2016/11/02/Gitlab%E6%89%A9%E5%B1%95%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E6%B5%81%E7%A8%8B/</url>
       <content type="html"><![CDATA[<h3 id="Gitlab扩展"><a href="#Gitlab扩展" class="headerlink" title="Gitlab扩展"></a>Gitlab扩展</h3><p>　　Gitlab扩展即对官方的Gitlab源代码进行二次开发，在原有Gitlab的基础上定制属于自己的项目与代码管理的工具。Gitlab是开源项目，其源代码在官网上可以查阅，我们一般使用的是免费的Gitlab社区版，即Gitlab-CE。下面将从开发，打包，部署三个部分谈谈从源代码到部署成自己的应用是一个怎么样的流程，整个环境的搭建需要注意些什么。<br><a id="more"></a></p>
 <h3 id="开发"><a href="#开发" class="headerlink" title="开发"></a>开发</h3><p>　　一般来说只要把Gitlab-CE的代码仓库clone到本地，就可以在上面修改代码了。这个是Gitlab-CE的地址：<a href="https://gitlab.com/gitlab-org/gitlab-ce/" target="_blank" rel="external">https://gitlab.com/gitlab-org/gitlab-ce/</a> 。但是，只有源代码是不能够直接在本地上跑起来的，整个开发环境还需要安装很多依赖，以及配置数据库。Gitlab为了方便开发者，提供了一个Gitlab开发工具Gitlab-Development-Kit，其地址是：<a href="https://gitlab.com/gitlab-org/gitlab-development-kit" target="_blank" rel="external">https://gitlab.com/gitlab-org/gitlab-development-kit</a> 。Gitlab-Development-Kit可以帮助开发者很方便地在本地搭建起开发环境，并且把Gitlab跑起来。它本身就有很详细的文档教你怎么使用，下面我就简单概括一下怎么利用Gitlab-Development-Kit搭建开发环境。</p>
