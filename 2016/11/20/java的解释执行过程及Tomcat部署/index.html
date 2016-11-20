@@ -90,7 +90,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="Java,Tomcat," />
 
 
 
@@ -106,15 +106,16 @@
 
 
 
-<meta name="description" content="广寒宫送千里香，杳杳随风入梦凉。我欲因之凌霄起，嫦娥丹桂尽入囊。">
-<meta property="og:type" content="website">
-<meta property="og:title" content="南国倾城">
-<meta property="og:url" content="http://wjqwsp.github.io/tags/前端/index.html">
+<meta name="description" content="前言　　最近做Gitlab CI的自动测试方面的工作，用简单的Java工程来做测试，在学习Gitlab CI和Docker的过程中又回顾了一下Java的编译，解释，执行的过程。以前做Java的项目多是借助IDE，有种感觉就是离开IDE就不会做Java开发了。这次因为Docker自动测试无法使用IDE，被迫回顾了一下如何用命令行去运行Java程序，以及如何部署在Tomcat上，挺有意义的。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java的解释执行过程及Tomcat部署">
+<meta property="og:url" content="http://wjqwsp.github.io/2016/11/20/java的解释执行过程及Tomcat部署/index.html">
 <meta property="og:site_name" content="南国倾城">
-<meta property="og:description" content="广寒宫送千里香，杳杳随风入梦凉。我欲因之凌霄起，嫦娥丹桂尽入囊。">
+<meta property="og:description" content="前言　　最近做Gitlab CI的自动测试方面的工作，用简单的Java工程来做测试，在学习Gitlab CI和Docker的过程中又回顾了一下Java的编译，解释，执行的过程。以前做Java的项目多是借助IDE，有种感觉就是离开IDE就不会做Java开发了。这次因为Docker自动测试无法使用IDE，被迫回顾了一下如何用命令行去运行Java程序，以及如何部署在Tomcat上，挺有意义的。">
+<meta property="og:updated_time" content="2016-11-20T12:52:04.038Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="南国倾城">
-<meta name="twitter:description" content="广寒宫送千里香，杳杳随风入梦凉。我欲因之凌霄起，嫦娥丹桂尽入囊。">
+<meta name="twitter:title" content="java的解释执行过程及Tomcat部署">
+<meta name="twitter:description" content="前言　　最近做Gitlab CI的自动测试方面的工作，用简单的Java工程来做测试，在学习Gitlab CI和Docker的过程中又回顾了一下Java的编译，解释，执行的过程。以前做Java的项目多是借助IDE，有种感觉就是离开IDE就不会做Java开发了。这次因为Docker自动测试无法使用IDE，被迫回顾了一下如何用命令行去运行Java程序，以及如何部署在Tomcat上，挺有意义的。">
 
 
 
@@ -135,9 +136,9 @@
 
 
 
-  <link rel="canonical" href="http://wjqwsp.github.io/tags/前端/"/>
+  <link rel="canonical" href="http://wjqwsp.github.io/2016/11/20/java的解释执行过程及Tomcat部署/"/>
 
-  <title> 标签: 前端 | 南国倾城 </title>
+  <title> java的解释执行过程及Tomcat部署 | 南国倾城 </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -158,7 +159,7 @@
     
   
 
-  <div class="container one-collumn sidebar-position-left  ">
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -259,158 +260,161 @@
           <div id="content" class="content">
             
 
-  <div id="posts" class="posts-collapse">
-    <div class="collection-title">
-      <h2 >
-        前端
-        <small>标签</small>
-      </h2>
-    </div>
-
+  <div id="posts" class="posts-expand">
     
-      
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h1 class="post-title">
-        
-            <a class="post-title-link" href="/2016/09/14/从面向对象看JavaScript（五）——-继承/" itemprop="url">
-              
-                <span itemprop="name">从面向对象看JavaScript（五）—— 继承</span>
-              
-            </a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2016-09-14T21:03:38+08:00"
-              content="2016-09-14" >
-          09-14
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-    
-      
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h1 class="post-title">
-        
-            <a class="post-title-link" href="/2016/09/14/从面向对象看JavaScript（四）——-内存管理/" itemprop="url">
-              
-                <span itemprop="name">从面向对象看JavaScript（四）—— 内存管理</span>
-              
-            </a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2016-09-14T15:01:43+08:00"
-              content="2016-09-14" >
-          09-14
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-    
-      
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h1 class="post-title">
-        
-            <a class="post-title-link" href="/2016/09/14/从面向对象看JavaScript（三—）——-属性权限管理/" itemprop="url">
-              
-                <span itemprop="name">从面向对象看JavaScript（三）—— 属性权限管理</span>
-              
-            </a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2016-09-14T13:42:10+08:00"
-              content="2016-09-14" >
-          09-14
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-    
-      
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h1 class="post-title">
-        
-            <a class="post-title-link" href="/2016/09/13/从面向对象看JavaScript（二）/" itemprop="url">
-              
-                <span itemprop="name">从面向对象看JavaScript（二）</span>
-              
-            </a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2016-09-13T20:44:34+08:00"
-              content="2016-09-13" >
-          09-13
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-    
-      
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h1 class="post-title">
-        
-            <a class="post-title-link" href="/2016/09/13/从面向对象看JavaScript（一））/" itemprop="url">
-              
-                <span itemprop="name">从面向对象看JavaScript（一）</span>
-              
-            </a>
-        
-      </h1>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2016-09-13T11:15:38+08:00"
-              content="2016-09-13" >
-          09-13
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-    
-  </div>
 
   
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                java的解释执行过程及Tomcat部署
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-11-20T19:38:47+08:00" content="2016-11-20">
+              2016-11-20
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/11/20/java的解释执行过程及Tomcat部署/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/11/20/java的解释执行过程及Tomcat部署/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/11/20/java的解释执行过程及Tomcat部署/" class="leancloud_visitors" data-flag-title="java的解释执行过程及Tomcat部署">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　最近做Gitlab CI的自动测试方面的工作，用简单的Java工程来做测试，在学习Gitlab CI和Docker的过程中又回顾了一下Java的编译，解释，执行的过程。以前做Java的项目多是借助IDE，有种感觉就是离开IDE就不会做Java开发了。这次因为Docker自动测试无法使用IDE，被迫回顾了一下如何用命令行去运行Java程序，以及如何部署在Tomcat上，挺有意义的。<br><a id="more"></a></p>
+<h3 id="编译成-class文件"><a href="#编译成-class文件" class="headerlink" title="编译成.class文件"></a>编译成.class文件</h3><p>　　严格来说Java不算纯粹的解释性语言，我觉得是介乎编译与解释性语言的一种。因为它在解释执行之前需要先编译成字节码。这种字节码就是.class文件。我们平常写的源代码都是.java文件，要执行它们，首先得编译成.class文件。</p>
+<p>　　编译成字节码很简单，只需用javac指令。看下面这个例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">javac -d classes -cp &quot;web/WEB-INF/lib/*:classes&quot; src/weibo/servlet/*</div></pre></td></tr></table></figure>
+<p>　　这行指令最核心的就是第一个词javac以及最后一个目录结构src/weibo/servlet/*。javac是编译成字节码的程序，最后面的目录结构下的文件就是待编译的.java文件。上例就是要把src/weibo/servlet/目录下的所有文件编译成字节码。我们还注意到，除了javac以及目标.java文件以外，中间还有一些参数。这些参数主要是用于提供.java文件里import的其他java类。</p>
+<p>　　如果待编译的.java文件没有额外引用其他类，或者引用的只是java核心包里的类，中间的这些参数可以统统省掉。但如果用到其他类，则必须提供这些类的.class文件或者所属的jar包。jar包实际上是把一些.class文件打包成一个文件。</p>
+<p>　　因此编译成.class文件也是有先后顺序的，必须先把待编译的类引入的其他类编译好。</p>
+<p>　　我们来看一看中间的这些参数。-d后面跟的目录便是我们希望的编译好的.class文件存放的地方。-cp后面跟的参数指定classpath，即引入的.class文件或jar包的目录。如果有多个目录，则在linux系统下用:分隔，windows系统下用;分隔。</p>
+<h3 id="解释执行-class文件"><a href="#解释执行-class文件" class="headerlink" title="解释执行.class文件"></a>解释执行.class文件</h3><p>　　很多人认为Java是解释性语言，就是因为它是在运行时边执行边用java虚拟机解释.class文件的字节码。多次运行同一段代码则需要多次解释，不像编译性语言一样预先编译成机器语言。解释执行.class文件只需用java指令。看下面的例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">java -cp &quot;classes:web/WEB-INF/lib/*&quot; org.junit.runner.JUnitCore weibo.servlet.SignUpAndLoginTest</div></pre></td></tr></table></figure>
+<p>　　上例的意思是我们要用org.junit.runner.JunitCore这个类对weibo.servlet.SignUpAndLoginTest这个类进行单元测试。没有接触过单元测试的只需简单地理解为我们需要执行org.junit.runner.JunitCore这个类，同时需要传入参数，这个参数是weibo.servlet.SignUpAndLoginTest这个类。如果这些类的.class文件不在当前目录下，则需要用-cp指定它们所在的classpath。我们指定类必须完整写出package结构，package结构与目录结构是等同的，上例相当于我们要找的类分别是classes/weibo/servlet/SignUpAndLoginTest和web/WEB-INF/lib/junit-4.11.jar里的org/junit/runner/JunitCore。package目录结构必须与.class存放的目录结构一致。</p>
+<h3 id="打成jar包"><a href="#打成jar包" class="headerlink" title="打成jar包"></a>打成jar包</h3><p>　　有时候我们需要将编译好的.class文件打包，便于迁移，管理与部署。打包很简单，用jar指令即可。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">jar -cvfe ../binaries/Server.jar buptchat.server.Server buptchat/server/*</div></pre></td></tr></table></figure>
+<p>　　我们先指定打出来的包要放在哪个目录下，以及叫什么名字，上例则是存放在../binaries里的Server.jar。-e指令指定入口类，即运行jar包时执行的main方法所在的类，上例是bupt.server.Server，最后一个参数是指定那些文件需要被打包。</p>
+<h3 id="Tomcat部署"><a href="#Tomcat部署" class="headerlink" title="Tomcat部署"></a>Tomcat部署</h3><p>　　Tomcat是一个java web container，核心功能是用于处理jsp以及servlet，以及内置了http服务器，拥有处理http请求和回应的功能。</p>
+<h4 id="打成war包"><a href="#打成war包" class="headerlink" title="打成war包"></a>打成war包</h4><p>　　将开发好的java web程序部署在Tomcat上，最简单的方法是将其打成war包，然后扔在tomcat的webapps目录下，tomcat启动时候会自动将其解压，便可以访问里面的jsp和servlet了。</p>
+<p>　　war包是有一定网络扩展功能的jar包。打成war包非常简单，与打jar包一样，都是用jar指令。如下例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">jar -cvf weibo.war *</div></pre></td></tr></table></figure>
+<p>　　将当前目录及其子目录的所有文件打成weibo.war这个包，并存放在当前目录下。</p>
+<h3 id="war包内的目录结构"><a href="#war包内的目录结构" class="headerlink" title="war包内的目录结构"></a>war包内的目录结构</h3><p>　　工程目录必须满足一定的目录结构。根目录一般放jsp和一些资源文件，例如css和javascript文件。也可以把jsp文件放在某个目录内。根目录下有一个固定的WEB-INF目录，里面有web.xml文件，主要是首页和servlet以及filter的一些映射配置。</p>
+<p>　　一般我们还需要在WEB-INF目录下建两个文件夹，分别是lib和classes，存放服务器要用到的java字节码。lib放jar包，classes放编译好的.class文件。</p>
+<p>　　只要满足这个目录结构，Tomcat便知道怎么用我们这个工程了。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Java/" rel="tag">#Java</a>
+          
+            <a href="/tags/Tomcat/" rel="tag">#Tomcat</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/11/02/Gitlab扩展环境配置流程/" rel="next" title="Gitlab扩展--开发，打包，部署配置指南及注意事项">
+                <i class="fa fa-chevron-left"></i> Gitlab扩展--开发，打包，部署配置指南及注意事项
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -418,6 +422,14 @@
 
 
           
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/11/20/java的解释执行过程及Tomcat部署/"
+           data-title="java的解释执行过程及Tomcat部署" data-url="http://wjqwsp.github.io/2016/11/20/java的解释执行过程及Tomcat部署/">
+      </div>
+    
+  </div>
+
 
         </div>
         
@@ -437,8 +449,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel  sidebar-panel-active ">
+      <section class="site-overview sidebar-panel ">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/uploads/avatar.jpg"
@@ -481,6 +502,17 @@
 
       </section>
 
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#编译成-class文件"><span class="nav-number">2.</span> <span class="nav-text">编译成.class文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解释执行-class文件"><span class="nav-number">3.</span> <span class="nav-text">解释执行.class文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#打成jar包"><span class="nav-number">4.</span> <span class="nav-text">打成jar包</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Tomcat部署"><span class="nav-number">5.</span> <span class="nav-text">Tomcat部署</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#打成war包"><span class="nav-number">5.1.</span> <span class="nav-text">打成war包</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#war包内的目录结构"><span class="nav-number">6.</span> <span class="nav-text">war包内的目录结构</span></a></li></ol></div>
+            
+          </div>
+        </section>
       
 
     </div>
@@ -584,6 +616,10 @@
 
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
 
   
 
