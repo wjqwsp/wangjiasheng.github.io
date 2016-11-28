@@ -4,6 +4,45 @@
   
     
     <entry>
+      <title><![CDATA[简析Docker的存储策略与网桥通信机制]]></title>
+      <url>http://wjqwsp.github.io/2016/11/28/%E7%AE%80%E6%9E%90Docker%E7%9A%84%E5%AD%98%E5%82%A8%E7%AD%96%E7%95%A5%E4%B8%8E%E7%BD%91%E6%A1%A5%E9%80%9A%E4%BF%A1%E6%9C%BA%E5%88%B6/</url>
+      <content type="html"><![CDATA[<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　Docker作为容器是越来越被广泛使用了，里面的知识也比较庞杂，但关于Docker Engine最核心的就是存储和网络了。这篇文章主要围绕这两个方面，做一些简单的总结。<br><a id="more"></a></p>
+<h3 id="Docker解决了什么"><a href="#Docker解决了什么" class="headerlink" title="Docker解决了什么"></a>Docker解决了什么</h3><p>　　做开发的时候，配环境总是最头疼的。需要安装各种程序，各种库，同时还要注意不让不同的应用之间互相影响，例如文件覆盖，配置信息冲突等等。我们需要的是让某个特定方向的开发环境或部署环境单独运行在一个独立的环境里，最奢侈的情况就是一台机器只跑一个应用。例如某Java Web应用的开发环境，或者某Ruby应用的部署环境，等等，统统放在不同的实体机里。</p>
+<p>　　在实际生产环境中我们也许是可以这么干的，但如果我们的产品还在测试阶段呢？虚拟机或许是一种解决办法。但一个虚拟机跑一个应用总觉得这个系统太重了，资源有点浪费。于是，我们开始寻求一种轻量级的隔离机制，Docker便应运而生了。</p>
+<p>　　Docker作为轻量级的容器，能够把一个个安装有特定库和依赖，运行特定应用的环境相互隔离，同时相比虚拟机能更充分地使用硬件资源，在许多场合里往往是不二法门。</p>
+<h3 id="存储策略"><a href="#存储策略" class="headerlink" title="存储策略"></a>存储策略</h3><h4 id="镜像"><a href="#镜像" class="headerlink" title="镜像"></a>镜像</h4><p>　　Docker的存储内容非常多，这篇文章涉及的只是很少的一部分，但都比较核心和重要。为了讲清楚这一套概念，我们得先从镜像谈起。</p>
+<p>　　Docker里的镜像与我们安装系统的镜像，或者虚拟机的镜像类似。我们可以根据这个镜像，安装或者恢复出整个操作系统。不一样的是，Docker的镜像不只是操作系统镜像。我们可以在某操作系统的基础上安装某些库或者应用程序，然后再创建出一个特定的镜像。例如java镜像（安装了Java虚拟机），tomcat镜像（安装了Java虚拟机和Tomcat），postgres镜像（安装了postgres数据库及其各种依赖）等等。</p>
+<p>　　Docker官方制作了一批镜像，同时很多软件公司或者互联网公司都发布了很多官方镜像，任何注册了的开发者也都可以制作自己的镜像。这些镜像都放在Docker Hub里，我们可以在上面挑选我们需要的镜像作为我们容器的基础镜像，或者以这个镜像为基础制作自己的镜像。</p>
+<h4 id="容器"><a href="#容器" class="headerlink" title="容器"></a>容器</h4><p>　　我们使用Docker，就是建立各种容器，容器里面运行不同的镜像。我们可以用Docker运行任何镜像，Docker会为我们生成容器，即一个个相互隔离的干净的文件系统。容器相当于一个轻量级的虚拟机。</p>
+<h4 id="镜像层"><a href="#镜像层" class="headerlink" title="镜像层"></a>镜像层</h4><p>　　镜像是用层来划分与存储的。上面所说的镜像由一层一层的镜像层以栈的方式堆积起来的。Docker制作镜像是由Dockerfile这个文件来控制生成的，下面是这个文件的一个例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">FROM docker/whalesay:latest</div><div class="line">RUN apt-get -y update &amp;&amp; apt-get install -y fortunes</div><div class="line">CMD /usr/games/fortune -a | cowsay</div></pre></td></tr></table></figure>
+<p>　　这个镜像大概的意思是由docker/whalesay最新版为基础镜像建立，更新apt-get并且安装fortunes这个应用程序。CMD这一行是指定运行这个镜像时默认会执行的指令，这里的意思是运行fortune这个应用并且把输出传给cowsay这个应用。</p>
+<p>　　基础镜像可能包含有一层或多层镜像层，后面的每行指令都会对镜像产生的文件系统有影响，都会产生一层image layer。</p>
+<p>　　每一个镜像层都默认使用缓存，即如果系统中如果已经运行过这个Dockerfile,产生了这几层镜像层，那么重新运行的话不会产生新的镜像层，而是会使用旧的镜像层来创建镜像。</p>
+<p>　　我们运行起来的容器，也会在原有镜像的基础上新建一个新的镜像层，所有对文件系统的改变都会写到这个镜像层里。</p>
+<h4 id="写时复制"><a href="#写时复制" class="headerlink" title="写时复制"></a>写时复制</h4><p>　　由上所述，docker的存储是由镜像层组成的。它的存储策略使用docker存储驱动来实现的，具体的驱动有很多种，其具体实现也各不相同，但其思想是统一的，就是写时复制策略。</p>
+<p>　　我们可以用同一个镜像运行多个容器。当容器运行时，它会复用该镜像的所有镜像层，而不会另外复制这些镜像层。这些源自镜像的镜像层都是只读的，不能被修改。除了这些被复用的镜像层以外，容器还会生成一层薄的，空的镜像层，这个是每个容器专有的镜像层，是可读写的，所有对容器文件系统的更改都会写到这个容器镜像层内。</p>
+<p>　　所谓的写时复制，即当用docker修改文件时，会把该文件从原镜像的某个镜像层里读出，复制一份到容器镜像层里；当创建新文件时，直接写在容器镜像层上；当读取文件时，则不会发生复制动作。</p>
+<p>　　这种策略可以让多次建立的容器充分利用原镜像的文件，而不用在启动时耗费时间去做大量的复制动作，又极大地节省了存储空间，只有在发生写操作时才做复制。</p>
+<h4 id="Device-Mapper-存储驱动"><a href="#Device-Mapper-存储驱动" class="headerlink" title="Device Mapper 存储驱动"></a>Device Mapper 存储驱动</h4><p>　　host主机使用不同的操作系统，其docker的存储驱动也可能有所不同。下面以centos操作系统里docker较常用的device mapper存储驱动为例，介绍一下它具体是怎么实现写时复制策略的。</p>
+<p>　　device mapper会首先创建一个pool，这个pool是从raw block或者稀疏文件上建立起来的，负责发生写操作时分配存储空间。device mapper的写时复制是针对block进行，而不是对文件。</p>
+<p>　　在这个pool上面，docker创建一个base device，这相当于一个空的文件系统，所有镜像层都是在这个base device的基础上打快照再进行新的改动而生成的。</p>
+<p>　　base device上面就是一层一层的镜像层。</p>
+<p>　　发生读操作时，由于container最上层的容器镜像层并不实际存储镜像的文件，但会维护所有block的指针，让读操作可以定位到下面某个镜像层的某个block中，从而读出真实数据。</p>
+<p>　　发生写操作时，利用最底层的pool以block为单位分配空间，每个block为64kb。当写操作的内容小于64kb，也必须分配一整个block。写操作会写在容器镜像层中，以后读取就直接在容器镜像层上读。</p>
+<h4 id="数据卷与挂载"><a href="#数据卷与挂载" class="headerlink" title="数据卷与挂载"></a>数据卷与挂载</h4><p>　　由存储驱动管理的docker存储空间一般是定在host主机的/var/lib/docker/…里的，读写操作都是由存储驱动负责。当容器删除时，新建的容器镜像层也会被删除。而且，对容器镜像层进行大量的写操作会不断地搜索镜像层以及进行复制，性能上也不是很理想。</p>
+<p>　　为了解决大量数据写操作以及数据的持久化存储与共享，docker提供了挂载数据卷的服务。</p>
+<p>　　挂载数据卷实际上是以host主机的某个文件或某个目录为挂载点，与docker容器的某个文件或目录挂载起来，使得数据在host主机和docker容器里可以共享与同步。</p>
+<p>　　这种数据卷的存储是独立于镜像层以及存储驱动的，其读写是由host主机直接实现的。具体的用法可以参考官网。</p>
+<h3 id="网桥驱动"><a href="#网桥驱动" class="headerlink" title="网桥驱动"></a>网桥驱动</h3><p>　　docker容器默认的网络连接方式就是网桥。在默认情况下，所有运行的容器都属于172.17.0.1/16这个网络内。我们也可以借助网桥驱动创建自己的网络，以此来划分不同的网络来隔离不同的容器。容器与容器的通信方式一般有两种，一种是host主机端口映射，另一种是docker link。</p>
+<h4 id="host主机端口映射"><a href="#host主机端口映射" class="headerlink" title="host主机端口映射"></a>host主机端口映射</h4><p>　　docker容器如果不做端口映射，外网是不能访问它的，但它可以通过masquerade的方式来借助host主机访问外网。如果要作为服务器，则需要让容器的某个端口与host主机的某个端口绑定在一起，以DNAT的方式来与外网通信，那么外网就可以访问docker容器了。</p>
+<p>　　不同的容器也可以借助host主机的端口来相互通信。</p>
+<h4 id="docker-link"><a href="#docker-link" class="headerlink" title="docker link"></a>docker link</h4><p>　　有时候我们希望让容器之间能通过容器名来访问彼此，docker link就可以帮我们实现。当我们建立了docker link，实际上会从环境变量和/etc/hosts两个部分来修改连接的容器，使得容器之间能通过环境变量和/etc/hosts文件两个部分建立联系信息，帮助他们借助容器名来进行通信。具体的用法可以查看官网。</p>
+<p>　　</p>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[Gitlab CI 与 Docker 的配置与整合流程]]></title>
       <url>http://wjqwsp.github.io/2016/11/23/Gitlab-CI-%E4%B8%8E-Docker-%E7%9A%84%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%95%B4%E5%90%88%E6%B5%81%E7%A8%8B/</url>
       <content type="html"><![CDATA[<h3 id="什么是Gitlab-CI"><a href="#什么是Gitlab-CI" class="headerlink" title="什么是Gitlab CI"></a>什么是Gitlab CI</h3><p>　　Gitlab CI是一个持续集成的工具，目前已经与Gitlab完美整合在一起。它提供一个虚拟的代码测试、打包的环境，这个环境与Gitlab Repo勾连在一起，让每一次的push或者merge request触发这个虚拟环境的创建，自动运行测试与打包的脚本，得出脚本的运行结果呈现在Gitlab 的web页面上，然后再销毁这个虚拟的环境。并且，它能与我们的真正的产品部署环境连接起来，让我们能在Gitlab的web页面上看到部署环境的一些结果，让整个代码的生产线变得完整。通过Gitlab CI与Gitlab的整合，源代码开发、自动测试、自动打包、自动部署成为一条流水线，能极大地加快产品的迭代速度。<br><a id="more"></a></p>

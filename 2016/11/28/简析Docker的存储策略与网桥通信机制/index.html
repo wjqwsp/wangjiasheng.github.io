@@ -90,7 +90,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="数据库,并发," />
+  <meta name="keywords" content="Docker," />
 
 
 
@@ -106,22 +106,16 @@
 
 
 
-<meta name="description" content="写在前面　　数据库并发处理是一个非常重要的问题，其实现本质上同应用程序一级的并发控制原理是一致的，也是通过加锁解决。而事务隔离级别相当于一段独立的代码块，具有原子性、一致性、隔离性、持久性4个特征。本来想自己写一篇总结，但看到有一篇文章总结得非常好，就直接转载过来。
-　　以下内容转载自：宋杰的站点 » 【转载】数据库事务隔离级别和锁实现机制
-　　原文的版式我修改了一下，有些跟核心内容无关的我删去了">
+<meta name="description" content="前言　　Docker作为容器是越来越被广泛使用了，里面的知识也比较庞杂，但关于Docker Engine最核心的就是存储和网络了。这篇文章主要围绕这两个方面，做一些简单的总结。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="数据库事务隔离级别与锁机制实现（转载）">
-<meta property="og:url" content="http://wjqwsp.github.io/2016/09/04/数据库事务隔离等级与锁机制浅析/index.html">
+<meta property="og:title" content="简析Docker的存储策略与网桥通信机制">
+<meta property="og:url" content="http://wjqwsp.github.io/2016/11/28/简析Docker的存储策略与网桥通信机制/index.html">
 <meta property="og:site_name" content="南国倾城">
-<meta property="og:description" content="写在前面　　数据库并发处理是一个非常重要的问题，其实现本质上同应用程序一级的并发控制原理是一致的，也是通过加锁解决。而事务隔离级别相当于一段独立的代码块，具有原子性、一致性、隔离性、持久性4个特征。本来想自己写一篇总结，但看到有一篇文章总结得非常好，就直接转载过来。
-　　以下内容转载自：宋杰的站点 » 【转载】数据库事务隔离级别和锁实现机制
-　　原文的版式我修改了一下，有些跟核心内容无关的我删去了">
-<meta property="og:updated_time" content="2016-09-05T15:33:39.032Z">
+<meta property="og:description" content="前言　　Docker作为容器是越来越被广泛使用了，里面的知识也比较庞杂，但关于Docker Engine最核心的就是存储和网络了。这篇文章主要围绕这两个方面，做一些简单的总结。">
+<meta property="og:updated_time" content="2016-11-28T13:39:05.602Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="数据库事务隔离级别与锁机制实现（转载）">
-<meta name="twitter:description" content="写在前面　　数据库并发处理是一个非常重要的问题，其实现本质上同应用程序一级的并发控制原理是一致的，也是通过加锁解决。而事务隔离级别相当于一段独立的代码块，具有原子性、一致性、隔离性、持久性4个特征。本来想自己写一篇总结，但看到有一篇文章总结得非常好，就直接转载过来。
-　　以下内容转载自：宋杰的站点 » 【转载】数据库事务隔离级别和锁实现机制
-　　原文的版式我修改了一下，有些跟核心内容无关的我删去了">
+<meta name="twitter:title" content="简析Docker的存储策略与网桥通信机制">
+<meta name="twitter:description" content="前言　　Docker作为容器是越来越被广泛使用了，里面的知识也比较庞杂，但关于Docker Engine最核心的就是存储和网络了。这篇文章主要围绕这两个方面，做一些简单的总结。">
 
 
 
@@ -142,9 +136,9 @@
 
 
 
-  <link rel="canonical" href="http://wjqwsp.github.io/2016/09/04/数据库事务隔离等级与锁机制浅析/"/>
+  <link rel="canonical" href="http://wjqwsp.github.io/2016/11/28/简析Docker的存储策略与网桥通信机制/"/>
 
-  <title> 数据库事务隔离级别与锁机制实现（转载） | 南国倾城 </title>
+  <title> 简析Docker的存储策略与网桥通信机制 | 南国倾城 </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -287,7 +281,7 @@
             
             
               
-                数据库事务隔离级别与锁机制实现（转载）
+                简析Docker的存储策略与网桥通信机制
               
             
           </h1>
@@ -299,8 +293,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-04T13:17:05+08:00" content="2016-09-04">
-              2016-09-04
+            <time itemprop="dateCreated" datetime="2016-11-28T20:36:57+08:00" content="2016-11-28">
+              2016-11-28
             </time>
           </span>
 
@@ -310,8 +304,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/2016/09/04/数据库事务隔离等级与锁机制浅析/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/04/数据库事务隔离等级与锁机制浅析/" itemprop="commentsCount"></span>
+                <a href="/2016/11/28/简析Docker的存储策略与网桥通信机制/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/11/28/简析Docker的存储策略与网桥通信机制/" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -321,7 +315,7 @@
 
           
           
-             <span id="/2016/09/04/数据库事务隔离等级与锁机制浅析/" class="leancloud_visitors" data-flag-title="数据库事务隔离级别与锁机制实现（转载）">
+             <span id="/2016/11/28/简析Docker的存储策略与网桥通信机制/" class="leancloud_visitors" data-flag-title="简析Docker的存储策略与网桥通信机制">
                &nbsp; | &nbsp;
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -343,159 +337,39 @@
       
 
       
-        <h3 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h3><p>　　数据库并发处理是一个非常重要的问题，其实现本质上同应用程序一级的并发控制原理是一致的，也是通过加锁解决。而事务隔离级别相当于一段独立的代码块，具有原子性、一致性、隔离性、持久性4个特征。本来想自己写一篇总结，但看到有一篇文章总结得非常好，就直接转载过来。</p>
-<p>　　以下内容转载自：<a href="http://www.songjie.info/" title="宋杰的站点" target="_blank" rel="external">宋杰的站点</a> » <a href="http://www.songjie.info/%E3%80%90%E8%BD%AC%E8%BD%BD%E3%80%91%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB%E5%92%8C%E9%94%81%E5%AE%9E%E7%8E%B0%E6%9C%BA%E5%88%B6/" title="【转载】数据库事务隔离级别和锁实现机制" target="_blank" rel="external">【转载】数据库事务隔离级别和锁实现机制</a></p>
-<p>　　原文的版式我修改了一下，有些跟核心内容无关的我删去了，某一两处内容我觉得不对的在后面加了备注。<br><a id="more"></a></p>
-<h3 id="数据库事务处理中出现的数据不一致的情况"><a href="#数据库事务处理中出现的数据不一致的情况" class="headerlink" title="数据库事务处理中出现的数据不一致的情况"></a>数据库事务处理中出现的数据不一致的情况</h3><p>在多个事务并发做数据库操作的时候，如果没有有效的避免机制，就会出现种种问题。大体上有四种问题，归结如下：</p>
-<h4 id="丢失更新"><a href="#丢失更新" class="headerlink" title="丢失更新"></a>丢失更新</h4><p>如果两个事务都要更新数据库一个字段x，x=100</p>
-<table>
-<thead>
-<tr>
-<th>事务A</th>
-<th>事务B</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>读取X＝100</td>
-<td>读取X＝100</td>
-</tr>
-<tr>
-<td>写入x＝X+100</td>
-<td>写入x＝X+200</td>
-</tr>
-<tr>
-<td>事务结束x=200</td>
-<td>事务结束x=300</td>
-</tr>
-<tr>
-<td></td>
-<td>最后x=300</td>
-</tr>
-</tbody>
-</table>
-<p>最后x=300</p>
-<p>两个不同事务同时获得相同数据，然后在各自事务中同时修改了该数据，那么先提交的事务更新会被后提交事务的更新给覆盖掉，这种情况事务A的更新就被覆盖掉了、丢失了。</p>
-<h4 id="脏读（未提交读）"><a href="#脏读（未提交读）" class="headerlink" title="脏读（未提交读）"></a>脏读（未提交读）</h4><p>防止一个事务读到另一个事务还没有提交的记录。 如：</p>
-<table>
-<thead>
-<tr>
-<th>事务A</th>
-<th>事务B</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td></td>
-<td>写入x＝X+100（x=200）</td>
-</tr>
-<tr>
-<td>读取X＝200（读取了事务B未提交的数据）</td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td>事务回滚x=100</td>
-</tr>
-<tr>
-<td></td>
-<td>事务结束x=100</td>
-</tr>
-<tr>
-<td>事务结束</td>
-</tr>
-</tbody>
-</table>
-<p>事务读取了未提交的数据，事务B的回滚，导致了事务A的数据不一致，导致了事务A的脏读 ！</p>
-<h4 id="不可重复读"><a href="#不可重复读" class="headerlink" title="不可重复读"></a>不可重复读</h4><p>一个事务在自己没有更新数据库数据的情况，同一个查询操作执行两次或多次的结果应该是一致的；如果不一致，就说明为不可重复读。</p>
-<p>还是用上面的例子</p>
-<table>
-<thead>
-<tr>
-<th>事务A</th>
-<th>事务B</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>读取X＝100</td>
-<td>读取X＝100</td>
-</tr>
-<tr>
-<td>读取X＝100</td>
-<td>写入x＝X+100</td>
-</tr>
-<tr>
-<td></td>
-<td>事务结束，x=200</td>
-</tr>
-<tr>
-<td>读取X＝200（此时，在同一个事务A中，读取的X值发生了变化！）</td>
-<td></td>
-</tr>
-<tr>
-<td>事务结束</td>
-</tr>
-</tbody>
-</table>
-<p>这种情况事务A多次读取x的结果出现了不一致，即为不可重复读 。</p>
-<h4 id="幻读（Phantom-Read）"><a href="#幻读（Phantom-Read）" class="headerlink" title="幻读（Phantom Read）"></a>幻读（Phantom Read）</h4><p>事务A读的时候读出了15条记录，事务B在事务A执行的过程中 增加 了1条，事务A再读的时候就变成了 16 条，这种情况就叫做幻影读。</p>
-<p>不可重复读说明了做数据库读操作的时候可能会出现的问题。</p>
-<h3 id="事务隔离级别通过锁的实现机制"><a href="#事务隔离级别通过锁的实现机制" class="headerlink" title="事务隔离级别通过锁的实现机制"></a>事务隔离级别通过锁的实现机制</h3><h4 id="两个锁："><a href="#两个锁：" class="headerlink" title="两个锁："></a>两个锁：</h4><ol>
-<li>排他锁 被加锁的对象只能被持有锁的事务读取和修改，其他事务无法在该对象上加其他锁，也不能读取和修改该对象</li>
-<li>共享锁 被加锁的对象可以被持锁事务读取，但是不能被修改，其他事务也可以在上面再加共享锁。</li>
-</ol>
-<p>特别的，对共享锁： 如果两个事务对同一个资源上了共享锁，事务A 想更新该数据，那么它必须等待 事务B 释放其共享锁。</p>
-<p>在运用 排他锁 和 共享锁 对数据对象加锁时，还需要约定一些规则，例如何时申请 排他锁 或 共享锁、持锁时间、何时释放等。称这些规则为封锁协议（Locking Protocol）。对封锁方式规定不同的规则，就形成了各种不同的封锁协议。</p>
-<h4 id="封锁协议"><a href="#封锁协议" class="headerlink" title="封锁协议"></a>封锁协议</h4><h5 id="一级封锁协议-对应-read-uncommited"><a href="#一级封锁协议-对应-read-uncommited" class="headerlink" title="一级封锁协议 (对应 read uncommited)"></a>一级封锁协议 (对应 read uncommited)</h5><p>一级封锁协议是：事务 在对需要修改的数据上面（就是在发生修改的瞬间） 对其加共享锁（其他事务不能更改，但是可以读取-导致“脏读”），直到事务结束才释放。事务结束包括正常结束（COMMIT）和非正常结束（ROLLBACK）。</p>
-<p>一级封锁协议不能避免 丢失更新，脏读，不可重复读，幻读！</p>
-<h5 id="二级封锁协议-（对应read-commited"><a href="#二级封锁协议-（对应read-commited" class="headerlink" title="二级封锁协议 （对应read commited)"></a>二级封锁协议 （对应read commited)</h5><p>二级封锁协议是：1）事务 在对需要更新的数据 上（就是发生更新的瞬间） 加 排他锁 （直到事务结束） ， 防止其他事务读取未提交的数据，这样，也就避免了 “脏读” 的情况。2）事务 对当前被读取的数据 上面加共享锁（当读到时加上共享锁），一旦读完该行，立即 释放该 该行的共享锁 – 从数据库的底层实现更深入的来理解，既是，数据库会对游标当前的数据上加共享锁 ， 但是当游标离开当前行的时候，立即释放该行的共享锁。<br>二级封锁协议除防止了“脏读”数据，但是不能避免 丢失更新，不可重复读，幻读 。</p>
-<p>但在二级封锁协议中，由于读完数据后立即 释放共享锁，所以它不能避免可重复读 ，同时它也不能避免 丢失更新 ，如果事务A、B同时获取资源X，然后事务A先发起更新记录X，那么 事务B 将等待事务 A 执行完成，然后获得记录X 的排他锁，进行更改。这样事务 A 的更新将会被丢失。 具体情况如下：</p>
-<table>
-<thead>
-<tr>
-<th>事务A</th>
-<th>事务B</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>读取X=100（同时上共享锁）</td>
-<td>读取X=100（同时上共享锁）</td>
-</tr>
-<tr>
-<td>读取成功（释放共享锁）</td>
-<td>读取成功（释放共享锁）</td>
-</tr>
-<tr>
-<td>UPDATE X=X+100 （上排他锁）</td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td>UPDATING A（等待事务A释放对X的排他锁）</td>
-</tr>
-<tr>
-<td>事务成功（释放排他锁）X=200</td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td>UPDATE X=X+200（成功上排他锁）</td>
-</tr>
-<tr>
-<td></td>
-<td>事务成功（释放排他锁）X=300</td>
-</tr>
-</tbody>
-</table>
-<p>由此可以看到，事务A的提交被事务B覆盖了，所以不能防止 丢失更新。</p>
-<p>如果要避免 丢失更新，我们需要额外的操作， 对凡是读到的数据加 共享锁 和排他锁 ，这个往往需要程序员自己编程实现，比如在Oracle 中，需要加 SELECT FOR UPDATE 语句，表明，凡是该事务读到的数据，额外的加上排他锁，防止其他数据同一时间获取相同数据，这样就防止了 丢失更新 ！</p>
-<h5 id="三级封锁协议-（对应reapetable-read-）"><a href="#三级封锁协议-（对应reapetable-read-）" class="headerlink" title="三级封锁协议 （对应reapetable read ）"></a>三级封锁协议 （对应reapetable read ）</h5><p>三级封锁协议是：二级封锁协议加上事务 在读取数据的瞬间 必须先对其加 共享锁 ，但是 直到事务结束才释放 ，这样保证了可重复读（既是其他的事务职能读取该数据，但是不能更新该数据）。</p>
-<p>三级封锁协议除防止了“脏”数据，不可重复读和丢失更新。但是这种情况不能避免 幻读。由于该封锁协议只是对某行数据加锁，因此在事务 A 没有完成之前，事务 B 可以新增数据（因为不是对锁住的这一行操作），那么 当事务 A 再次读取的时候，事务B 新增的数据会被读取到，这样，在该封锁协议下，幻读 就产生了。</p>
-<p>注：原文说该封锁协议不能避免丢失更新，但我认为是可以避免的。因为无论共享锁还是排它锁，在该事务隔离等级下，其持有时间都是整个事务周期，所以无论读还是写某一行记录都是独占的，不可能存在事务A和B并发读取数据的情况，同时只有一个事务能读取并修改数据。因此应该不会造成丢失更新。</p>
-<p>进阶：repeatable read 导致死锁的情况（即便是 不同的资源在相同的顺序下获取）。 比如 事务1 读取 A，同时 事务2 也读取 A，那么事务1和事务2 同时对 A 上了共享锁，然后事务1 要UPDATE A，而此时 事务2 也要 UPDATE A，这个时候 事务1 等待 事务2 释放其在 A 上的共享锁，然后 事务2 要等待 事务1 释放其在 A 上的共享锁，这样，事务1 和 事务2 相互等待，产生死锁！（SQL Server/DB2 里面有 UPDATE LOCK 可以解决这种情况，具体的思路是，在 repeatable read 的情况下，将读取的数据 上的 UPDATE 锁，介于 共享锁 和 排他锁之间的一种锁，该锁的作用是 当出现上面这种情况后，事务1 和 事务2 对 A 上的是 UPDATE 锁，那么谁先 要修改 A，那么该事务就会将 UPDATE 锁可以顺利升级为 排他锁对该数据进行修改！）</p>
-<h5 id="最强封锁协议（对应Serialization"><a href="#最强封锁协议（对应Serialization" class="headerlink" title="最强封锁协议（对应Serialization)"></a>最强封锁协议（对应Serialization)</h5><p>四级封锁协议是对三级封锁协议的增强，其实现机制也最为简单，直接对 事务中 所 读取 或者 更改的数据所在的表加表锁，也就是说，其他事务不能 读写 该表中的任何数据。这样所有的 脏读，不可重复读，幻读 ，都得以避免！</p>
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　Docker作为容器是越来越被广泛使用了，里面的知识也比较庞杂，但关于Docker Engine最核心的就是存储和网络了。这篇文章主要围绕这两个方面，做一些简单的总结。<br><a id="more"></a></p>
+<h3 id="Docker解决了什么"><a href="#Docker解决了什么" class="headerlink" title="Docker解决了什么"></a>Docker解决了什么</h3><p>　　做开发的时候，配环境总是最头疼的。需要安装各种程序，各种库，同时还要注意不让不同的应用之间互相影响，例如文件覆盖，配置信息冲突等等。我们需要的是让某个特定方向的开发环境或部署环境单独运行在一个独立的环境里，最奢侈的情况就是一台机器只跑一个应用。例如某Java Web应用的开发环境，或者某Ruby应用的部署环境，等等，统统放在不同的实体机里。</p>
+<p>　　在实际生产环境中我们也许是可以这么干的，但如果我们的产品还在测试阶段呢？虚拟机或许是一种解决办法。但一个虚拟机跑一个应用总觉得这个系统太重了，资源有点浪费。于是，我们开始寻求一种轻量级的隔离机制，Docker便应运而生了。</p>
+<p>　　Docker作为轻量级的容器，能够把一个个安装有特定库和依赖，运行特定应用的环境相互隔离，同时相比虚拟机能更充分地使用硬件资源，在许多场合里往往是不二法门。</p>
+<h3 id="存储策略"><a href="#存储策略" class="headerlink" title="存储策略"></a>存储策略</h3><h4 id="镜像"><a href="#镜像" class="headerlink" title="镜像"></a>镜像</h4><p>　　Docker的存储内容非常多，这篇文章涉及的只是很少的一部分，但都比较核心和重要。为了讲清楚这一套概念，我们得先从镜像谈起。</p>
+<p>　　Docker里的镜像与我们安装系统的镜像，或者虚拟机的镜像类似。我们可以根据这个镜像，安装或者恢复出整个操作系统。不一样的是，Docker的镜像不只是操作系统镜像。我们可以在某操作系统的基础上安装某些库或者应用程序，然后再创建出一个特定的镜像。例如java镜像（安装了Java虚拟机），tomcat镜像（安装了Java虚拟机和Tomcat），postgres镜像（安装了postgres数据库及其各种依赖）等等。</p>
+<p>　　Docker官方制作了一批镜像，同时很多软件公司或者互联网公司都发布了很多官方镜像，任何注册了的开发者也都可以制作自己的镜像。这些镜像都放在Docker Hub里，我们可以在上面挑选我们需要的镜像作为我们容器的基础镜像，或者以这个镜像为基础制作自己的镜像。</p>
+<h4 id="容器"><a href="#容器" class="headerlink" title="容器"></a>容器</h4><p>　　我们使用Docker，就是建立各种容器，容器里面运行不同的镜像。我们可以用Docker运行任何镜像，Docker会为我们生成容器，即一个个相互隔离的干净的文件系统。容器相当于一个轻量级的虚拟机。</p>
+<h4 id="镜像层"><a href="#镜像层" class="headerlink" title="镜像层"></a>镜像层</h4><p>　　镜像是用层来划分与存储的。上面所说的镜像由一层一层的镜像层以栈的方式堆积起来的。Docker制作镜像是由Dockerfile这个文件来控制生成的，下面是这个文件的一个例子：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">FROM docker/whalesay:latest</div><div class="line">RUN apt-get -y update &amp;&amp; apt-get install -y fortunes</div><div class="line">CMD /usr/games/fortune -a | cowsay</div></pre></td></tr></table></figure>
+<p>　　这个镜像大概的意思是由docker/whalesay最新版为基础镜像建立，更新apt-get并且安装fortunes这个应用程序。CMD这一行是指定运行这个镜像时默认会执行的指令，这里的意思是运行fortune这个应用并且把输出传给cowsay这个应用。</p>
+<p>　　基础镜像可能包含有一层或多层镜像层，后面的每行指令都会对镜像产生的文件系统有影响，都会产生一层image layer。</p>
+<p>　　每一个镜像层都默认使用缓存，即如果系统中如果已经运行过这个Dockerfile,产生了这几层镜像层，那么重新运行的话不会产生新的镜像层，而是会使用旧的镜像层来创建镜像。</p>
+<p>　　我们运行起来的容器，也会在原有镜像的基础上新建一个新的镜像层，所有对文件系统的改变都会写到这个镜像层里。</p>
+<h4 id="写时复制"><a href="#写时复制" class="headerlink" title="写时复制"></a>写时复制</h4><p>　　由上所述，docker的存储是由镜像层组成的。它的存储策略使用docker存储驱动来实现的，具体的驱动有很多种，其具体实现也各不相同，但其思想是统一的，就是写时复制策略。</p>
+<p>　　我们可以用同一个镜像运行多个容器。当容器运行时，它会复用该镜像的所有镜像层，而不会另外复制这些镜像层。这些源自镜像的镜像层都是只读的，不能被修改。除了这些被复用的镜像层以外，容器还会生成一层薄的，空的镜像层，这个是每个容器专有的镜像层，是可读写的，所有对容器文件系统的更改都会写到这个容器镜像层内。</p>
+<p>　　所谓的写时复制，即当用docker修改文件时，会把该文件从原镜像的某个镜像层里读出，复制一份到容器镜像层里；当创建新文件时，直接写在容器镜像层上；当读取文件时，则不会发生复制动作。</p>
+<p>　　这种策略可以让多次建立的容器充分利用原镜像的文件，而不用在启动时耗费时间去做大量的复制动作，又极大地节省了存储空间，只有在发生写操作时才做复制。</p>
+<h4 id="Device-Mapper-存储驱动"><a href="#Device-Mapper-存储驱动" class="headerlink" title="Device Mapper 存储驱动"></a>Device Mapper 存储驱动</h4><p>　　host主机使用不同的操作系统，其docker的存储驱动也可能有所不同。下面以centos操作系统里docker较常用的device mapper存储驱动为例，介绍一下它具体是怎么实现写时复制策略的。</p>
+<p>　　device mapper会首先创建一个pool，这个pool是从raw block或者稀疏文件上建立起来的，负责发生写操作时分配存储空间。device mapper的写时复制是针对block进行，而不是对文件。</p>
+<p>　　在这个pool上面，docker创建一个base device，这相当于一个空的文件系统，所有镜像层都是在这个base device的基础上打快照再进行新的改动而生成的。</p>
+<p>　　base device上面就是一层一层的镜像层。</p>
+<p>　　发生读操作时，由于container最上层的容器镜像层并不实际存储镜像的文件，但会维护所有block的指针，让读操作可以定位到下面某个镜像层的某个block中，从而读出真实数据。</p>
+<p>　　发生写操作时，利用最底层的pool以block为单位分配空间，每个block为64kb。当写操作的内容小于64kb，也必须分配一整个block。写操作会写在容器镜像层中，以后读取就直接在容器镜像层上读。</p>
+<h4 id="数据卷与挂载"><a href="#数据卷与挂载" class="headerlink" title="数据卷与挂载"></a>数据卷与挂载</h4><p>　　由存储驱动管理的docker存储空间一般是定在host主机的/var/lib/docker/…里的，读写操作都是由存储驱动负责。当容器删除时，新建的容器镜像层也会被删除。而且，对容器镜像层进行大量的写操作会不断地搜索镜像层以及进行复制，性能上也不是很理想。</p>
+<p>　　为了解决大量数据写操作以及数据的持久化存储与共享，docker提供了挂载数据卷的服务。</p>
+<p>　　挂载数据卷实际上是以host主机的某个文件或某个目录为挂载点，与docker容器的某个文件或目录挂载起来，使得数据在host主机和docker容器里可以共享与同步。</p>
+<p>　　这种数据卷的存储是独立于镜像层以及存储驱动的，其读写是由host主机直接实现的。具体的用法可以参考官网。</p>
+<h3 id="网桥驱动"><a href="#网桥驱动" class="headerlink" title="网桥驱动"></a>网桥驱动</h3><p>　　docker容器默认的网络连接方式就是网桥。在默认情况下，所有运行的容器都属于172.17.0.1/16这个网络内。我们也可以借助网桥驱动创建自己的网络，以此来划分不同的网络来隔离不同的容器。容器与容器的通信方式一般有两种，一种是host主机端口映射，另一种是docker link。</p>
+<h4 id="host主机端口映射"><a href="#host主机端口映射" class="headerlink" title="host主机端口映射"></a>host主机端口映射</h4><p>　　docker容器如果不做端口映射，外网是不能访问它的，但它可以通过masquerade的方式来借助host主机访问外网。如果要作为服务器，则需要让容器的某个端口与host主机的某个端口绑定在一起，以DNAT的方式来与外网通信，那么外网就可以访问docker容器了。</p>
+<p>　　不同的容器也可以借助host主机的端口来相互通信。</p>
+<h4 id="docker-link"><a href="#docker-link" class="headerlink" title="docker link"></a>docker link</h4><p>　　有时候我们希望让容器之间能通过容器名来访问彼此，docker link就可以帮我们实现。当我们建立了docker link，实际上会从环境变量和/etc/hosts两个部分来修改连接的容器，使得容器之间能通过环境变量和/etc/hosts文件两个部分建立联系信息，帮助他们借助容器名来进行通信。具体的用法可以查看官网。</p>
+<p>　　</p>
 
       
     </div>
@@ -518,9 +392,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/数据库/" rel="tag">#数据库</a>
-          
-            <a href="/tags/并发/" rel="tag">#并发</a>
+            <a href="/tags/Docker/" rel="tag">#Docker</a>
           
         </div>
       
@@ -529,17 +401,13 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2016/08/31/从压力测试看数据库连接池配置/" rel="next" title="从压力测试看数据库连接池配置">
-                <i class="fa fa-chevron-left"></i> 从压力测试看数据库连接池配置
+              <a href="/2016/11/23/Gitlab-CI-与-Docker-的配置与整合流程/" rel="next" title="Gitlab CI 与 Docker 的配置与整合流程">
+                <i class="fa fa-chevron-left"></i> Gitlab CI 与 Docker 的配置与整合流程
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2016/09/05/PostgreSQL-MVCC机制浅析/" rel="prev" title="PostgreSQL MVCC机制浅析">
-                PostgreSQL MVCC机制浅析 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -565,8 +433,8 @@
           
   <div class="comments" id="comments">
     
-      <div class="ds-thread" data-thread-key="2016/09/04/数据库事务隔离等级与锁机制浅析/"
-           data-title="数据库事务隔离级别与锁机制实现（转载）" data-url="http://wjqwsp.github.io/2016/09/04/数据库事务隔离等级与锁机制浅析/">
+      <div class="ds-thread" data-thread-key="2016/11/28/简析Docker的存储策略与网桥通信机制/"
+           data-title="简析Docker的存储策略与网桥通信机制" data-url="http://wjqwsp.github.io/2016/11/28/简析Docker的存储策略与网桥通信机制/">
       </div>
     
   </div>
@@ -650,7 +518,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#写在前面"><span class="nav-number">1.</span> <span class="nav-text">写在前面</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据库事务处理中出现的数据不一致的情况"><span class="nav-number">2.</span> <span class="nav-text">数据库事务处理中出现的数据不一致的情况</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#丢失更新"><span class="nav-number">2.1.</span> <span class="nav-text">丢失更新</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#脏读（未提交读）"><span class="nav-number">2.2.</span> <span class="nav-text">脏读（未提交读）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#不可重复读"><span class="nav-number">2.3.</span> <span class="nav-text">不可重复读</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#幻读（Phantom-Read）"><span class="nav-number">2.4.</span> <span class="nav-text">幻读（Phantom Read）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#事务隔离级别通过锁的实现机制"><span class="nav-number">3.</span> <span class="nav-text">事务隔离级别通过锁的实现机制</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#两个锁："><span class="nav-number">3.1.</span> <span class="nav-text">两个锁：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#封锁协议"><span class="nav-number">3.2.</span> <span class="nav-text">封锁协议</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#一级封锁协议-对应-read-uncommited"><span class="nav-number">3.2.1.</span> <span class="nav-text">一级封锁协议 (对应 read uncommited)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#二级封锁协议-（对应read-commited"><span class="nav-number">3.2.2.</span> <span class="nav-text">二级封锁协议 （对应read commited)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#三级封锁协议-（对应reapetable-read-）"><span class="nav-number">3.2.3.</span> <span class="nav-text">三级封锁协议 （对应reapetable read ）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#最强封锁协议（对应Serialization"><span class="nav-number">3.2.4.</span> <span class="nav-text">最强封锁协议（对应Serialization)</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Docker解决了什么"><span class="nav-number">2.</span> <span class="nav-text">Docker解决了什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#存储策略"><span class="nav-number">3.</span> <span class="nav-text">存储策略</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#镜像"><span class="nav-number">3.1.</span> <span class="nav-text">镜像</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#容器"><span class="nav-number">3.2.</span> <span class="nav-text">容器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#镜像层"><span class="nav-number">3.3.</span> <span class="nav-text">镜像层</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#写时复制"><span class="nav-number">3.4.</span> <span class="nav-text">写时复制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Device-Mapper-存储驱动"><span class="nav-number">3.5.</span> <span class="nav-text">Device Mapper 存储驱动</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#数据卷与挂载"><span class="nav-number">3.6.</span> <span class="nav-text">数据卷与挂载</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#网桥驱动"><span class="nav-number">4.</span> <span class="nav-text">网桥驱动</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#host主机端口映射"><span class="nav-number">4.1.</span> <span class="nav-text">host主机端口映射</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#docker-link"><span class="nav-number">4.2.</span> <span class="nav-text">docker link</span></a></li></ol></li></ol></div>
             
           </div>
         </section>
