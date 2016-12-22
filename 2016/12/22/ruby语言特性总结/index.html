@@ -112,7 +112,7 @@
 <meta property="og:url" content="http://wjqwsp.github.io/2016/12/22/ruby语言特性总结/index.html">
 <meta property="og:site_name" content="南国倾城">
 <meta property="og:description" content="前言　　之前在做Gitlab源代码的扩展工作，一直没有时间总结一下Ruby和Rails的内容。最近在看《Effective Ruby》，顺便总结一下Ruby的一些语言特性与进阶内容。此博文将持续不定期更新。">
-<meta property="og:updated_time" content="2016-12-22T03:40:43.340Z">
+<meta property="og:updated_time" content="2016-12-22T07:21:33.408Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Ruby语言特性总结">
 <meta name="twitter:description" content="前言　　之前在做Gitlab源代码的扩展工作，一直没有时间总结一下Ruby和Rails的内容。最近在看《Effective Ruby》，顺便总结一下Ruby的一些语言特性与进阶内容。此博文将持续不定期更新。">
@@ -344,6 +344,17 @@
 <h4 id="留心nil对象"><a href="#留心nil对象" class="headerlink" title="留心nil对象"></a>留心nil对象</h4><p>　　在方法调用过程中，很可能产生nil对象，也很可能传入的参数本身就是nil。对这些对象调用方法往往会抛出nil:NilClass的NoMethodError错误。所以我们在处理对象是要十分小心。</p>
 <p>　　最普通的方法是用nil?方法判断一下。或者用to_s，to_i，to_a等方法将对象进行转换。意思是，假如你某个对象是String类的对象，在调用方法前先用to_s处理一下，如果是正常对象则返回本身，如果是nil则返回””，这样在调用方法时就不会抛异常。同理，如果你要处理的对象正常情况下是Integer或Array对象，则可以用to_i，to_a方法转换一下。</p>
 <p>　　Array#compact方法还能去除Array里所有nil元素。</p>
+<h4 id="避免古怪的语法"><a href="#避免古怪的语法" class="headerlink" title="避免古怪的语法"></a>避免古怪的语法</h4><p>　　由于受Perl语言的影响，Ruby的部分语法显得非常古怪，难以阅读，我们应有意识地避免这些用法。</p>
+<p>　　String#=~方法匹配函数右边的正则表达式，返回匹配到的位置或者nil。同时，会将匹配到的结果设置到几个全局变量中，$1，$2，$3等等。但是，这些全局变量非常特殊，它们的作用域仅限于当前进程的当前方法内，相当于全局变量的局部变量，非常容易引起歧义，令人费解。我们可以用String#match方法代替，它会返回一个MatchData的对象的类数组对象，用数组的索引方法取得相应的匹配结果。还有一些其他的有关正则表达式的用法也会设置$1，$2，$3这些值，我们都要尽量避免。</p>
+<p>　　Ruby用require来引入其他文件，它用一个全局变量$:来表示一个包含所有库的目录的数组，可见这种奇怪的变量非常难以理解，我们可以用$LOAD_PATH来代替。除此之外，还有$;，$/等类似的古怪变量，这些全局变量我们可以通过require(‘English’)来用一些更有描述性的别名来代替。具体的别名完整列表可以查阅English模块的文档。</p>
+<p>　　Kernel#readline方法会从标准输入中读取一行，存储在变量$<em>中。并且，如果Kernel#print没有参数调用时，会自动打印$</em>变量的内容。Regexp#~试图使用右边的正则表达式匹配$_的内容，如果匹配成功返回位置索引否则返回nil。这种语法同样十分难以理解。我们应尽量避免。</p>
+<h4 id="常量"><a href="#常量" class="headerlink" title="常量"></a>常量</h4><p>　　Ruby中的常量是可变的，改变常量的值会有warning，但不会报错。我们在使用常量时应用freeze方法将其冻结。</p>
+<p>　　所有以大写字母开头的标识符都是常量，类和模块的名字自然也是常量。我们可以用freeze方法冻结常量所在的类或者模块，则该模块内的常量也不会被改变。</p>
+<p>　　要冻结数组，还必须冻结数组内的每一个元素。</p>
+<h4 id="充分利用警告信息"><a href="#充分利用警告信息" class="headerlink" title="充分利用警告信息"></a>充分利用警告信息</h4><p>　　警告分为编译时警告和运行时警告。我们在开发时建议把两种警告都开启。尤其是编译阶段警告非常重要。</p>
+<p>　　Ruby允许在方法调用时不带空格，这样有时候会产生模糊代码，会有警告信息输出。这时候需要Ruby解释器去猜测你的意图，虽然暂时不影响程序的正确性，但最好还是规避这种情况。而且不带括号，会难以分清哪些是关键字哪些是方法调用。</p>
+<p>　　还有一些警告是定义了变量没有使用，或者同一作用域内重复定义了相同的变量名。这些情况很可能是你在程序里有某些疏忽产生，所以警告信息非常有用。</p>
+<p>　　在运行ruby时加上-w参数可以开启编译和运行时警告。或者直接设置环境变量RUBYOPT为-w。设置全局变量$VERBOSE为true开启运行时警告，为false关闭运行时警告。</p>
 
       
     </div>
@@ -492,7 +503,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Ruby最基础的语法特性"><span class="nav-number">2.</span> <span class="nav-text">Ruby最基础的语法特性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#true和false"><span class="nav-number">2.1.</span> <span class="nav-text">true和false</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#留心nil对象"><span class="nav-number">2.2.</span> <span class="nav-text">留心nil对象</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Ruby最基础的语法特性"><span class="nav-number">2.</span> <span class="nav-text">Ruby最基础的语法特性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#true和false"><span class="nav-number">2.1.</span> <span class="nav-text">true和false</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#留心nil对象"><span class="nav-number">2.2.</span> <span class="nav-text">留心nil对象</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#避免古怪的语法"><span class="nav-number">2.3.</span> <span class="nav-text">避免古怪的语法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#常量"><span class="nav-number">2.4.</span> <span class="nav-text">常量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#充分利用警告信息"><span class="nav-number">2.5.</span> <span class="nav-text">充分利用警告信息</span></a></li></ol></li></ol></div>
             
           </div>
         </section>
