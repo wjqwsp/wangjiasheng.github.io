@@ -106,19 +106,16 @@
 
 
 
-<meta name="description" content="前言　　之前在做Gitlab源代码的扩展工作，一直没有时间总结一下Ruby和Rails的内容。最近在看《Effective Ruby》，顺便总结一下Ruby的一些语言特性与进阶内容。此博文将持续不定期更新。
-Ruby最基础的语法特性true和false　　在Ruby中，一切皆是对象。这个“一切”的概念很广，除了一般面向对象语言的对象概念以外，像class也是对象，true，false，nil等也都">
+<meta name="description" content="前言　　之前在做Gitlab源代码的扩展工作，一直没有时间总结一下Ruby和Rails的内容。最近在看《Effective Ruby》，顺便总结一下Ruby的一些语言特性与进阶内容。此博文将持续不定期更新。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Ruby语言特性总结">
 <meta property="og:url" content="http://wjqwsp.github.io/2016/12/22/ruby语言特性总结/index.html">
 <meta property="og:site_name" content="南国倾城">
-<meta property="og:description" content="前言　　之前在做Gitlab源代码的扩展工作，一直没有时间总结一下Ruby和Rails的内容。最近在看《Effective Ruby》，顺便总结一下Ruby的一些语言特性与进阶内容。此博文将持续不定期更新。
-Ruby最基础的语法特性true和false　　在Ruby中，一切皆是对象。这个“一切”的概念很广，除了一般面向对象语言的对象概念以外，像class也是对象，true，false，nil等也都">
-<meta property="og:updated_time" content="2016-12-22T03:39:22.787Z">
+<meta property="og:description" content="前言　　之前在做Gitlab源代码的扩展工作，一直没有时间总结一下Ruby和Rails的内容。最近在看《Effective Ruby》，顺便总结一下Ruby的一些语言特性与进阶内容。此博文将持续不定期更新。">
+<meta property="og:updated_time" content="2016-12-22T03:40:43.340Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Ruby语言特性总结">
-<meta name="twitter:description" content="前言　　之前在做Gitlab源代码的扩展工作，一直没有时间总结一下Ruby和Rails的内容。最近在看《Effective Ruby》，顺便总结一下Ruby的一些语言特性与进阶内容。此博文将持续不定期更新。
-Ruby最基础的语法特性true和false　　在Ruby中，一切皆是对象。这个“一切”的概念很广，除了一般面向对象语言的对象概念以外，像class也是对象，true，false，nil等也都">
+<meta name="twitter:description" content="前言　　之前在做Gitlab源代码的扩展工作，一直没有时间总结一下Ruby和Rails的内容。最近在看《Effective Ruby》，顺便总结一下Ruby的一些语言特性与进阶内容。此博文将持续不定期更新。">
 
 
 
@@ -340,7 +337,7 @@ Ruby最基础的语法特性true和false　　在Ruby中，一切皆是对象。
       
 
       
-        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　之前在做Gitlab源代码的扩展工作，一直没有时间总结一下Ruby和Rails的内容。最近在看《Effective Ruby》，顺便总结一下Ruby的一些语言特性与进阶内容。此博文将持续不定期更新。</p>
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　之前在做Gitlab源代码的扩展工作，一直没有时间总结一下Ruby和Rails的内容。最近在看《Effective Ruby》，顺便总结一下Ruby的一些语言特性与进阶内容。此博文将持续不定期更新。<br><a id="more"></a></p>
 <h3 id="Ruby最基础的语法特性"><a href="#Ruby最基础的语法特性" class="headerlink" title="Ruby最基础的语法特性"></a>Ruby最基础的语法特性</h3><h4 id="true和false"><a href="#true和false" class="headerlink" title="true和false"></a>true和false</h4><p>　　在Ruby中，一切皆是对象。这个“一切”的概念很广，除了一般面向对象语言的对象概念以外，像class也是对象，true，false，nil等也都是对象。Ruby里用到的==，&gt;=等比较操作符，统统都是对象方法。</p>
 <p>　　在其他语言中，true和false往往是关键字。但在Ruby中，它们是不遵循命名规范和赋值规范的全局变量，它们的行为和全局对象一样，只是不以字符$开头，也不能放在赋值语句的左半边。他们都是TrueClass和FalseClass的实例对象。在Ruby中，除了false和nil，一切都是真值，都能让表达式为真，所以true的存在只是方便，是冗余的。</p>
 <p>　　凡是某表达式返回false或nil都不成立，其他值都成立。但这样也有一个问题，就是不好区分false和nil方法。最简单的区分方法是用nil?方法，另一种是用==方法，false是方法的调用者。因为Object#==方法会比较方法调用者和参数是否属于同一对象。但要注意false要放在==左边作为方法的调用者，因为如果其他对象放在==左边，相当于调用它们的==方法，而这些对象很可能覆盖了Object#==方法，造成诡异的返回。</p>
