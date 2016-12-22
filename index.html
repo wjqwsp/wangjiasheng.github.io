@@ -283,6 +283,122 @@
             
               
                 
+                <a class="post-title-link" href="/2016/12/22/ruby语言特性总结/" itemprop="url">
+                  Ruby语言特性总结
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-12-22T11:13:41+08:00" content="2016-12-22">
+              2016-12-22
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/12/22/ruby语言特性总结/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/12/22/ruby语言特性总结/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/12/22/ruby语言特性总结/" class="leancloud_visitors" data-flag-title="Ruby语言特性总结">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　之前在做Gitlab源代码的扩展工作，一直没有时间总结一下Ruby和Rails的内容。最近在看《Effective Ruby》，顺便总结一下Ruby的一些语言特性与进阶内容。此博文将持续不定期更新。</p>
+<h3 id="Ruby最基础的语法特性"><a href="#Ruby最基础的语法特性" class="headerlink" title="Ruby最基础的语法特性"></a>Ruby最基础的语法特性</h3><h4 id="true和false"><a href="#true和false" class="headerlink" title="true和false"></a>true和false</h4><p>　　在Ruby中，一切皆是对象。这个“一切”的概念很广，除了一般面向对象语言的对象概念以外，像class也是对象，true，false，nil等也都是对象。Ruby里用到的==，&gt;=等比较操作符，统统都是对象方法。</p>
+<p>　　在其他语言中，true和false往往是关键字。但在Ruby中，它们是不遵循命名规范和赋值规范的全局变量，它们的行为和全局对象一样，只是不以字符$开头，也不能放在赋值语句的左半边。他们都是TrueClass和FalseClass的实例对象。在Ruby中，除了false和nil，一切都是真值，都能让表达式为真，所以true的存在只是方便，是冗余的。</p>
+<p>　　凡是某表达式返回false或nil都不成立，其他值都成立。但这样也有一个问题，就是不好区分false和nil方法。最简单的区分方法是用nil?方法，另一种是用==方法，false是方法的调用者。因为Object#==方法会比较方法调用者和参数是否属于同一对象。但要注意false要放在==左边作为方法的调用者，因为如果其他对象放在==左边，相当于调用它们的==方法，而这些对象很可能覆盖了Object#==方法，造成诡异的返回。</p>
+<h4 id="留心nil对象"><a href="#留心nil对象" class="headerlink" title="留心nil对象"></a>留心nil对象</h4><p>　　在方法调用过程中，很可能产生nil对象，也很可能传入的参数本身就是nil。对这些对象调用方法往往会抛出nil:NilClass的NoMethodError错误。所以我们在处理对象是要十分小心。</p>
+<p>　　最普通的方法是用nil?方法判断一下。或者用to_s，to_i，to_a等方法将对象进行转换。意思是，假如你某个对象是String类的对象，在调用方法前先用to_s处理一下，如果是正常对象则返回本身，如果是nil则返回””，这样在调用方法时就不会抛异常。同理，如果你要处理的对象正常情况下是Integer或Array对象，则可以用to_i，to_a方法转换一下。</p>
+<p>　　Array#compact方法还能去除Array里所有nil元素。</p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2016/11/28/简析Docker的存储策略与网桥通信机制/" itemprop="url">
                   简析Docker的存储策略与网桥通信机制
                 </a>
@@ -1292,118 +1408,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/09/14/从面向对象看JavaScript（五）——-继承/" itemprop="url">
-                  从面向对象看JavaScript（五）—— 继承
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-14T21:03:38+08:00" content="2016-09-14">
-              2016-09-14
-            </time>
-          </span>
-
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/09/14/从面向对象看JavaScript（五）——-继承/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/14/从面向对象看JavaScript（五）——-继承/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-             <span id="/2016/09/14/从面向对象看JavaScript（五）——-继承/" class="leancloud_visitors" data-flag-title="从面向对象看JavaScript（五）—— 继承">
-               &nbsp; | &nbsp;
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="继承的本质"><a href="#继承的本质" class="headerlink" title="继承的本质"></a>继承的本质</h3><p>　　继承的初衷是复用。即已经有一个原始的类，希望在保留原始类的所有属性和方法的前提下，进行扩展或修改，以最大限度地降低开发成本。JavaScript实现继承，也是源自这个思想，即想办法让新的引用类型能够访问别的引用类型的所有属性和函数。<br>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/09/14/从面向对象看JavaScript（五）——-继承/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -1449,7 +1453,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">22</span>
+              <span class="site-state-item-count">23</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -1459,7 +1463,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">23</span>
+                <span class="site-state-item-count">24</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

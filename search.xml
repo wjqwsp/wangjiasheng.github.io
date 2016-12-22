@@ -4,6 +4,19 @@
   
     
     <entry>
+      <title><![CDATA[Ruby语言特性总结]]></title>
+      <url>http://wjqwsp.github.io/2016/12/22/ruby%E8%AF%AD%E8%A8%80%E7%89%B9%E6%80%A7%E6%80%BB%E7%BB%93/</url>
+      <content type="html"><![CDATA[<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　之前在做Gitlab源代码的扩展工作，一直没有时间总结一下Ruby和Rails的内容。最近在看《Effective Ruby》，顺便总结一下Ruby的一些语言特性与进阶内容。此博文将持续不定期更新。</p>
+<h3 id="Ruby最基础的语法特性"><a href="#Ruby最基础的语法特性" class="headerlink" title="Ruby最基础的语法特性"></a>Ruby最基础的语法特性</h3><h4 id="true和false"><a href="#true和false" class="headerlink" title="true和false"></a>true和false</h4><p>　　在Ruby中，一切皆是对象。这个“一切”的概念很广，除了一般面向对象语言的对象概念以外，像class也是对象，true，false，nil等也都是对象。Ruby里用到的==，&gt;=等比较操作符，统统都是对象方法。</p>
+<p>　　在其他语言中，true和false往往是关键字。但在Ruby中，它们是不遵循命名规范和赋值规范的全局变量，它们的行为和全局对象一样，只是不以字符$开头，也不能放在赋值语句的左半边。他们都是TrueClass和FalseClass的实例对象。在Ruby中，除了false和nil，一切都是真值，都能让表达式为真，所以true的存在只是方便，是冗余的。</p>
+<p>　　凡是某表达式返回false或nil都不成立，其他值都成立。但这样也有一个问题，就是不好区分false和nil方法。最简单的区分方法是用nil?方法，另一种是用==方法，false是方法的调用者。因为Object#==方法会比较方法调用者和参数是否属于同一对象。但要注意false要放在==左边作为方法的调用者，因为如果其他对象放在==左边，相当于调用它们的==方法，而这些对象很可能覆盖了Object#==方法，造成诡异的返回。</p>
+<h4 id="留心nil对象"><a href="#留心nil对象" class="headerlink" title="留心nil对象"></a>留心nil对象</h4><p>　　在方法调用过程中，很可能产生nil对象，也很可能传入的参数本身就是nil。对这些对象调用方法往往会抛出nil:NilClass的NoMethodError错误。所以我们在处理对象是要十分小心。</p>
+<p>　　最普通的方法是用nil?方法判断一下。或者用to_s，to_i，to_a等方法将对象进行转换。意思是，假如你某个对象是String类的对象，在调用方法前先用to_s处理一下，如果是正常对象则返回本身，如果是nil则返回””，这样在调用方法时就不会抛异常。同理，如果你要处理的对象正常情况下是Integer或Array对象，则可以用to_i，to_a方法转换一下。</p>
+<p>　　Array#compact方法还能去除Array里所有nil元素。</p>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[简析Docker的存储策略与网桥通信机制]]></title>
       <url>http://wjqwsp.github.io/2016/11/28/%E7%AE%80%E6%9E%90Docker%E7%9A%84%E5%AD%98%E5%82%A8%E7%AD%96%E7%95%A5%E4%B8%8E%E7%BD%91%E6%A1%A5%E9%80%9A%E4%BF%A1%E6%9C%BA%E5%88%B6/</url>
       <content type="html"><![CDATA[<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　Docker作为容器是越来越被广泛使用了，里面的知识也比较庞杂，但关于Docker Engine最核心的就是存储和网络了。这篇文章主要围绕这两个方面，做一些简单的总结。<br><a id="more"></a></p>

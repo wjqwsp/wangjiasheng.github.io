@@ -90,7 +90,7 @@
 <link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="LeetCode,Linked List," />
+  <meta name="keywords" content="Ruby," />
 
 
 
@@ -106,25 +106,19 @@
 
 
 
-<meta name="description" content="题目　　Remove all elements from a linked list of integers that have value val.
-　　Example
-　　Given: 1 –&amp;gt; 2 –&amp;gt; 6 –&amp;gt; 3 –&amp;gt; 4 –&amp;gt; 5 –&amp;gt; 6, val = 6
-　　Return: 1 –&amp;gt; 2 –&amp;gt; 3 –&amp;gt; 4 –&amp;gt; 5">
+<meta name="description" content="前言　　之前在做Gitlab源代码的扩展工作，一直没有时间总结一下Ruby和Rails的内容。最近在看《Effective Ruby》，顺便总结一下Ruby的一些语言特性与进阶内容。此博文将持续不定期更新。
+Ruby最基础的语法特性true和false　　在Ruby中，一切皆是对象。这个“一切”的概念很广，除了一般面向对象语言的对象概念以外，像class也是对象，true，false，nil等也都">
 <meta property="og:type" content="article">
-<meta property="og:title" content="LeetCode 203 Remove Linked List Elements 题解">
-<meta property="og:url" content="http://wjqwsp.github.io/2016/09/24/LeetCode-203-Remove-Linked-List-Elements-题解/index.html">
+<meta property="og:title" content="Ruby语言特性总结">
+<meta property="og:url" content="http://wjqwsp.github.io/2016/12/22/ruby语言特性总结/index.html">
 <meta property="og:site_name" content="南国倾城">
-<meta property="og:description" content="题目　　Remove all elements from a linked list of integers that have value val.
-　　Example
-　　Given: 1 –&amp;gt; 2 –&amp;gt; 6 –&amp;gt; 3 –&amp;gt; 4 –&amp;gt; 5 –&amp;gt; 6, val = 6
-　　Return: 1 –&amp;gt; 2 –&amp;gt; 3 –&amp;gt; 4 –&amp;gt; 5">
-<meta property="og:updated_time" content="2016-09-24T12:36:27.029Z">
+<meta property="og:description" content="前言　　之前在做Gitlab源代码的扩展工作，一直没有时间总结一下Ruby和Rails的内容。最近在看《Effective Ruby》，顺便总结一下Ruby的一些语言特性与进阶内容。此博文将持续不定期更新。
+Ruby最基础的语法特性true和false　　在Ruby中，一切皆是对象。这个“一切”的概念很广，除了一般面向对象语言的对象概念以外，像class也是对象，true，false，nil等也都">
+<meta property="og:updated_time" content="2016-12-22T03:39:22.787Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="LeetCode 203 Remove Linked List Elements 题解">
-<meta name="twitter:description" content="题目　　Remove all elements from a linked list of integers that have value val.
-　　Example
-　　Given: 1 –&amp;gt; 2 –&amp;gt; 6 –&amp;gt; 3 –&amp;gt; 4 –&amp;gt; 5 –&amp;gt; 6, val = 6
-　　Return: 1 –&amp;gt; 2 –&amp;gt; 3 –&amp;gt; 4 –&amp;gt; 5">
+<meta name="twitter:title" content="Ruby语言特性总结">
+<meta name="twitter:description" content="前言　　之前在做Gitlab源代码的扩展工作，一直没有时间总结一下Ruby和Rails的内容。最近在看《Effective Ruby》，顺便总结一下Ruby的一些语言特性与进阶内容。此博文将持续不定期更新。
+Ruby最基础的语法特性true和false　　在Ruby中，一切皆是对象。这个“一切”的概念很广，除了一般面向对象语言的对象概念以外，像class也是对象，true，false，nil等也都">
 
 
 
@@ -145,9 +139,9 @@
 
 
 
-  <link rel="canonical" href="http://wjqwsp.github.io/2016/09/24/LeetCode-203-Remove-Linked-List-Elements-题解/"/>
+  <link rel="canonical" href="http://wjqwsp.github.io/2016/12/22/ruby语言特性总结/"/>
 
-  <title> LeetCode 203 Remove Linked List Elements 题解 | 南国倾城 </title>
+  <title> Ruby语言特性总结 | 南国倾城 </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -290,7 +284,7 @@
             
             
               
-                LeetCode 203 Remove Linked List Elements 题解
+                Ruby语言特性总结
               
             
           </h1>
@@ -302,8 +296,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-24T20:28:51+08:00" content="2016-09-24">
-              2016-09-24
+            <time itemprop="dateCreated" datetime="2016-12-22T11:13:41+08:00" content="2016-12-22">
+              2016-12-22
             </time>
           </span>
 
@@ -313,8 +307,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/2016/09/24/LeetCode-203-Remove-Linked-List-Elements-题解/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/24/LeetCode-203-Remove-Linked-List-Elements-题解/" itemprop="commentsCount"></span>
+                <a href="/2016/12/22/ruby语言特性总结/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/12/22/ruby语言特性总结/" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -324,7 +318,7 @@
 
           
           
-             <span id="/2016/09/24/LeetCode-203-Remove-Linked-List-Elements-题解/" class="leancloud_visitors" data-flag-title="LeetCode 203 Remove Linked List Elements 题解">
+             <span id="/2016/12/22/ruby语言特性总结/" class="leancloud_visitors" data-flag-title="Ruby语言特性总结">
                &nbsp; | &nbsp;
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -346,14 +340,13 @@
       
 
       
-        <h3 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h3><p>　　Remove all elements from a linked list of integers that have value val.</p>
-<p>　　Example</p>
-<p>　　Given: 1 –&gt; 2 –&gt; 6 –&gt; 3 –&gt; 4 –&gt; 5 –&gt; 6, val = 6</p>
-<p>　　Return: 1 –&gt; 2 –&gt; 3 –&gt; 4 –&gt; 5<br><a id="more"></a></p>
-<h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><p>　　这道题非常简单，但很好地体现了单链表的特点。单链表每个结点只能引用下一个结点，因此删除结点时，也只能立足于一个不需要被删除的结点，去判断是否需要删除下一个结点。</p>
-<p>　　由于删除时候需要遍历链表，但遍历的开始必须是头结点，而头结点如果要删除就要额外处理了。这里我们在头结点之前再插入一个临时结点，以统一处理整个链表。</p>
-<h3 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * Definition for singly-linked list.</div><div class="line"> * public class ListNode &#123;</div><div class="line"> *     int val;</div><div class="line"> *     ListNode next;</div><div class="line"> *     ListNode(int x) &#123; val = x; &#125;</div><div class="line"> * &#125;</div><div class="line"> */</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> ListNode <span class="title">removeElements</span><span class="params">(ListNode head, <span class="keyword">int</span> val)</span> </span>&#123;</div><div class="line">        ListNode dummy = <span class="keyword">new</span> ListNode(<span class="number">0</span>);</div><div class="line">        dummy.next = head;</div><div class="line">        head = dummy;</div><div class="line">        <span class="keyword">while</span>(head.next != <span class="keyword">null</span>)&#123;</div><div class="line">            <span class="keyword">if</span>(head.next.val == val)&#123;</div><div class="line">                head.next = head.next.next;</div><div class="line">            &#125;<span class="keyword">else</span>&#123;</div><div class="line">                head = head.next;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> dummy.next;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>　　代码里删除只针对紧邻的下一个结点。当下一个结点的值是需要删除的值时，则删除下一个结点，再判断新的下一个结点是否需要删除；如果下一个结点不需要删除，则移动到下一个结点，再观察后面的结点是否需要删除。</p>
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　之前在做Gitlab源代码的扩展工作，一直没有时间总结一下Ruby和Rails的内容。最近在看《Effective Ruby》，顺便总结一下Ruby的一些语言特性与进阶内容。此博文将持续不定期更新。</p>
+<h3 id="Ruby最基础的语法特性"><a href="#Ruby最基础的语法特性" class="headerlink" title="Ruby最基础的语法特性"></a>Ruby最基础的语法特性</h3><h4 id="true和false"><a href="#true和false" class="headerlink" title="true和false"></a>true和false</h4><p>　　在Ruby中，一切皆是对象。这个“一切”的概念很广，除了一般面向对象语言的对象概念以外，像class也是对象，true，false，nil等也都是对象。Ruby里用到的==，&gt;=等比较操作符，统统都是对象方法。</p>
+<p>　　在其他语言中，true和false往往是关键字。但在Ruby中，它们是不遵循命名规范和赋值规范的全局变量，它们的行为和全局对象一样，只是不以字符$开头，也不能放在赋值语句的左半边。他们都是TrueClass和FalseClass的实例对象。在Ruby中，除了false和nil，一切都是真值，都能让表达式为真，所以true的存在只是方便，是冗余的。</p>
+<p>　　凡是某表达式返回false或nil都不成立，其他值都成立。但这样也有一个问题，就是不好区分false和nil方法。最简单的区分方法是用nil?方法，另一种是用==方法，false是方法的调用者。因为Object#==方法会比较方法调用者和参数是否属于同一对象。但要注意false要放在==左边作为方法的调用者，因为如果其他对象放在==左边，相当于调用它们的==方法，而这些对象很可能覆盖了Object#==方法，造成诡异的返回。</p>
+<h4 id="留心nil对象"><a href="#留心nil对象" class="headerlink" title="留心nil对象"></a>留心nil对象</h4><p>　　在方法调用过程中，很可能产生nil对象，也很可能传入的参数本身就是nil。对这些对象调用方法往往会抛出nil:NilClass的NoMethodError错误。所以我们在处理对象是要十分小心。</p>
+<p>　　最普通的方法是用nil?方法判断一下。或者用to_s，to_i，to_a等方法将对象进行转换。意思是，假如你某个对象是String类的对象，在调用方法前先用to_s处理一下，如果是正常对象则返回本身，如果是nil则返回””，这样在调用方法时就不会抛异常。同理，如果你要处理的对象正常情况下是Integer或Array对象，则可以用to_i，to_a方法转换一下。</p>
+<p>　　Array#compact方法还能去除Array里所有nil元素。</p>
 
       
     </div>
@@ -376,9 +369,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/LeetCode/" rel="tag">#LeetCode</a>
-          
-            <a href="/tags/Linked-List/" rel="tag">#Linked List</a>
+            <a href="/tags/Ruby/" rel="tag">#Ruby</a>
           
         </div>
       
@@ -387,17 +378,13 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2016/09/24/LeetCode-234-Palindrome-Linked-List-题解/" rel="next" title="LeetCode 234 Palindrome Linked List 题解">
-                <i class="fa fa-chevron-left"></i> LeetCode 234 Palindrome Linked List 题解
+              <a href="/2016/11/28/简析Docker的存储策略与网桥通信机制/" rel="next" title="简析Docker的存储策略与网桥通信机制">
+                <i class="fa fa-chevron-left"></i> 简析Docker的存储策略与网桥通信机制
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2016/09/24/LeetCode-160-Intersection-of-Two-Linked-Lists-题解/" rel="prev" title="LeetCode 160 Intersection of Two Linked Lists 题解">
-                LeetCode 160 Intersection of Two Linked Lists 题解 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -423,8 +410,8 @@
           
   <div class="comments" id="comments">
     
-      <div class="ds-thread" data-thread-key="2016/09/24/LeetCode-203-Remove-Linked-List-Elements-题解/"
-           data-title="LeetCode 203 Remove Linked List Elements 题解" data-url="http://wjqwsp.github.io/2016/09/24/LeetCode-203-Remove-Linked-List-Elements-题解/">
+      <div class="ds-thread" data-thread-key="2016/12/22/ruby语言特性总结/"
+           data-title="Ruby语言特性总结" data-url="http://wjqwsp.github.io/2016/12/22/ruby语言特性总结/">
       </div>
     
   </div>
@@ -508,7 +495,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#题目"><span class="nav-number">1.</span> <span class="nav-text">题目</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#思路"><span class="nav-number">2.</span> <span class="nav-text">思路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码"><span class="nav-number">3.</span> <span class="nav-text">代码</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Ruby最基础的语法特性"><span class="nav-number">2.</span> <span class="nav-text">Ruby最基础的语法特性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#true和false"><span class="nav-number">2.1.</span> <span class="nav-text">true和false</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#留心nil对象"><span class="nav-number">2.2.</span> <span class="nav-text">留心nil对象</span></a></li></ol></li></ol></div>
             
           </div>
         </section>
