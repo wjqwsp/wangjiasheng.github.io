@@ -61,6 +61,15 @@
 <h4 id="考虑使用哈希的默认值"><a href="#考虑使用哈希的默认值" class="headerlink" title="考虑使用哈希的默认值"></a>考虑使用哈希的默认值</h4><p>　　可以用Hash.new方法传入一个参数作为默认值，当访问不存在的键时会返回默认值，并且不会修改哈希对象。但是如果默认值是可修改的，例如数组，那么很可能会修改默认值，造成很多错误。建议传入的参数是一个块，它的返回值会作为默认值，并且不会修改默认值。但用块的话访问一个不存在的键会将这个键存入哈希。</p>
 <p>　　正确检查一个哈希是否包含某个键使用has_key?方法。因为设置了默认值的哈希不会返回nil，不能用hash[key]的返回值来判断。这时候设置默认值需要十分谨慎。用Hash#fetch方法会更加安全。</p>
 <h4 id="使用代理而不是继承"><a href="#使用代理而不是继承" class="headerlink" title="使用代理而不是继承"></a>使用代理而不是继承</h4><p>　　我们可能想要实现一个改良版的集合类或者其他核心类，这时候应该优先使用代理，这可以给我们带来更大的灵活性。通过require(‘forwardable’)并且继承Forwardable类，我们可以使用def_delegators方法实现代理。</p>
+<h3 id="异常"><a href="#异常" class="headerlink" title="异常"></a>异常</h3><h4 id="使用定制的异常"><a href="#使用定制的异常" class="headerlink" title="使用定制的异常"></a>使用定制的异常</h4><p>　　当raise直接传字符串时，抛出RuntimeError，这个异常有点表意不明，推荐使用其他特定的异常类或者自定义的异常类作为参数传给raise。这样能抛出更有用的信息。自定义异常类需要继承StandardError，并且类名要以Error结尾。</p>
+<p>　　如果自定义的异常类重写了initialize方法，需要确保其调用了super方法，最好以错误信息作为参数。在initialize方法中再次设置错误信息，会覆盖在initialize中设置的。</p>
+<p>　　raise方法可以传入类对象或者实例对象作为参数，这两种方法没有什么不同。</p>
+<h4 id="捕获具体的异常"><a href="#捕获具体的异常" class="headerlink" title="捕获具体的异常"></a>捕获具体的异常</h4><p>　　以白名单法捕获异常，即捕获知道怎么处理的异常，尽量不捕获不知道如何处理的异常。如果在rescue中又抛出了另一个异常，此时会离开原来的作用域，前一个异常信息会被丢弃，新异常会被抛出。可以在rescue中执行一个特殊方法，以异常对象作为参数，在方法中执行rescue，把原异常抛出。</p>
+<h4 id="通过块和ensure管理资源"><a href="#通过块和ensure管理资源" class="headerlink" title="通过块和ensure管理资源"></a>通过块和ensure管理资源</h4><p>　　ensure用来执行异常处理后的清理工作，但如果处处都有ensure就显得比较笨重，我们可以进行一下封装。将一个块与类方法绑定起来，在这个方法里调用块，并且执行一些清理工作。在方法里还可以用block_given?来判断是否传入块，用这种方法使得清理工作变得非常灵活且自动化。</p>
+<h4 id="不在ensure里使用return"><a href="#不在ensure里使用return" class="headerlink" title="不在ensure里使用return"></a>不在ensure里使用return</h4><p>　　在rescue里使用return会忽略掉所有StandardError异常，在ensure里使用return会忽略掉所有异常，必须避免。ensure里使用next和break也会丢弃异常。</p>
+<h4 id="限制retry的次数"><a href="#限制retry的次数" class="headerlink" title="限制retry的次数"></a>限制retry的次数</h4><p>　　如果需要在rescue里重试，可以使用retry关键字。避免可能无限重试，添加一个计数器来限制retry次数，并且等待一定的时间再重试。但延时有可能会加剧问题，可以用指数退避算法等方法来调整等待时间。</p>
+<p>　　如果retry过程中又抛出了另一个异常，那么原始异常信息就会丢失。建议在日志里记录一下retry的信息。</p>
+<h4 id="throw控制流程"><a href="#throw控制流程" class="headerlink" title="throw控制流程"></a>throw控制流程</h4><p>　　throw比raise更适合用来控制流程，可以搭配catch和throw来跳出作用域。但如果滥用，会使得调用栈十分复杂，应尽量用简单的办法来控制流程，例如方法调用和return，代替catch和throw。</p>
 ]]></content>
     </entry>
     
