@@ -112,7 +112,7 @@
 <meta property="og:url" content="http://wjqwsp.github.io/2017/03/20/Gitlabb-CI-对erlang应用进行自动测试/index.html">
 <meta property="og:site_name" content="南国倾城">
 <meta property="og:description" content="Common Test测试框架　　common test是erlang自带的一个测试框架，对于复杂，大规模，特别是分布式的测试场景，它尤为合适。我们将先用它来编写测试计划，然后再编写gitlab ci的测试脚本来调用这些测试计划，从而实现自动测试。">
-<meta property="og:updated_time" content="2017-03-20T09:10:45.195Z">
+<meta property="og:updated_time" content="2017-03-20T09:16:20.588Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Gitlab CI 对erlang应用进行自动测试">
 <meta name="twitter:description" content="Common Test测试框架　　common test是erlang自带的一个测试框架，对于复杂，大规模，特别是分布式的测试场景，它尤为合适。我们将先用它来编写测试计划，然后再编写gitlab ci的测试脚本来调用这些测试计划，从而实现自动测试。">
@@ -371,7 +371,7 @@
 <p>　　只需要在Gitlab CI服务器里修改/srv/gitlab-runner/config/config.toml文件，在相应的gitlab runner配置信息里加上hostname，例如这样：</p>
 <figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">[[runners]]</div><div class="line">  name = "ct-runner"</div><div class="line">  url = "http://gitlab.local/ci"</div><div class="line">  token = "ff7494dabc6a295333f685a90a7198"</div><div class="line">  executor = "docker"</div><div class="line">  [runners.docker]</div><div class="line">    hostname = "localhost"</div><div class="line">    tls_verify = false</div><div class="line">    image = "erlang:18.3.4"</div><div class="line">    privileged = false</div><div class="line">    disable_cache = false</div><div class="line">    volumes = ["/cache"]</div><div class="line">    extra_hosts = ["gitlab.local:10.106.128.234"]</div><div class="line">  [runners.cache]</div></pre></td></tr></table></figure>
 <h6 id="自行判断测试是否通过"><a href="#自行判断测试是否通过" class="headerlink" title="自行判断测试是否通过"></a>自行判断测试是否通过</h6><p>　　如果在单结点环境下进行测试，无论运行test suite还是test spec，测试正确状态码都是0，错误都是1。这样Gitlab CI的运行结果是能正确体现测试结果的。但如果运行分布式测试，Gitlab CI的运行结果只反映是否连通其他结点。只要连通了，无论测试结果如何状态码都是0。这就需要我们自己判断测试是否通过。</p>
-<p>　　每次运行完测试，common test都会生成html格式的报告文件。如果有错误的话，会有错误次数显示，并用红色标注。因此，我们可以通过检索每个结点相应的html文件里是否出现<font color="red">这个关键字，来判断测试是否通过。</font></p>
+<p>　　每次运行完测试，common test都会生成html格式的报告文件。如果有错误的话，会有错误次数显示，并用红色标注。因此，我们可以通过检索每个结点相应的html文件里是否出现“<font color="\"red\"">”这个关键字，来判断测试是否通过。</font></p>
 <p>　　可以用grep命令提取关键字出现的次数，但要注意grep命令如果找不到关键字的话，其返回码是1！！会导致Gitlab CI崩溃。这就与我们找不到关键字代表结果正确这个需求恰恰相反了。所以如果用这个命令来做匹配，需要绕点弯，像上面例子那样，多做几步操作。</p>
 
       
