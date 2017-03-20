@@ -106,19 +106,16 @@
 
 
 
-<meta name="description" content="Common Test测试框架　　common test是erlang自带的一个测试框架，对于复杂，大规模，特别是分布式的测试场景，它尤为合适。我们将先用它来编写测试计划，然后再编写gitlab ci的测试脚本来调用这些测试计划，从而实现自动测试。
-基本结构　　common test由内而外可分为四层。最内层，也即粒度最小的结构，是test case。它们是一个个函数，每一个函数都作为一个测试用例">
+<meta name="description" content="Common Test测试框架　　common test是erlang自带的一个测试框架，对于复杂，大规模，特别是分布式的测试场景，它尤为合适。我们将先用它来编写测试计划，然后再编写gitlab ci的测试脚本来调用这些测试计划，从而实现自动测试。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Gitlab CI 对erlang应用进行自动测试">
 <meta property="og:url" content="http://wjqwsp.github.io/2017/03/20/Gitlabb-CI-对erlang应用进行自动测试/index.html">
 <meta property="og:site_name" content="南国倾城">
-<meta property="og:description" content="Common Test测试框架　　common test是erlang自带的一个测试框架，对于复杂，大规模，特别是分布式的测试场景，它尤为合适。我们将先用它来编写测试计划，然后再编写gitlab ci的测试脚本来调用这些测试计划，从而实现自动测试。
-基本结构　　common test由内而外可分为四层。最内层，也即粒度最小的结构，是test case。它们是一个个函数，每一个函数都作为一个测试用例">
-<meta property="og:updated_time" content="2017-03-20T09:09:38.010Z">
+<meta property="og:description" content="Common Test测试框架　　common test是erlang自带的一个测试框架，对于复杂，大规模，特别是分布式的测试场景，它尤为合适。我们将先用它来编写测试计划，然后再编写gitlab ci的测试脚本来调用这些测试计划，从而实现自动测试。">
+<meta property="og:updated_time" content="2017-03-20T09:10:45.195Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Gitlab CI 对erlang应用进行自动测试">
-<meta name="twitter:description" content="Common Test测试框架　　common test是erlang自带的一个测试框架，对于复杂，大规模，特别是分布式的测试场景，它尤为合适。我们将先用它来编写测试计划，然后再编写gitlab ci的测试脚本来调用这些测试计划，从而实现自动测试。
-基本结构　　common test由内而外可分为四层。最内层，也即粒度最小的结构，是test case。它们是一个个函数，每一个函数都作为一个测试用例">
+<meta name="twitter:description" content="Common Test测试框架　　common test是erlang自带的一个测试框架，对于复杂，大规模，特别是分布式的测试场景，它尤为合适。我们将先用它来编写测试计划，然后再编写gitlab ci的测试脚本来调用这些测试计划，从而实现自动测试。">
 
 
 
@@ -341,6 +338,7 @@
 
       
         <h3 id="Common-Test测试框架"><a href="#Common-Test测试框架" class="headerlink" title="Common Test测试框架"></a>Common Test测试框架</h3><p>　　common test是erlang自带的一个测试框架，对于复杂，大规模，特别是分布式的测试场景，它尤为合适。我们将先用它来编写测试计划，然后再编写gitlab ci的测试脚本来调用这些测试计划，从而实现自动测试。</p>
+<a id="more"></a>
 <h4 id="基本结构"><a href="#基本结构" class="headerlink" title="基本结构"></a>基本结构</h4><p>　　common test由内而外可分为四层。最内层，也即粒度最小的结构，是test case。它们是一个个函数，每一个函数都作为一个测试用例来测试一个小的功能点。包裹一组test case的模块是test suite，他们把一些针对系统同一部件的测试组织在一起。许多test suite组成test object directory。所有test object directory都在test root目录里。由此从内而外，由下而上，一层一层地搭建起针对整个erlang系统的测试，力求覆盖系统的方方面面。</p>
 <h4 id="基本测试方法"><a href="#基本测试方法" class="headerlink" title="基本测试方法"></a>基本测试方法</h4><p>　　我们一般针对test suite来运行测试。为了简化测试的过程，更好地组织起对多个test suite的测试计划，common test还有一个非常强大的测试工具：test spec。对于复杂特别是分布式的测试场景，我们一般使用test spec。它实际上就是让我们编写一个配置文件，利用提供的一些配置元组来配置我们的测试计划。除了erlang原生的一些执行common test的指令外，rebar3也对common test有很好的支持，下面来总结一下erlang原生自带的和rebar3下分别是如何执行common test测试的。</p>
 <h5 id="erlang原生"><a href="#erlang原生" class="headerlink" title="erlang原生"></a>erlang原生</h5><h6 id="针对test-suite进行测试"><a href="#针对test-suite进行测试" class="headerlink" title="针对test suite进行测试"></a>针对test suite进行测试</h6><p>　　linux shell下直接运行：</p>
