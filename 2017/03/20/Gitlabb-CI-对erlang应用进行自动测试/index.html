@@ -1,0 +1,925 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+  <link href="//cdn.jsdelivr.net/fancybox/2.1.5/jquery.fancybox.min.css" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Lobster Two:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+  
+
+<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.2/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="erlang,Gitlab CI,自动测试," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="Common Test测试框架　　common test是erlang自带的一个测试框架，对于复杂，大规模，特别是分布式的测试场景，它尤为合适。我们将先用它来编写测试计划，然后再编写gitlab ci的测试脚本来调用这些测试计划，从而实现自动测试。
+基本结构　　common test由内而外可分为四层。最内层，也即粒度最小的结构，是test case。它们是一个个函数，每一个函数都作为一个测试用例">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Gitlab CI 对erlang应用进行自动测试">
+<meta property="og:url" content="http://wjqwsp.github.io/2017/03/20/Gitlabb-CI-对erlang应用进行自动测试/index.html">
+<meta property="og:site_name" content="南国倾城">
+<meta property="og:description" content="Common Test测试框架　　common test是erlang自带的一个测试框架，对于复杂，大规模，特别是分布式的测试场景，它尤为合适。我们将先用它来编写测试计划，然后再编写gitlab ci的测试脚本来调用这些测试计划，从而实现自动测试。
+基本结构　　common test由内而外可分为四层。最内层，也即粒度最小的结构，是test case。它们是一个个函数，每一个函数都作为一个测试用例">
+<meta property="og:updated_time" content="2017-03-20T09:09:38.010Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Gitlab CI 对erlang应用进行自动测试">
+<meta name="twitter:description" content="Common Test测试框架　　common test是erlang自带的一个测试框架，对于复杂，大规模，特别是分布式的测试场景，它尤为合适。我们将先用它来编写测试计划，然后再编写gitlab ci的测试脚本来调用这些测试计划，从而实现自动测试。
+基本结构　　common test由内而外可分为四层。最内层，也即粒度最小的结构，是test case。它们是一个个函数，每一个函数都作为一个测试用例">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 6320571070080353000,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://wjqwsp.github.io/2017/03/20/Gitlabb-CI-对erlang应用进行自动测试/"/>
+
+  <title> Gitlab CI 对erlang应用进行自动测试 | 南国倾城 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">南国倾城</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">左手代码，右手年华</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Gitlab CI 对erlang应用进行自动测试
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-03-20T14:52:11+08:00" content="2017-03-20">
+              2017-03-20
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2017/03/20/Gitlabb-CI-对erlang应用进行自动测试/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/03/20/Gitlabb-CI-对erlang应用进行自动测试/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2017/03/20/Gitlabb-CI-对erlang应用进行自动测试/" class="leancloud_visitors" data-flag-title="Gitlab CI 对erlang应用进行自动测试">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="Common-Test测试框架"><a href="#Common-Test测试框架" class="headerlink" title="Common Test测试框架"></a>Common Test测试框架</h3><p>　　common test是erlang自带的一个测试框架，对于复杂，大规模，特别是分布式的测试场景，它尤为合适。我们将先用它来编写测试计划，然后再编写gitlab ci的测试脚本来调用这些测试计划，从而实现自动测试。</p>
+<h4 id="基本结构"><a href="#基本结构" class="headerlink" title="基本结构"></a>基本结构</h4><p>　　common test由内而外可分为四层。最内层，也即粒度最小的结构，是test case。它们是一个个函数，每一个函数都作为一个测试用例来测试一个小的功能点。包裹一组test case的模块是test suite，他们把一些针对系统同一部件的测试组织在一起。许多test suite组成test object directory。所有test object directory都在test root目录里。由此从内而外，由下而上，一层一层地搭建起针对整个erlang系统的测试，力求覆盖系统的方方面面。</p>
+<h4 id="基本测试方法"><a href="#基本测试方法" class="headerlink" title="基本测试方法"></a>基本测试方法</h4><p>　　我们一般针对test suite来运行测试。为了简化测试的过程，更好地组织起对多个test suite的测试计划，common test还有一个非常强大的测试工具：test spec。对于复杂特别是分布式的测试场景，我们一般使用test spec。它实际上就是让我们编写一个配置文件，利用提供的一些配置元组来配置我们的测试计划。除了erlang原生的一些执行common test的指令外，rebar3也对common test有很好的支持，下面来总结一下erlang原生自带的和rebar3下分别是如何执行common test测试的。</p>
+<h5 id="erlang原生"><a href="#erlang原生" class="headerlink" title="erlang原生"></a>erlang原生</h5><h6 id="针对test-suite进行测试"><a href="#针对test-suite进行测试" class="headerlink" title="针对test suite进行测试"></a>针对test suite进行测试</h6><p>　　linux shell下直接运行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ct_run -suite *****_SUITE</div></pre></td></tr></table></figure>
+<p>　　erl shell里运行：</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ct:run_test([&#123;suite, *****_SUITE&#125;])</div></pre></td></tr></table></figure>
+<h5 id="运行test-spec"><a href="#运行test-spec" class="headerlink" title="运行test spec"></a>运行test spec</h5><p>　　linux shell下直接运行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ct_run -spec ****.spec</div></pre></td></tr></table></figure>
+<p>　　erl shell里运行：</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ct:run_test([&#123;spec, <span class="string">"****.spec"</span>&#125;])</div></pre></td></tr></table></figure>
+<p>　　但是，对于需要执行分布式测试的test spec，则只能在erl shell里运行：</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ct_master:run(<span class="string">"****.spec"</span>)</div></pre></td></tr></table></figure>
+<h4 id="rebar3"><a href="#rebar3" class="headerlink" title="rebar3"></a>rebar3</h4><h5 id="针对test-suite进行测试-1"><a href="#针对test-suite进行测试-1" class="headerlink" title="针对test suite进行测试"></a>针对test suite进行测试</h5><p>　　如果应用是用rebar3建立的，那么运行测试非常简单。只需要执行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">rebar3 ct</div></pre></td></tr></table></figure>
+<p>　　会自动运行应用内test文件夹下所有的test suite文件。还可以指定执行哪些test suite：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">rebar3 ct -suite=***_SUITE</div></pre></td></tr></table></figure>
+<h5 id="运行test-spec-1"><a href="#运行test-spec-1" class="headerlink" title="运行test spec"></a>运行test spec</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">rebar3 ct -spec=***.spec</div></pre></td></tr></table></figure>
+<p>　　可以用上述方法指定执行哪一个或那几个spec文件。但是，如果spec文件执行的是分布式测试，那么测试会忽略掉。目前，分布式测试只找到用erlang原生的函数来执行的办法。</p>
+<h3 id="Gitlab-CI进行erlang分布式测试"><a href="#Gitlab-CI进行erlang分布式测试" class="headerlink" title="Gitlab CI进行erlang分布式测试"></a>Gitlab CI进行erlang分布式测试</h3><h4 id="遇到的问题"><a href="#遇到的问题" class="headerlink" title="遇到的问题"></a>遇到的问题</h4><h5 id="Gitlab-CI-service不能更改hostname"><a href="#Gitlab-CI-service不能更改hostname" class="headerlink" title="Gitlab CI service不能更改hostname"></a>Gitlab CI service不能更改hostname</h5><p>　　如果要搭建多个虚拟主机的erlang分布式自动测试环境，必须利用Gitlab CI service功能，它底下是用docker link实现对多个docker container的通信，一个service就是一个docker container，即一个虚拟主机。但目前Gitlab CI还不能更改service的hostname。hostname默认是由service的image名字决定，这样就使得一个镜像只能创建一个service，难以创建多个erlang结点。</p>
+<p>　　虽然已经有很多Gitlab CI用户反映需要有更改hostname的需求，Gitlab社区版也有了相应的merge request，并且Gitlab官方人员貌似有意在不久的将来把这个功能加进去，但目前还是难以实现。Gitlab CI service的初衷应该主要是一个协助主测试环境的一个单独的虚拟服务器，例如数据库服务器。对于搭建这种分布式环境目前恐怕仍是支持不足。</p>
+<h5 id="erlang的docker镜像默认执行的启动指令返回值非0"><a href="#erlang的docker镜像默认执行的启动指令返回值非0" class="headerlink" title="erlang的docker镜像默认执行的启动指令返回值非0"></a>erlang的docker镜像默认执行的启动指令返回值非0</h5><p>　　erlang的docker镜像在启动以后，会默认执行指令erl，即开启一个erl shell。但这个指令返回值不是0，而Gitlab CI是利用返回值是否为0判断是否出错。如果启动一个erlang的service，系统会报错，使得service启动失败。</p>
+<h4 id="目前的解决方案"><a href="#目前的解决方案" class="headerlink" title="目前的解决方案"></a>目前的解决方案</h4><p>　　通过在同一个虚拟主机里创建多个虚拟结点的方法来搭建分布式环境，而不把分布式环境搭在多个虚拟主机里。</p>
+<h4 id="简单的erlang程序自动测试例子："><a href="#简单的erlang程序自动测试例子：" class="headerlink" title="简单的erlang程序自动测试例子："></a>简单的erlang程序自动测试例子：</h4><p>　　.gitlab-ci.yml文件：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="attr">image:</span> erlang:<span class="number">18.3</span><span class="number">.4</span></div><div class="line"></div><div class="line"><span class="attr">stages:</span></div><div class="line"><span class="bullet">  -</span> test</div><div class="line"></div><div class="line"><span class="attr">compile:</span></div><div class="line"><span class="attr">  stage:</span> test</div><div class="line"><span class="attr">  script:</span></div><div class="line"><span class="bullet">    -</span> mkdir ebin</div><div class="line"><span class="bullet">    -</span> mkdir logs</div><div class="line"><span class="bullet">    -</span> cd ebin</div><div class="line"><span class="bullet">    -</span> erlc ../src/meeting.erl</div><div class="line"><span class="bullet">    -</span> erl -noshell -sname ct -run ct_master run <span class="string">"../test/spec.spec"</span> -s init stop</div><div class="line"><span class="bullet">    -</span> vLines=$(grep -vc <span class="string">'&lt;font color=\"red\"&gt;'</span> ../logs/ct_run.c*/index.html)</div><div class="line"><span class="bullet">    -</span> all=$(cat ../logs/ct_run.c*/index.html | wc -l)</div><div class="line"><span class="bullet">    -</span> status1=$(($all-$vLines))</div><div class="line"><span class="bullet">    -</span> vLines=$(grep -vc <span class="string">'&lt;font color=\"red\"&gt;'</span> ../logs/ct_run.d*/index.html)</div><div class="line"><span class="bullet">    -</span> all=$(cat ../logs/ct_run.d*/index.html | wc -l)</div><div class="line"><span class="bullet">    -</span> status2=$(($all-$vLines))</div><div class="line"><span class="bullet">    -</span> status=$(($status1+$status2))</div><div class="line"><span class="bullet">    -</span> exit $status</div></pre></td></tr></table></figure>
+<p>　　spec.spec文件：</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">&#123;node, c, 'c@localhost'&#125;.</div><div class="line">&#123;node, d, 'd@localhost'&#125;.</div><div class="line"></div><div class="line"></div><div class="line">&#123;init, [c,d], [&#123;node_start, [&#123;monitor_master, true&#125;, &#123;erl_flags, <span class="string">"-pa /builds/wangjiasheng/ct-test/ebin/"</span>&#125;]&#125;]&#125;.</div><div class="line"></div><div class="line">&#123;alias, meeting, <span class="string">"./meeting/"</span>&#125;.</div><div class="line">&#123;logdir, all_nodes, <span class="string">"../logs/"</span>&#125;.</div><div class="line">&#123;logdir, master, <span class="string">"../logs/"</span>&#125;.</div><div class="line">&#123;suites, [c,d], meeting, all&#125;.</div></pre></td></tr></table></figure>
+<p>　　这里在本机建立两个erlang结点c@localhost和d@localhost。这两个结点都会运行相同的test suite。其中最核心的执行测试的指令就是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">erl -noshell -sname ct -run ct_master run &quot;../test/spec.spec&quot; -s init stop</div></pre></td></tr></table></figure>
+<h4 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h4><h5 id="更改docker-container的hostname"><a href="#更改docker-container的hostname" class="headerlink" title="更改docker container的hostname"></a>更改docker container的hostname</h5><p>　　在编写spec文件时候，需要指定启动哪些erlang结点，需要知道该结点的sname。然而，Gitlab CI默认的hostname是一长串字符，类似runner-ff7494da-project-564-concurrent-0这种，是运行时动态生成的，并且对该虚拟主机的访问只能通过这个hostname，localhost也是不能用的。因此我们需要自定义一个固定的hostname。</p>
+<p>　　只需要在Gitlab CI服务器里修改/srv/gitlab-runner/config/config.toml文件，在相应的gitlab runner配置信息里加上hostname，例如这样：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">[[runners]]</div><div class="line">  name = "ct-runner"</div><div class="line">  url = "http://gitlab.local/ci"</div><div class="line">  token = "ff7494dabc6a295333f685a90a7198"</div><div class="line">  executor = "docker"</div><div class="line">  [runners.docker]</div><div class="line">    hostname = "localhost"</div><div class="line">    tls_verify = false</div><div class="line">    image = "erlang:18.3.4"</div><div class="line">    privileged = false</div><div class="line">    disable_cache = false</div><div class="line">    volumes = ["/cache"]</div><div class="line">    extra_hosts = ["gitlab.local:10.106.128.234"]</div><div class="line">  [runners.cache]</div></pre></td></tr></table></figure>
+<h6 id="自行判断测试是否通过"><a href="#自行判断测试是否通过" class="headerlink" title="自行判断测试是否通过"></a>自行判断测试是否通过</h6><p>　　如果在单结点环境下进行测试，无论运行test suite还是test spec，测试正确状态码都是0，错误都是1。这样Gitlab CI的运行结果是能正确体现测试结果的。但如果运行分布式测试，Gitlab CI的运行结果只反映是否连通其他结点。只要连通了，无论测试结果如何状态码都是0。这就需要我们自己判断测试是否通过。</p>
+<p>　　每次运行完测试，common test都会生成html格式的报告文件。如果有错误的话，会有错误次数显示，并用红色标注。因此，我们可以通过检索每个结点相应的html文件里是否出现<font color="red">这个关键字，来判断测试是否通过。</font></p>
+<p>　　可以用grep命令提取关键字出现的次数，但要注意grep命令如果找不到关键字的话，其返回码是1！！会导致Gitlab CI崩溃。这就与我们找不到关键字代表结果正确这个需求恰恰相反了。所以如果用这个命令来做匹配，需要绕点弯，像上面例子那样，多做几步操作。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/erlang/" rel="tag">#erlang</a>
+          
+            <a href="/tags/Gitlab-CI/" rel="tag">#Gitlab CI</a>
+          
+            <a href="/tags/自动测试/" rel="tag">#自动测试</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/12/22/ruby语言特性总结/" rel="next" title="Ruby语言特性总结">
+                <i class="fa fa-chevron-left"></i> Ruby语言特性总结
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2017/03/20/Gitlabb-CI-对erlang应用进行自动测试/"
+           data-title="Gitlab CI 对erlang应用进行自动测试" data-url="http://wjqwsp.github.io/2017/03/20/Gitlabb-CI-对erlang应用进行自动测试/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/uploads/avatar.jpg"
+               alt="Gavin Wong" />
+          <p class="site-author-name" itemprop="name">Gavin Wong</p>
+          <p class="site-description motion-element" itemprop="description">广寒宫送千里香，杳杳随风入梦凉。我欲因之凌霄起，嫦娥丹桂尽入囊。</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">24</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">27</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Common-Test测试框架"><span class="nav-number">1.</span> <span class="nav-text">Common Test测试框架</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#基本结构"><span class="nav-number">1.1.</span> <span class="nav-text">基本结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#基本测试方法"><span class="nav-number">1.2.</span> <span class="nav-text">基本测试方法</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#erlang原生"><span class="nav-number">1.2.1.</span> <span class="nav-text">erlang原生</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#针对test-suite进行测试"><span class="nav-number">1.2.1.1.</span> <span class="nav-text">针对test suite进行测试</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#运行test-spec"><span class="nav-number">1.2.2.</span> <span class="nav-text">运行test spec</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#rebar3"><span class="nav-number">1.3.</span> <span class="nav-text">rebar3</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#针对test-suite进行测试-1"><span class="nav-number">1.3.1.</span> <span class="nav-text">针对test suite进行测试</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#运行test-spec-1"><span class="nav-number">1.3.2.</span> <span class="nav-text">运行test spec</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Gitlab-CI进行erlang分布式测试"><span class="nav-number">2.</span> <span class="nav-text">Gitlab CI进行erlang分布式测试</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#遇到的问题"><span class="nav-number">2.1.</span> <span class="nav-text">遇到的问题</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Gitlab-CI-service不能更改hostname"><span class="nav-number">2.1.1.</span> <span class="nav-text">Gitlab CI service不能更改hostname</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#erlang的docker镜像默认执行的启动指令返回值非0"><span class="nav-number">2.1.2.</span> <span class="nav-text">erlang的docker镜像默认执行的启动指令返回值非0</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#目前的解决方案"><span class="nav-number">2.2.</span> <span class="nav-text">目前的解决方案</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#简单的erlang程序自动测试例子："><span class="nav-number">2.3.</span> <span class="nav-text">简单的erlang程序自动测试例子：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#注意事项"><span class="nav-number">2.4.</span> <span class="nav-text">注意事项</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#更改docker-container的hostname"><span class="nav-number">2.4.1.</span> <span class="nav-text">更改docker container的hostname</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#自行判断测试是否通过"><span class="nav-number">2.4.1.1.</span> <span class="nav-text">自行判断测试是否通过</span></a></li></ol></li></ol></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gavin Wong</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/jquery/2.1.3/jquery.min.js"></script>
+
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/fastclick/1.0.6/fastclick.min.js"></script>
+
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/jquery.lazyload/1.9.3/jquery.lazyload.min.js"></script>
+
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/velocity/1.2.3/velocity.min.js"></script>
+
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/velocity/1.2.3/velocity.ui.min.js"></script>
+
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/fancybox/2.1.5/jquery.fancybox.pack.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"wjqwsp"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="//cdn.jsdelivr.net/ua-parser.js/0.7.10/ua-parser.min.js"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+       search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+    'use strict';
+    $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+            // get the contents from search data
+            isfetched = true;
+            $('.popup').detach().appendTo('.header-inner');
+            var datas = $( "entry", xmlResponse ).map(function() {
+                return {
+                    title: $( "title", this ).text(),
+                    content: $("content",this).text(),
+                    url: $( "url" , this).text()
+                };
+            }).get();
+            var $input = document.getElementById(search_id);
+            var $resultContent = document.getElementById(content_id);
+            $input.addEventListener('input', function(){
+                var matchcounts = 0;
+                var str='<ul class=\"search-result-list\">';
+                var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                $resultContent.innerHTML = "";
+                if (this.value.trim().length > 1) {
+                // perform local searching
+                datas.forEach(function(data) {
+                    var isMatch = true;
+                    var content_index = [];
+                    var data_title = data.title.trim().toLowerCase();
+                    var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                    var data_url = data.url;
+                    var index_title = -1;
+                    var index_content = -1;
+                    var first_occur = -1;
+                    // only match artiles with not empty titles and contents
+                    if(data_title != '' && data_content != '') {
+                        keywords.forEach(function(keyword, i) {
+                            index_title = data_title.indexOf(keyword);
+                            index_content = data_content.indexOf(keyword);
+                            if( index_title < 0 && index_content < 0 ){
+                                isMatch = false;
+                            } else {
+                                if (index_content < 0) {
+                                    index_content = 0;
+                                }
+                                if (i == 0) {
+                                    first_occur = index_content;
+                                }
+                            }
+                        });
+                    }
+                    // show search results
+                    if (isMatch) {
+                        matchcounts += 1;
+                        str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                        var content = data.content.trim().replace(/<[^>]+>/g,"");
+                        if (first_occur >= 0) {
+                            // cut out 100 characters
+                            var start = first_occur - 20;
+                            var end = first_occur + 80;
+                            if(start < 0){
+                                start = 0;
+                            }
+                            if(start == 0){
+                                end = 50;
+                            }
+                            if(end > content.length){
+                                end = content.length;
+                            }
+                            var match_content = content.substring(start, end);
+                            // highlight all keywords
+                            keywords.forEach(function(keyword){
+                                var regS = new RegExp(keyword, "gi");
+                                match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                            });
+
+                            str += "<p class=\"search-result\">" + match_content +"...</p>"
+                        }
+                        str += "</li>";
+                    }
+                })};
+                str += "</ul>";
+                if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+                if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+                $resultContent.innerHTML = str;
+            });
+            proceedsearch();
+        }
+    });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("EBQKkMtlkhkxwaXmaewHY2c4-gzGzoHsz", "KSypTWMBbTMgIBYw9EuDa73j");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+</body>
+</html>

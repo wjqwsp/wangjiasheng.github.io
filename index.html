@@ -283,6 +283,150 @@
             
               
                 
+                <a class="post-title-link" href="/2017/03/20/Gitlabb-CI-对erlang应用进行自动测试/" itemprop="url">
+                  Gitlab CI 对erlang应用进行自动测试
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-03-20T14:52:11+08:00" content="2017-03-20">
+              2017-03-20
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2017/03/20/Gitlabb-CI-对erlang应用进行自动测试/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/03/20/Gitlabb-CI-对erlang应用进行自动测试/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+             <span id="/2017/03/20/Gitlabb-CI-对erlang应用进行自动测试/" class="leancloud_visitors" data-flag-title="Gitlab CI 对erlang应用进行自动测试">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="Common-Test测试框架"><a href="#Common-Test测试框架" class="headerlink" title="Common Test测试框架"></a>Common Test测试框架</h3><p>　　common test是erlang自带的一个测试框架，对于复杂，大规模，特别是分布式的测试场景，它尤为合适。我们将先用它来编写测试计划，然后再编写gitlab ci的测试脚本来调用这些测试计划，从而实现自动测试。</p>
+<h4 id="基本结构"><a href="#基本结构" class="headerlink" title="基本结构"></a>基本结构</h4><p>　　common test由内而外可分为四层。最内层，也即粒度最小的结构，是test case。它们是一个个函数，每一个函数都作为一个测试用例来测试一个小的功能点。包裹一组test case的模块是test suite，他们把一些针对系统同一部件的测试组织在一起。许多test suite组成test object directory。所有test object directory都在test root目录里。由此从内而外，由下而上，一层一层地搭建起针对整个erlang系统的测试，力求覆盖系统的方方面面。</p>
+<h4 id="基本测试方法"><a href="#基本测试方法" class="headerlink" title="基本测试方法"></a>基本测试方法</h4><p>　　我们一般针对test suite来运行测试。为了简化测试的过程，更好地组织起对多个test suite的测试计划，common test还有一个非常强大的测试工具：test spec。对于复杂特别是分布式的测试场景，我们一般使用test spec。它实际上就是让我们编写一个配置文件，利用提供的一些配置元组来配置我们的测试计划。除了erlang原生的一些执行common test的指令外，rebar3也对common test有很好的支持，下面来总结一下erlang原生自带的和rebar3下分别是如何执行common test测试的。</p>
+<h5 id="erlang原生"><a href="#erlang原生" class="headerlink" title="erlang原生"></a>erlang原生</h5><h6 id="针对test-suite进行测试"><a href="#针对test-suite进行测试" class="headerlink" title="针对test suite进行测试"></a>针对test suite进行测试</h6><p>　　linux shell下直接运行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ct_run -suite *****_SUITE</div></pre></td></tr></table></figure>
+<p>　　erl shell里运行：</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ct:run_test([&#123;suite, *****_SUITE&#125;])</div></pre></td></tr></table></figure>
+<h5 id="运行test-spec"><a href="#运行test-spec" class="headerlink" title="运行test spec"></a>运行test spec</h5><p>　　linux shell下直接运行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ct_run -spec ****.spec</div></pre></td></tr></table></figure>
+<p>　　erl shell里运行：</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ct:run_test([&#123;spec, <span class="string">"****.spec"</span>&#125;])</div></pre></td></tr></table></figure>
+<p>　　但是，对于需要执行分布式测试的test spec，则只能在erl shell里运行：</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ct_master:run(<span class="string">"****.spec"</span>)</div></pre></td></tr></table></figure>
+<h4 id="rebar3"><a href="#rebar3" class="headerlink" title="rebar3"></a>rebar3</h4><h5 id="针对test-suite进行测试-1"><a href="#针对test-suite进行测试-1" class="headerlink" title="针对test suite进行测试"></a>针对test suite进行测试</h5><p>　　如果应用是用rebar3建立的，那么运行测试非常简单。只需要执行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">rebar3 ct</div></pre></td></tr></table></figure>
+<p>　　会自动运行应用内test文件夹下所有的test suite文件。还可以指定执行哪些test suite：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">rebar3 ct -suite=***_SUITE</div></pre></td></tr></table></figure>
+<h5 id="运行test-spec-1"><a href="#运行test-spec-1" class="headerlink" title="运行test spec"></a>运行test spec</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">rebar3 ct -spec=***.spec</div></pre></td></tr></table></figure>
+<p>　　可以用上述方法指定执行哪一个或那几个spec文件。但是，如果spec文件执行的是分布式测试，那么测试会忽略掉。目前，分布式测试只找到用erlang原生的函数来执行的办法。</p>
+<h3 id="Gitlab-CI进行erlang分布式测试"><a href="#Gitlab-CI进行erlang分布式测试" class="headerlink" title="Gitlab CI进行erlang分布式测试"></a>Gitlab CI进行erlang分布式测试</h3><h4 id="遇到的问题"><a href="#遇到的问题" class="headerlink" title="遇到的问题"></a>遇到的问题</h4><h5 id="Gitlab-CI-service不能更改hostname"><a href="#Gitlab-CI-service不能更改hostname" class="headerlink" title="Gitlab CI service不能更改hostname"></a>Gitlab CI service不能更改hostname</h5><p>　　如果要搭建多个虚拟主机的erlang分布式自动测试环境，必须利用Gitlab CI service功能，它底下是用docker link实现对多个docker container的通信，一个service就是一个docker container，即一个虚拟主机。但目前Gitlab CI还不能更改service的hostname。hostname默认是由service的image名字决定，这样就使得一个镜像只能创建一个service，难以创建多个erlang结点。</p>
+<p>　　虽然已经有很多Gitlab CI用户反映需要有更改hostname的需求，Gitlab社区版也有了相应的merge request，并且Gitlab官方人员貌似有意在不久的将来把这个功能加进去，但目前还是难以实现。Gitlab CI service的初衷应该主要是一个协助主测试环境的一个单独的虚拟服务器，例如数据库服务器。对于搭建这种分布式环境目前恐怕仍是支持不足。</p>
+<h5 id="erlang的docker镜像默认执行的启动指令返回值非0"><a href="#erlang的docker镜像默认执行的启动指令返回值非0" class="headerlink" title="erlang的docker镜像默认执行的启动指令返回值非0"></a>erlang的docker镜像默认执行的启动指令返回值非0</h5><p>　　erlang的docker镜像在启动以后，会默认执行指令erl，即开启一个erl shell。但这个指令返回值不是0，而Gitlab CI是利用返回值是否为0判断是否出错。如果启动一个erlang的service，系统会报错，使得service启动失败。</p>
+<h4 id="目前的解决方案"><a href="#目前的解决方案" class="headerlink" title="目前的解决方案"></a>目前的解决方案</h4><p>　　通过在同一个虚拟主机里创建多个虚拟结点的方法来搭建分布式环境，而不把分布式环境搭在多个虚拟主机里。</p>
+<h4 id="简单的erlang程序自动测试例子："><a href="#简单的erlang程序自动测试例子：" class="headerlink" title="简单的erlang程序自动测试例子："></a>简单的erlang程序自动测试例子：</h4><p>　　.gitlab-ci.yml文件：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="attr">image:</span> erlang:<span class="number">18.3</span><span class="number">.4</span></div><div class="line"></div><div class="line"><span class="attr">stages:</span></div><div class="line"><span class="bullet">  -</span> test</div><div class="line"></div><div class="line"><span class="attr">compile:</span></div><div class="line"><span class="attr">  stage:</span> test</div><div class="line"><span class="attr">  script:</span></div><div class="line"><span class="bullet">    -</span> mkdir ebin</div><div class="line"><span class="bullet">    -</span> mkdir logs</div><div class="line"><span class="bullet">    -</span> cd ebin</div><div class="line"><span class="bullet">    -</span> erlc ../src/meeting.erl</div><div class="line"><span class="bullet">    -</span> erl -noshell -sname ct -run ct_master run <span class="string">"../test/spec.spec"</span> -s init stop</div><div class="line"><span class="bullet">    -</span> vLines=$(grep -vc <span class="string">'&lt;font color=\"red\"&gt;'</span> ../logs/ct_run.c*/index.html)</div><div class="line"><span class="bullet">    -</span> all=$(cat ../logs/ct_run.c*/index.html | wc -l)</div><div class="line"><span class="bullet">    -</span> status1=$(($all-$vLines))</div><div class="line"><span class="bullet">    -</span> vLines=$(grep -vc <span class="string">'&lt;font color=\"red\"&gt;'</span> ../logs/ct_run.d*/index.html)</div><div class="line"><span class="bullet">    -</span> all=$(cat ../logs/ct_run.d*/index.html | wc -l)</div><div class="line"><span class="bullet">    -</span> status2=$(($all-$vLines))</div><div class="line"><span class="bullet">    -</span> status=$(($status1+$status2))</div><div class="line"><span class="bullet">    -</span> exit $status</div></pre></td></tr></table></figure>
+<p>　　spec.spec文件：</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">&#123;node, c, 'c@localhost'&#125;.</div><div class="line">&#123;node, d, 'd@localhost'&#125;.</div><div class="line"></div><div class="line"></div><div class="line">&#123;init, [c,d], [&#123;node_start, [&#123;monitor_master, true&#125;, &#123;erl_flags, <span class="string">"-pa /builds/wangjiasheng/ct-test/ebin/"</span>&#125;]&#125;]&#125;.</div><div class="line"></div><div class="line">&#123;alias, meeting, <span class="string">"./meeting/"</span>&#125;.</div><div class="line">&#123;logdir, all_nodes, <span class="string">"../logs/"</span>&#125;.</div><div class="line">&#123;logdir, master, <span class="string">"../logs/"</span>&#125;.</div><div class="line">&#123;suites, [c,d], meeting, all&#125;.</div></pre></td></tr></table></figure>
+<p>　　这里在本机建立两个erlang结点c@localhost和d@localhost。这两个结点都会运行相同的test suite。其中最核心的执行测试的指令就是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">erl -noshell -sname ct -run ct_master run &quot;../test/spec.spec&quot; -s init stop</div></pre></td></tr></table></figure>
+<h4 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h4><h5 id="更改docker-container的hostname"><a href="#更改docker-container的hostname" class="headerlink" title="更改docker container的hostname"></a>更改docker container的hostname</h5><p>　　在编写spec文件时候，需要指定启动哪些erlang结点，需要知道该结点的sname。然而，Gitlab CI默认的hostname是一长串字符，类似runner-ff7494da-project-564-concurrent-0这种，是运行时动态生成的，并且对该虚拟主机的访问只能通过这个hostname，localhost也是不能用的。因此我们需要自定义一个固定的hostname。</p>
+<p>　　只需要在Gitlab CI服务器里修改/srv/gitlab-runner/config/config.toml文件，在相应的gitlab runner配置信息里加上hostname，例如这样：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">[[runners]]</div><div class="line">  name = "ct-runner"</div><div class="line">  url = "http://gitlab.local/ci"</div><div class="line">  token = "ff7494dabc6a295333f685a90a7198"</div><div class="line">  executor = "docker"</div><div class="line">  [runners.docker]</div><div class="line">    hostname = "localhost"</div><div class="line">    tls_verify = false</div><div class="line">    image = "erlang:18.3.4"</div><div class="line">    privileged = false</div><div class="line">    disable_cache = false</div><div class="line">    volumes = ["/cache"]</div><div class="line">    extra_hosts = ["gitlab.local:10.106.128.234"]</div><div class="line">  [runners.cache]</div></pre></td></tr></table></figure>
+<h6 id="自行判断测试是否通过"><a href="#自行判断测试是否通过" class="headerlink" title="自行判断测试是否通过"></a>自行判断测试是否通过</h6><p>　　如果在单结点环境下进行测试，无论运行test suite还是test spec，测试正确状态码都是0，错误都是1。这样Gitlab CI的运行结果是能正确体现测试结果的。但如果运行分布式测试，Gitlab CI的运行结果只反映是否连通其他结点。只要连通了，无论测试结果如何状态码都是0。这就需要我们自己判断测试是否通过。</p>
+<p>　　每次运行完测试，common test都会生成html格式的报告文件。如果有错误的话，会有错误次数显示，并用红色标注。因此，我们可以通过检索每个结点相应的html文件里是否出现<font color="red">这个关键字，来判断测试是否通过。</font></p>
+<p>　　可以用grep命令提取关键字出现的次数，但要注意grep命令如果找不到关键字的话，其返回码是1！！会导致Gitlab CI崩溃。这就与我们找不到关键字代表结果正确这个需求恰恰相反了。所以如果用这个命令来做匹配，需要绕点弯，像上面例子那样，多做几步操作。</p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2016/12/22/ruby语言特性总结/" itemprop="url">
                   Ruby语言特性总结
                 </a>
@@ -1288,122 +1432,6 @@
 
 
     
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
-                <a class="post-title-link" href="/2016/09/22/Java异常处理总结/" itemprop="url">
-                  Java异常处理总结
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-22T12:10:45+08:00" content="2016-09-22">
-              2016-09-22
-            </time>
-          </span>
-
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/09/22/Java异常处理总结/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/09/22/Java异常处理总结/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-             <span id="/2016/09/22/Java异常处理总结/" class="leancloud_visitors" data-flag-title="Java异常处理总结">
-               &nbsp; | &nbsp;
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　这一讲抽取Java异常处理的核心内容与基本思想，作一个总结，既作为个人笔记，也可供读者参考。</p>
-<h3 id="基本思想"><a href="#基本思想" class="headerlink" title="基本思想"></a>基本思想</h3><ul>
-<li>降低错误处理代码的复杂度，让程序实际的逻辑实现与错误处理相分离，使代码的阅读，编写和调试工作更加井井有条。</li>
-<li>在能处理时捕捉异常，不能处理时则将异常传给其他地方处理。</li>
-<li>将异常分类，用异常类的名字或携带的信息标识异常类别与详细信息，一般只用名字标识即可。在处理时不针对异常抛出点处理，只对异常类型处理，简化了异常处理的代码。
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/09/22/Java异常处理总结/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -1449,7 +1477,7 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">23</span>
+              <span class="site-state-item-count">24</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -1459,7 +1487,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-count">27</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
