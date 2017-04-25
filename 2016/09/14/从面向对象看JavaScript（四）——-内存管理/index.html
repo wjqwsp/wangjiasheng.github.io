@@ -112,7 +112,7 @@
 <meta property="og:url" content="http://wjqwsp.github.io/2016/09/14/从面向对象看JavaScript（四）——-内存管理/index.html">
 <meta property="og:site_name" content="南国倾城">
 <meta property="og:description" content="前言　　与java类似，JavaScript也有两种垃圾回收方式，分别是标记清除和引用计数。目前基本上都是使用标记清除的方式，引用计数存在循环引用的问题，实际中很少使用，但IE中的BOM和DOM对象却是用引用计数方式来做垃圾回收，非常容易造成内存泄漏。">
-<meta property="og:updated_time" content="2016-09-14T08:45:01.009Z">
+<meta property="og:updated_time" content="2017-04-25T13:37:08.439Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="从面向对象看JavaScript（四）—— 内存管理">
 <meta name="twitter:description" content="前言　　与java类似，JavaScript也有两种垃圾回收方式，分别是标记清除和引用计数。目前基本上都是使用标记清除的方式，引用计数存在循环引用的问题，实际中很少使用，但IE中的BOM和DOM对象却是用引用计数方式来做垃圾回收，非常容易造成内存泄漏。">
@@ -355,6 +355,11 @@
 <p>　　我们可以这样修改代码：</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">assignHandler</span>(<span class="params"></span>)</span>&#123;</div><div class="line">    <span class="keyword">var</span> element = <span class="built_in">document</span>.getElementById(<span class="string">"someElement"</span>);</div><div class="line">    <span class="keyword">var</span> id = element.id;</div><div class="line">    element.onclick = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">        alert(id);</div><div class="line">    &#125;；</div><div class="line">    element = <span class="literal">null</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>　　谨记及时将DOM或BOM的引用手动设为null。</p>
+<h3 id="gc-root"><a href="#gc-root" class="headerlink" title="gc root"></a>gc root</h3><p>　　javascript的垃圾收集从gc root开始。gc root的核心包括当前执行环境的所有对象，可以沿着作用域链找到所有在当前环境的对象。然后从这些对象开始，沿着原型链一层一层地寻找引用的对象。这个过程类似函数执行的变量查找策略。也是先查作用域链，获得寻找的对象，然后查找该对象的原型链，获得要查找的属性。这是一种二维作用域链查找方式。这里的对象包括函数，因为在javascript里函数也是对象。</p>
+<h3 id="最佳实践"><a href="#最佳实践" class="headerlink" title="最佳实践"></a>最佳实践</h3><p>　　在实际开发中，容易造成内存泄漏的主要有以下方面：无用的全局变量，闭包以及脱离dom tree的dom元素。</p>
+<h4 id="不用的变量及时赋null"><a href="#不用的变量及时赋null" class="headerlink" title="不用的变量及时赋null"></a>不用的变量及时赋null</h4><p>　　养成好习惯，在函数执行过程中将用完的变量设为null，使得对象脱离执行环境。</p>
+<h4 id="注意闭包"><a href="#注意闭包" class="headerlink" title="注意闭包"></a>注意闭包</h4><p>　　闭包往往使得原本应该脱离执行环境的变量仍然保留在闭包函数的[[scope]]中而不能被释放，在使用闭包时应该谨慎，留意内存泄漏的发生，将作用域链里无用的变量设为null。</p>
+<h4 id="不要保留dom元素的引用"><a href="#不要保留dom元素的引用" class="headerlink" title="不要保留dom元素的引用"></a>不要保留dom元素的引用</h4><p>　　当我们保留了某子元素的引用时，即便其父元素脱离了文档，整个父元素及其所有子元素的内存都不会释放。而且当处理dom元素和其回调函数时要注意不要将元素对象作为参数传入回调函数中，这样容易造成循环引用。虽然现代浏览器普遍已经不使用引用计数法，这个问题不大，但养成好习惯总是好的。</p>
 <h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>　　关于JavaScript的内存管理，只需要掌握两种垃圾回收策略即可。特别要注意闭包和DOM,BOM对象，注意循环引用。及时手动切断引用与DOM,BOM对象，全局环境下的对象的联系。</p>
 
       
@@ -514,7 +519,7 @@
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#标记清除"><span class="nav-number">2.</span> <span class="nav-text">标记清除</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#引用计数"><span class="nav-number">3.</span> <span class="nav-text">引用计数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#闭包的循环引用问题"><span class="nav-number">4.</span> <span class="nav-text">闭包的循环引用问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#标记清除"><span class="nav-number">2.</span> <span class="nav-text">标记清除</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#引用计数"><span class="nav-number">3.</span> <span class="nav-text">引用计数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#闭包的循环引用问题"><span class="nav-number">4.</span> <span class="nav-text">闭包的循环引用问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#gc-root"><span class="nav-number">5.</span> <span class="nav-text">gc root</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#最佳实践"><span class="nav-number">6.</span> <span class="nav-text">最佳实践</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#不用的变量及时赋null"><span class="nav-number">6.1.</span> <span class="nav-text">不用的变量及时赋null</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#注意闭包"><span class="nav-number">6.2.</span> <span class="nav-text">注意闭包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#不要保留dom元素的引用"><span class="nav-number">6.3.</span> <span class="nav-text">不要保留dom元素的引用</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></ol></div>
             
           </div>
         </section>
