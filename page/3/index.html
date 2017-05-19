@@ -5,16 +5,22 @@
   
 
 
-<html class="theme-next pisces use-motion">
+<html class="theme-next pisces use-motion" lang="zh-Hans">
 <head>
   <meta charset="UTF-8"/>
-<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
 
 
 
 <meta http-equiv="Cache-Control" content="no-transform" />
 <meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
 
 
 
@@ -87,7 +93,7 @@
 
 <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.2/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
 
-<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+<link href="/css/main.css?v=5.1.1" rel="stylesheet" type="text/css" />
 
 
   <meta name="keywords" content="Hexo, NexT" />
@@ -99,7 +105,7 @@
 
 
 
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.1" />
 
 
 
@@ -118,26 +124,37 @@
 
 
 
-<script type="text/javascript" id="hexo.configuration">
+<script type="text/javascript" id="hexo.configurations">
   var NexT = window.NexT || {};
   var CONFIG = {
+    root: '/',
     scheme: 'Pisces',
-    sidebar: {"position":"left","display":"post"},
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
     fancybox: true,
     motion: true,
     duoshuo: {
-      userId: undefined,
+      userId: 'undefined',
       author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
     }
   };
 </script>
 
 
 
-
   <link rel="canonical" href="http://wjqwsp.github.io/page/3/"/>
 
-  <title> 南国倾城 </title>
+
+
+
+
+  <title>南国倾城</title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -153,36 +170,45 @@
 
 
 
+
+
+
+
+
   
   
     
   
 
-  <div class="container one-collumn sidebar-position-left 
+  <div class="container sidebar-position-left 
    page-home 
  ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
-      <div class="header-inner"><div class="site-meta ">
-  
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
 
-  <div class="custom-logo-site-title">
-    <a href="/"  class="brand" rel="start">
-      <span class="logo-line-before"><i></i></span>
-      <span class="site-title">南国倾城</span>
-      <span class="logo-line-after"><i></i></span>
-    </a>
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">南国倾城</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">左手代码，右手年华</p>
+      
   </div>
-  <p class="site-subtitle">左手代码，右手年华</p>
-</div>
 
-<div class="site-nav-toggle">
-  <button>
-    <span class="btn-bar"></span>
-    <span class="btn-bar"></span>
-    <span class="btn-bar"></span>
-  </button>
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
 </div>
 
 <nav class="site-nav">
@@ -223,34 +249,13 @@
       
 
       
-        <li class="menu-item menu-item-search">
-          
-            <a href="javascript:;" class="popup-trigger">
-          
-            
-              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
-            
-            搜索
-          </a>
-        </li>
-      
     </ul>
   
 
   
-    <div class="site-search">
-      
-  <div class="popup">
- <span class="search-icon fa fa-search"></span>
- <input type="text" id="local-search-input">
- <div id="local-search-result"></div>
- <span class="popup-btn-close">close</span>
-</div>
-
-
-    </div>
-  
 </nav>
+
+
 
  </div>
     </header>
@@ -265,13 +270,23 @@
       
 
   
-  
 
   
   
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://wjqwsp.github.io/2016/08/29/jmeter压力测试基础/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Gavin Wong">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="南国倾城">
+    </span>
 
     
       <header class="post-header">
@@ -279,27 +294,27 @@
         
         
           <h1 class="post-title" itemprop="name headline">
-            
-            
-              
                 
-                <a class="post-title-link" href="/2016/08/29/jmeter压力测试基础/" itemprop="url">
-                  JMeter压力测试基础
-                </a>
-              
-            
-          </h1>
+                <a class="post-title-link" href="/2016/08/29/jmeter压力测试基础/" itemprop="url">JMeter压力测试基础</a></h1>
         
 
         <div class="post-meta">
           <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-08-29T19:22:15+08:00" content="2016-08-29">
-              2016-08-29
-            </time>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-08-29T19:22:15+08:00">
+                2016-08-29
+              </time>
+            
+
+            
+
+            
           </span>
 
           
@@ -309,24 +324,28 @@
           
 
           
-
-          
           
              <span id="/2016/08/29/jmeter压力测试基础/" class="leancloud_visitors" data-flag-title="JMeter压力测试基础">
-               &nbsp; | &nbsp;
+               <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
                </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
           
 
           
+
+          
+
+          
+
         </div>
       </header>
     
-
 
     <div class="post-body" itemprop="articleBody">
 
@@ -337,12 +356,18 @@
         
           <h3 id="什么是压力测试"><a href="#什么是压力测试" class="headerlink" title="什么是压力测试"></a>什么是压力测试</h3><p>　　当我们开发完一个Web系统，实现了需求中的所有功能，此时还不能马上将其上线。我们必须对这个系统进行充分的，全面的测试，最大程度地确保它不会出错。压力测试就是这些测试的一种。压力测试的目的是为系统模拟一个现实的访问场景，建立一堆线程去并发地访问系统，了解这个Web系统能支持多大的并发量，或者说支持多少用户同时在线而不会崩溃。我们通过调整并发的线程数，访问时间等参数，去了解在一定的硬件配置下，我们的系统能支持多少线程在多少时间内同时访问。在确定了这些测试数据以后，我们便对这个Web系统的性能有一个比较客观全面的了解，从而可以更好地寻求优化的方案。</p>
 <h3 id="关于JMeter"><a href="#关于JMeter" class="headerlink" title="关于JMeter"></a>关于JMeter</h3><p>　　JMeter是用java实现的开源的压力测试工具，功能强大，使用简单，在压力测试中占据极其重要的地位。这一讲就以JMeter对一个简单的微博系统进行压力测试的实例入手，介绍一下JMeter最基本的一些知识，看看JMeter是怎么对HTTP request进行测试的。虽然是以实例的形式去介绍，但涉及的都是JMeter最基本的内容，更深入的学习还需不断参考JMeter官方文档。<br>
-          <div class="post-more-link text-center">
+          <!--noindex-->
+          <div class="post-button text-center">
             <a class="btn" href="/2016/08/29/jmeter压力测试基础/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
+          <!--/noindex-->
         
+      
+    </div>
+
+    <div>
       
     </div>
 
@@ -360,6 +385,8 @@
       
 
       
+
+      
       
         <div class="post-eof"></div>
       
@@ -371,13 +398,23 @@
       
 
   
-  
 
   
   
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://wjqwsp.github.io/2016/08/26/ORM-in-JaveEE——JPA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Gavin Wong">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="南国倾城">
+    </span>
 
     
       <header class="post-header">
@@ -385,27 +422,27 @@
         
         
           <h1 class="post-title" itemprop="name headline">
-            
-            
-              
                 
-                <a class="post-title-link" href="/2016/08/26/ORM-in-JaveEE——JPA/" itemprop="url">
-                  ORM in JaveEE——JPA
-                </a>
-              
-            
-          </h1>
+                <a class="post-title-link" href="/2016/08/26/ORM-in-JaveEE——JPA/" itemprop="url">ORM in JaveEE——JPA</a></h1>
         
 
         <div class="post-meta">
           <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-08-26T13:42:40+08:00" content="2016-08-26">
-              2016-08-26
-            </time>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-08-26T13:42:40+08:00">
+                2016-08-26
+              </time>
+            
+
+            
+
+            
           </span>
 
           
@@ -415,24 +452,28 @@
           
 
           
-
-          
           
              <span id="/2016/08/26/ORM-in-JaveEE——JPA/" class="leancloud_visitors" data-flag-title="ORM in JaveEE——JPA">
-               &nbsp; | &nbsp;
+               <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
                </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
           
 
           
+
+          
+
+          
+
         </div>
       </header>
     
-
 
     <div class="post-body" itemprop="articleBody">
 
@@ -444,12 +485,18 @@
           <h3 id="什么是ORM"><a href="#什么是ORM" class="headerlink" title="什么是ORM"></a>什么是ORM</h3><p>　　ORM,即Object Relation Mapping，对象关系映射。我们一般用数据库作数据的持久化存储，通过针对表，属性等进行各种sql的操作，来进行增删改查。但作为程序员，在面向对象思想大行其道的今天，我们更倾向于处理对象，而不是直接处理数据库里面的关系表。我们希望在程序的业务逻辑中，一切皆是对象，而不是表与表的关系，表之间的属性。于是一套从表到对象的映射技术，便应运而生。目前，很多框架都可以实现从关系型数据库到对象的映射，例如Hibernate,EclipseLink等。只需要编写一些配置文件，便可以轻松实现。</p>
 <h3 id="什么是JPA"><a href="#什么是JPA" class="headerlink" title="什么是JPA"></a>什么是JPA</h3><p>　　由于市面上有很多框架都可以实现ORM，我们使用不同的框架，就需要一套不一样的配置文件，一套不一样的代码。换言之，我们的工程与这些框架是紧耦合的。如果我们想更换这些框架，那么改动就非常大了。JPA就实现了一套统一的接口标准，让我们可以自由选择不同供应商的不同ORM框架，实现与这些第三方框架的解耦合。并且，JPA广泛使用注解，代码简单，开发十分方便。</p>
 <h3 id="JPA与RESTful-API"><a href="#JPA与RESTful-API" class="headerlink" title="JPA与RESTful API"></a>JPA与RESTful API</h3><p>　　前面我们提到RESTful API使用JAX-RS实现的。RESTful API与JPA没有直接的关系，但我们知道通过RESTful API我们实际上是把对对象的增删改查映射到HTTP方法上。而JPA相当于是处理下一层的工作，把对数据库表的增删改查映射到对象上。这样，经过JAX-RS到JPA再到数据库这么三层的处理，我们便可以利用RESTful API来实现我们的业务逻辑。<br>
-          <div class="post-more-link text-center">
+          <!--noindex-->
+          <div class="post-button text-center">
             <a class="btn" href="/2016/08/26/ORM-in-JaveEE——JPA/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
+          <!--/noindex-->
         
+      
+    </div>
+
+    <div>
       
     </div>
 
@@ -467,6 +514,8 @@
       
 
       
+
+      
       
         <div class="post-eof"></div>
       
@@ -478,13 +527,23 @@
       
 
   
-  
 
   
   
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://wjqwsp.github.io/2016/08/23/RESTful-API规范补充/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Gavin Wong">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="南国倾城">
+    </span>
 
     
       <header class="post-header">
@@ -492,27 +551,27 @@
         
         
           <h1 class="post-title" itemprop="name headline">
-            
-            
-              
                 
-                <a class="post-title-link" href="/2016/08/23/RESTful-API规范补充/" itemprop="url">
-                  RESTful API规范补充以及JAX-RS传递参数的方法
-                </a>
-              
-            
-          </h1>
+                <a class="post-title-link" href="/2016/08/23/RESTful-API规范补充/" itemprop="url">RESTful API规范补充以及JAX-RS传递参数的方法</a></h1>
         
 
         <div class="post-meta">
           <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-08-23T13:46:01+08:00" content="2016-08-23">
-              2016-08-23
-            </time>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-08-23T13:46:01+08:00">
+                2016-08-23
+              </time>
+            
+
+            
+
+            
           </span>
 
           
@@ -522,24 +581,28 @@
           
 
           
-
-          
           
              <span id="/2016/08/23/RESTful-API规范补充/" class="leancloud_visitors" data-flag-title="RESTful API规范补充以及JAX-RS传递参数的方法">
-               &nbsp; | &nbsp;
+               <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
                </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
           
 
           
+
+          
+
+          
+
         </div>
       </header>
     
-
 
     <div class="post-body" itemprop="articleBody">
 
@@ -553,12 +616,18 @@
 <pre><code>/api/weibo/6</code></pre>
 
 <p>　　但往往还需要限制一下搜索条件，例如评论数大于某个数，或者含有什么关键字，如果是搜索微博列表，也可能加上对日期作升序或降序排序的要求。这些附加条件，是作为query param附加在http请求里的。例如：<br>
-          <div class="post-more-link text-center">
+          <!--noindex-->
+          <div class="post-button text-center">
             <a class="btn" href="/2016/08/23/RESTful-API规范补充/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
+          <!--/noindex-->
         
+      
+    </div>
+
+    <div>
       
     </div>
 
@@ -576,6 +645,8 @@
       
 
       
+
+      
       
         <div class="post-eof"></div>
       
@@ -587,13 +658,23 @@
       
 
   
-  
 
   
   
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://wjqwsp.github.io/2016/08/22/RESTful-API-入门二-JAX-RS实现/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Gavin Wong">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="南国倾城">
+    </span>
 
     
       <header class="post-header">
@@ -601,27 +682,27 @@
         
         
           <h1 class="post-title" itemprop="name headline">
-            
-            
-              
                 
-                <a class="post-title-link" href="/2016/08/22/RESTful-API-入门二-JAX-RS实现/" itemprop="url">
-                  RESTful API 入门二(JAX-RS实现)
-                </a>
-              
-            
-          </h1>
+                <a class="post-title-link" href="/2016/08/22/RESTful-API-入门二-JAX-RS实现/" itemprop="url">RESTful API 入门二(JAX-RS实现)</a></h1>
         
 
         <div class="post-meta">
           <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-08-22T20:04:04+08:00" content="2016-08-22">
-              2016-08-22
-            </time>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-08-22T20:04:04+08:00">
+                2016-08-22
+              </time>
+            
+
+            
+
+            
           </span>
 
           
@@ -631,24 +712,28 @@
           
 
           
-
-          
           
              <span id="/2016/08/22/RESTful-API-入门二-JAX-RS实现/" class="leancloud_visitors" data-flag-title="RESTful API 入门二(JAX-RS实现)">
-               &nbsp; | &nbsp;
+               <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
                </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
           
 
           
+
+          
+
+          
+
         </div>
       </header>
     
-
 
     <div class="post-body" itemprop="articleBody">
 
@@ -659,12 +744,18 @@
         
           <h3 id="为什么要用Provider"><a href="#为什么要用Provider" class="headerlink" title="为什么要用Provider"></a>为什么要用Provider</h3><p>　　provider是在程序运行时自动调用的一些类，起到配置与修改http请求与回应的作用，是JAX-RS里不可或缺的一项组件。从上一讲可以看到，Resource组件已经能够完全实现RESTful API，在JAX-RS标准里无非就是添加一些注解的事。然而，实现功能只是最基本的要求，要做出企业级的应用，必须符合一些标准和规范，才能最大程度地提高团队的开发效率，并从最佳实践的角度去吻合市场的需求。RESTful API的一些设计规范，就必须要使用到provider去做配置。</p>
 <h3 id="几种provider的介绍"><a href="#几种provider的介绍" class="headerlink" title="几种provider的介绍"></a>几种provider的介绍</h3><p>　　所有类名上添加了@provider注解的类，都属于provider组件。下面将介绍一下常用的provider。<br>
-          <div class="post-more-link text-center">
+          <!--noindex-->
+          <div class="post-button text-center">
             <a class="btn" href="/2016/08/22/RESTful-API-入门二-JAX-RS实现/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
+          <!--/noindex-->
         
+      
+    </div>
+
+    <div>
       
     </div>
 
@@ -682,6 +773,8 @@
       
 
       
+
+      
       
         <div class="post-eof"></div>
       
@@ -693,13 +786,23 @@
       
 
   
-  
 
   
   
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://wjqwsp.github.io/2016/08/21/RESTful-API-入门-JAX-RS实现/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Gavin Wong">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="南国倾城">
+    </span>
 
     
       <header class="post-header">
@@ -707,27 +810,27 @@
         
         
           <h1 class="post-title" itemprop="name headline">
-            
-            
-              
                 
-                <a class="post-title-link" href="/2016/08/21/RESTful-API-入门-JAX-RS实现/" itemprop="url">
-                  RESTful API 入门一(JAX-RS实现)
-                </a>
-              
-            
-          </h1>
+                <a class="post-title-link" href="/2016/08/21/RESTful-API-入门-JAX-RS实现/" itemprop="url">RESTful API 入门一(JAX-RS实现)</a></h1>
         
 
         <div class="post-meta">
           <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-08-21T20:52:42+08:00" content="2016-08-21">
-              2016-08-21
-            </time>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-08-21T20:52:42+08:00">
+                2016-08-21
+              </time>
+            
+
+            
+
+            
           </span>
 
           
@@ -737,24 +840,28 @@
           
 
           
-
-          
           
              <span id="/2016/08/21/RESTful-API-入门-JAX-RS实现/" class="leancloud_visitors" data-flag-title="RESTful API 入门一(JAX-RS实现)">
-               &nbsp; | &nbsp;
+               <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
                </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
           
 
           
+
+          
+
+          
+
         </div>
       </header>
     
-
 
     <div class="post-body" itemprop="articleBody">
 
@@ -768,11 +875,13 @@
 <li>服务器端提供给开发者的一套接口，开发者通过调用这些接口，访问服务器的资源。这些资源通常是数据库的表抽象出来的对象，程序员通过获取这些对象，把对这些对象的增删改查映射到数据库，从而实现自己前后端的其他业务逻辑。目前移动端很多都是使用RESTful API来访问后台，受移动端影响，浏览器端也越来越多地使用这种规范。</li>
 <li>本质就是http协议。RESTful API的所有操作无非是CRUD，全部映射成http的POST,GET,PUT,PATCH,DELETE等方法，操作RESTful API实际上就是操作http报文，其只是在http协议外面再封装一层。因此操作十分简洁，直观，代码优雅。</li>
 <li>用URI定位所有资源。服务器端把所有供开发者访问的资源都以特定的URI表示。URI与http方法(上述的POST，GET等)组合，便可以实现对所有资源的所有操作。以微博和评论为例，假如新浪微博开放了所有微博和评论允许开发者访问。那么所有微博的URI可能是：
-          <div class="post-more-link text-center">
+          <!--noindex-->
+          <div class="post-button text-center">
             <a class="btn" href="/2016/08/21/RESTful-API-入门-JAX-RS实现/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
+          <!--/noindex-->
         
       
     </div>
@@ -785,7 +894,13 @@
       
     </div>
 
+    <div>
+      
+    </div>
+
     <footer class="post-footer">
+      
+
       
 
       
@@ -833,27 +948,34 @@
 
       
 
-      <section class="site-overview sidebar-panel  sidebar-panel-active ">
+      <section class="site-overview sidebar-panel sidebar-panel-active">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/uploads/avatar.jpg"
                alt="Gavin Wong" />
           <p class="site-author-name" itemprop="name">Gavin Wong</p>
-          <p class="site-description motion-element" itemprop="description">广寒宫送千里香，杳杳随风入梦凉。我欲因之凌霄起，嫦娥丹桂尽入囊。</p>
+           
+              <p class="site-description motion-element" itemprop="description">广寒宫送千里香，杳杳随风入梦凉。我欲因之凌霄起，嫦娥丹桂尽入囊。</p>
+          
         </div>
         <nav class="site-state motion-element">
-          <div class="site-state-item site-state-posts">
-            <a href="/archives">
-              <span class="site-state-item-count">25</span>
-              <span class="site-state-item-name">日志</span>
-            </a>
-          </div>
 
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">25</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
           
 
           
+
+          
+            
+            
             <div class="site-state-item site-state-tags">
-              <a href="/tags">
+              <a href="/tags/index.html">
                 <span class="site-state-item-count">28</span>
                 <span class="site-state-item-name">标签</span>
               </a>
@@ -874,7 +996,12 @@
         
         
 
+        
+
+
       </section>
+
+      
 
       
 
@@ -898,6 +1025,7 @@
   <span class="author" itemprop="copyrightHolder">Gavin Wong</span>
 </div>
 
+
 <div class="powered-by">
   由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
 </div>
@@ -909,15 +1037,20 @@
   </a>
 </div>
 
+
         
 
         
       </div>
     </footer>
 
-    <div class="back-to-top">
-      <i class="fa fa-arrow-up"></i>
-    </div>
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
   </div>
 
   
@@ -937,6 +1070,15 @@
 
 
   
+
+
+
+
+
+
+
+
+
 
 
 
@@ -962,173 +1104,72 @@
   
 
 
-  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.1"></script>
 
-  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
-
-
-
-  
-  
-
-
-  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
-
-  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.1"></script>
 
 
 
   
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.1"></script>
+
+
+
+  
 
   
 
 
-  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
-
-
-
-  
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.1"></script>
 
 
 
   
 
 
+  
+
+
+
+
+	
+
+
+
 
 
   
-  
-  <script type="text/javascript">
-    // Popup Window;
-    var isfetched = false;
-    // Search DB path;
-    var search_path = "search.xml";
-    if (search_path.length == 0) {
-       search_path = "search.xml";
-    }
-    var path = "/" + search_path;
-    // monitor main search box;
-
-    function proceedsearch() {
-      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
-      $('.popup').toggle();
-
-    }
-    // search function;
-    var searchFunc = function(path, search_id, content_id) {
-    'use strict';
-    $.ajax({
-        url: path,
-        dataType: "xml",
-        async: true,
-        success: function( xmlResponse ) {
-            // get the contents from search data
-            isfetched = true;
-            $('.popup').detach().appendTo('.header-inner');
-            var datas = $( "entry", xmlResponse ).map(function() {
-                return {
-                    title: $( "title", this ).text(),
-                    content: $("content",this).text(),
-                    url: $( "url" , this).text()
-                };
-            }).get();
-            var $input = document.getElementById(search_id);
-            var $resultContent = document.getElementById(content_id);
-            $input.addEventListener('input', function(){
-                var matchcounts = 0;
-                var str='<ul class=\"search-result-list\">';
-                var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
-                $resultContent.innerHTML = "";
-                if (this.value.trim().length > 1) {
-                // perform local searching
-                datas.forEach(function(data) {
-                    var isMatch = true;
-                    var content_index = [];
-                    var data_title = data.title.trim().toLowerCase();
-                    var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
-                    var data_url = data.url;
-                    var index_title = -1;
-                    var index_content = -1;
-                    var first_occur = -1;
-                    // only match artiles with not empty titles and contents
-                    if(data_title != '' && data_content != '') {
-                        keywords.forEach(function(keyword, i) {
-                            index_title = data_title.indexOf(keyword);
-                            index_content = data_content.indexOf(keyword);
-                            if( index_title < 0 && index_content < 0 ){
-                                isMatch = false;
-                            } else {
-                                if (index_content < 0) {
-                                    index_content = 0;
-                                }
-                                if (i == 0) {
-                                    first_occur = index_content;
-                                }
-                            }
-                        });
-                    }
-                    // show search results
-                    if (isMatch) {
-                        matchcounts += 1;
-                        str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
-                        var content = data.content.trim().replace(/<[^>]+>/g,"");
-                        if (first_occur >= 0) {
-                            // cut out 100 characters
-                            var start = first_occur - 20;
-                            var end = first_occur + 80;
-                            if(start < 0){
-                                start = 0;
-                            }
-                            if(start == 0){
-                                end = 50;
-                            }
-                            if(end > content.length){
-                                end = content.length;
-                            }
-                            var match_content = content.substring(start, end);
-                            // highlight all keywords
-                            keywords.forEach(function(keyword){
-                                var regS = new RegExp(keyword, "gi");
-                                match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
-                            });
-
-                            str += "<p class=\"search-result\">" + match_content +"...</p>"
-                        }
-                        str += "</li>";
-                    }
-                })};
-                str += "</ul>";
-                if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
-                if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
-                $resultContent.innerHTML = str;
-            });
-            proceedsearch();
-        }
-    });}
-
-    // handle and trigger popup window;
-    $('.popup-trigger').click(function(e) {
-      e.stopPropagation();
-      if (isfetched == false) {
-        searchFunc(path, 'local-search-input', 'local-search-result');
-      } else {
-        proceedsearch();
+    
+    <script>
+      var cloudTieConfig = {
+        url: document.location.href, 
+        sourceId: "",
+        productKey: "7186f7e53b7349c49adb69310cf73ddd",
+        target: "cloud-tie-wrapper"
       };
+    </script>
+    <script src="https://img1.ws.126.net/f2e/tie/yun/sdk/loader.js"></script>
+  
 
-    });
 
-    $('.popup-btn-close').click(function(e){
-      $('.popup').hide();
-      $(".popoverlay").remove();
-      $('body').css('overflow', '');
-    });
-    $('.popup').click(function(e){
-      e.stopPropagation();
-    });
-  </script>
+
+
+
+
+
+
 
 
   
+
+
+
+
 
   
 
@@ -1238,6 +1279,12 @@
   </script>
 
 
+
+  
+
+  
+
+  
 
   
 

@@ -5,16 +5,22 @@
   
 
 
-<html class="theme-next pisces use-motion">
+<html class="theme-next pisces use-motion" lang="zh-Hans">
 <head>
   <meta charset="UTF-8"/>
-<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
 
 
 
 <meta http-equiv="Cache-Control" content="no-transform" />
 <meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
 
 
 
@@ -87,7 +93,7 @@
 
 <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.2/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
 
-<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+<link href="/css/main.css?v=5.1.1" rel="stylesheet" type="text/css" />
 
 
   <meta name="keywords" content="Hexo, NexT" />
@@ -99,7 +105,7 @@
 
 
 
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.1" />
 
 
 
@@ -118,26 +124,37 @@
 
 
 
-<script type="text/javascript" id="hexo.configuration">
+<script type="text/javascript" id="hexo.configurations">
   var NexT = window.NexT || {};
   var CONFIG = {
+    root: '/',
     scheme: 'Pisces',
-    sidebar: {"position":"left","display":"post"},
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
     fancybox: true,
     motion: true,
     duoshuo: {
-      userId: undefined,
+      userId: 'undefined',
       author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
     }
   };
 </script>
 
 
 
-
   <link rel="canonical" href="http://wjqwsp.github.io/page/2/"/>
 
-  <title> 南国倾城 </title>
+
+
+
+
+  <title>南国倾城</title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -153,36 +170,45 @@
 
 
 
+
+
+
+
+
   
   
     
   
 
-  <div class="container one-collumn sidebar-position-left 
+  <div class="container sidebar-position-left 
    page-home 
  ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
-      <div class="header-inner"><div class="site-meta ">
-  
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
 
-  <div class="custom-logo-site-title">
-    <a href="/"  class="brand" rel="start">
-      <span class="logo-line-before"><i></i></span>
-      <span class="site-title">南国倾城</span>
-      <span class="logo-line-after"><i></i></span>
-    </a>
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">南国倾城</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">左手代码，右手年华</p>
+      
   </div>
-  <p class="site-subtitle">左手代码，右手年华</p>
-</div>
 
-<div class="site-nav-toggle">
-  <button>
-    <span class="btn-bar"></span>
-    <span class="btn-bar"></span>
-    <span class="btn-bar"></span>
-  </button>
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
 </div>
 
 <nav class="site-nav">
@@ -223,34 +249,13 @@
       
 
       
-        <li class="menu-item menu-item-search">
-          
-            <a href="javascript:;" class="popup-trigger">
-          
-            
-              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
-            
-            搜索
-          </a>
-        </li>
-      
     </ul>
   
 
   
-    <div class="site-search">
-      
-  <div class="popup">
- <span class="search-icon fa fa-search"></span>
- <input type="text" id="local-search-input">
- <div id="local-search-result"></div>
- <span class="popup-btn-close">close</span>
-</div>
-
-
-    </div>
-  
 </nav>
+
+
 
  </div>
     </header>
@@ -265,13 +270,23 @@
       
 
   
-  
 
   
   
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://wjqwsp.github.io/2016/09/24/LeetCode-237-Delete-Node-in-a-LinkedList-题解/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Gavin Wong">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="南国倾城">
+    </span>
 
     
       <header class="post-header">
@@ -279,27 +294,27 @@
         
         
           <h1 class="post-title" itemprop="name headline">
-            
-            
-              
                 
-                <a class="post-title-link" href="/2016/09/24/LeetCode-237-Delete-Node-in-a-LinkedList-题解/" itemprop="url">
-                  LeetCode 237 Delete Node in a LinkedList 题解
-                </a>
-              
-            
-          </h1>
+                <a class="post-title-link" href="/2016/09/24/LeetCode-237-Delete-Node-in-a-LinkedList-题解/" itemprop="url">LeetCode 237 Delete Node in a LinkedList 题解</a></h1>
         
 
         <div class="post-meta">
           <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-24T16:41:40+08:00" content="2016-09-24">
-              2016-09-24
-            </time>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-09-24T16:41:40+08:00">
+                2016-09-24
+              </time>
+            
+
+            
+
+            
           </span>
 
           
@@ -309,24 +324,28 @@
           
 
           
-
-          
           
              <span id="/2016/09/24/LeetCode-237-Delete-Node-in-a-LinkedList-题解/" class="leancloud_visitors" data-flag-title="LeetCode 237 Delete Node in a LinkedList 题解">
-               &nbsp; | &nbsp;
+               <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
                </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
           
 
           
+
+          
+
+          
+
         </div>
       </header>
     
-
 
     <div class="post-body" itemprop="articleBody">
 
@@ -337,12 +356,18 @@
         
           <h3 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h3><p>　　Write a function to delete a node (except the tail) in a singly linked list, given only access to that node.</p>
 <p>　　Supposed the linked list is 1 -&gt; 2 -&gt; 3 -&gt; 4 and you are given the third node with value 3, the linked list should become 1 -&gt; 2 -&gt; 4 after calling your function.<br>
-          <div class="post-more-link text-center">
+          <!--noindex-->
+          <div class="post-button text-center">
             <a class="btn" href="/2016/09/24/LeetCode-237-Delete-Node-in-a-LinkedList-题解/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
+          <!--/noindex-->
         
+      
+    </div>
+
+    <div>
       
     </div>
 
@@ -360,6 +385,8 @@
       
 
       
+
+      
       
         <div class="post-eof"></div>
       
@@ -371,13 +398,23 @@
       
 
   
-  
 
   
   
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://wjqwsp.github.io/2016/09/22/Java异常处理总结/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Gavin Wong">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="南国倾城">
+    </span>
 
     
       <header class="post-header">
@@ -385,27 +422,27 @@
         
         
           <h1 class="post-title" itemprop="name headline">
-            
-            
-              
                 
-                <a class="post-title-link" href="/2016/09/22/Java异常处理总结/" itemprop="url">
-                  Java异常处理总结
-                </a>
-              
-            
-          </h1>
+                <a class="post-title-link" href="/2016/09/22/Java异常处理总结/" itemprop="url">Java异常处理总结</a></h1>
         
 
         <div class="post-meta">
           <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-22T12:10:45+08:00" content="2016-09-22">
-              2016-09-22
-            </time>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-09-22T12:10:45+08:00">
+                2016-09-22
+              </time>
+            
+
+            
+
+            
           </span>
 
           
@@ -415,24 +452,28 @@
           
 
           
-
-          
           
              <span id="/2016/09/22/Java异常处理总结/" class="leancloud_visitors" data-flag-title="Java异常处理总结">
-               &nbsp; | &nbsp;
+               <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
                </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
           
 
           
+
+          
+
+          
+
         </div>
       </header>
     
-
 
     <div class="post-body" itemprop="articleBody">
 
@@ -446,12 +487,18 @@
 <li>降低错误处理代码的复杂度，让程序实际的逻辑实现与错误处理相分离，使代码的阅读，编写和调试工作更加井井有条。</li>
 <li>在能处理时捕捉异常，不能处理时则将异常传给其他地方处理。</li>
 <li>将异常分类，用异常类的名字或携带的信息标识异常类别与详细信息，一般只用名字标识即可。在处理时不针对异常抛出点处理，只对异常类型处理，简化了异常处理的代码。
-          <div class="post-more-link text-center">
+          <!--noindex-->
+          <div class="post-button text-center">
             <a class="btn" href="/2016/09/22/Java异常处理总结/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
+          <!--/noindex-->
         
+      
+    </div>
+
+    <div>
       
     </div>
 
@@ -469,6 +516,8 @@
       
 
       
+
+      
       
         <div class="post-eof"></div>
       
@@ -480,13 +529,23 @@
       
 
   
-  
 
   
   
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://wjqwsp.github.io/2016/09/14/从面向对象看JavaScript（五）——-继承/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Gavin Wong">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="南国倾城">
+    </span>
 
     
       <header class="post-header">
@@ -494,27 +553,27 @@
         
         
           <h1 class="post-title" itemprop="name headline">
-            
-            
-              
                 
-                <a class="post-title-link" href="/2016/09/14/从面向对象看JavaScript（五）——-继承/" itemprop="url">
-                  从面向对象看JavaScript（五）—— 继承
-                </a>
-              
-            
-          </h1>
+                <a class="post-title-link" href="/2016/09/14/从面向对象看JavaScript（五）——-继承/" itemprop="url">从面向对象看JavaScript（五）—— 继承</a></h1>
         
 
         <div class="post-meta">
           <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-14T21:03:38+08:00" content="2016-09-14">
-              2016-09-14
-            </time>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-09-14T21:03:38+08:00">
+                2016-09-14
+              </time>
+            
+
+            
+
+            
           </span>
 
           
@@ -524,24 +583,28 @@
           
 
           
-
-          
           
              <span id="/2016/09/14/从面向对象看JavaScript（五）——-继承/" class="leancloud_visitors" data-flag-title="从面向对象看JavaScript（五）—— 继承">
-               &nbsp; | &nbsp;
+               <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
                </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
           
 
           
+
+          
+
+          
+
         </div>
       </header>
     
-
 
     <div class="post-body" itemprop="articleBody">
 
@@ -551,12 +614,18 @@
       
         
           <h3 id="继承的本质"><a href="#继承的本质" class="headerlink" title="继承的本质"></a>继承的本质</h3><p>　　继承的初衷是复用。即已经有一个原始的类，希望在保留原始类的所有属性和方法的前提下，进行扩展或修改，以最大限度地降低开发成本。JavaScript实现继承，也是源自这个思想，即想办法让新的引用类型能够访问别的引用类型的所有属性和函数。<br>
-          <div class="post-more-link text-center">
+          <!--noindex-->
+          <div class="post-button text-center">
             <a class="btn" href="/2016/09/14/从面向对象看JavaScript（五）——-继承/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
+          <!--/noindex-->
         
+      
+    </div>
+
+    <div>
       
     </div>
 
@@ -574,6 +643,8 @@
       
 
       
+
+      
       
         <div class="post-eof"></div>
       
@@ -585,13 +656,23 @@
       
 
   
-  
 
   
   
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://wjqwsp.github.io/2016/09/14/从面向对象看JavaScript（四）——-内存管理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Gavin Wong">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="南国倾城">
+    </span>
 
     
       <header class="post-header">
@@ -599,27 +680,27 @@
         
         
           <h1 class="post-title" itemprop="name headline">
-            
-            
-              
                 
-                <a class="post-title-link" href="/2016/09/14/从面向对象看JavaScript（四）——-内存管理/" itemprop="url">
-                  从面向对象看JavaScript（四）—— 内存管理
-                </a>
-              
-            
-          </h1>
+                <a class="post-title-link" href="/2016/09/14/从面向对象看JavaScript（四）——-内存管理/" itemprop="url">从面向对象看JavaScript（四）—— 内存管理</a></h1>
         
 
         <div class="post-meta">
           <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-14T15:01:43+08:00" content="2016-09-14">
-              2016-09-14
-            </time>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-09-14T15:01:43+08:00">
+                2016-09-14
+              </time>
+            
+
+            
+
+            
           </span>
 
           
@@ -629,24 +710,28 @@
           
 
           
-
-          
           
              <span id="/2016/09/14/从面向对象看JavaScript（四）——-内存管理/" class="leancloud_visitors" data-flag-title="从面向对象看JavaScript（四）—— 内存管理">
-               &nbsp; | &nbsp;
+               <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
                </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
           
 
           
+
+          
+
+          
+
         </div>
       </header>
     
-
 
     <div class="post-body" itemprop="articleBody">
 
@@ -656,12 +741,18 @@
       
         
           <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　与java类似，JavaScript也有两种垃圾回收方式，分别是标记清除和引用计数。目前基本上都是使用标记清除的方式，引用计数存在循环引用的问题，实际中很少使用，但IE中的BOM和DOM对象却是用引用计数方式来做垃圾回收，非常容易造成内存泄漏。<br>
-          <div class="post-more-link text-center">
+          <!--noindex-->
+          <div class="post-button text-center">
             <a class="btn" href="/2016/09/14/从面向对象看JavaScript（四）——-内存管理/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
+          <!--/noindex-->
         
+      
+    </div>
+
+    <div>
       
     </div>
 
@@ -679,6 +770,8 @@
       
 
       
+
+      
       
         <div class="post-eof"></div>
       
@@ -690,13 +783,23 @@
       
 
   
-  
 
   
   
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://wjqwsp.github.io/2016/09/14/从面向对象看JavaScript（三—）——-属性权限管理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Gavin Wong">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="南国倾城">
+    </span>
 
     
       <header class="post-header">
@@ -704,27 +807,27 @@
         
         
           <h1 class="post-title" itemprop="name headline">
-            
-            
-              
                 
-                <a class="post-title-link" href="/2016/09/14/从面向对象看JavaScript（三—）——-属性权限管理/" itemprop="url">
-                  从面向对象看JavaScript（三）—— 属性权限管理
-                </a>
-              
-            
-          </h1>
+                <a class="post-title-link" href="/2016/09/14/从面向对象看JavaScript（三—）——-属性权限管理/" itemprop="url">从面向对象看JavaScript（三）—— 属性权限管理</a></h1>
         
 
         <div class="post-meta">
           <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-14T13:42:10+08:00" content="2016-09-14">
-              2016-09-14
-            </time>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-09-14T13:42:10+08:00">
+                2016-09-14
+              </time>
+            
+
+            
+
+            
           </span>
 
           
@@ -734,24 +837,28 @@
           
 
           
-
-          
           
              <span id="/2016/09/14/从面向对象看JavaScript（三—）——-属性权限管理/" class="leancloud_visitors" data-flag-title="从面向对象看JavaScript（三）—— 属性权限管理">
-               &nbsp; | &nbsp;
+               <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
                </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
           
 
           
+
+          
+
+          
+
         </div>
       </header>
     
-
 
     <div class="post-body" itemprop="articleBody">
 
@@ -761,12 +868,18 @@
       
         
           <h3 id="对象的私有成员"><a href="#对象的私有成员" class="headerlink" title="对象的私有成员"></a>对象的私有成员</h3><p>　　原文再续，书接上一回。第一讲里我们提到怎么定义类，怎么创建对象。但在这些对象上创建的属性与方法，都是能被直接访问的，JavaScript并没有提供private,public,protected等属性的权限管理机制。但是，利用闭包我们完全可以实现对象属性和方法的私有化管理。<br>
-          <div class="post-more-link text-center">
+          <!--noindex-->
+          <div class="post-button text-center">
             <a class="btn" href="/2016/09/14/从面向对象看JavaScript（三—）——-属性权限管理/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
+          <!--/noindex-->
         
+      
+    </div>
+
+    <div>
       
     </div>
 
@@ -784,6 +897,8 @@
       
 
       
+
+      
       
         <div class="post-eof"></div>
       
@@ -795,13 +910,23 @@
       
 
   
-  
 
   
   
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://wjqwsp.github.io/2016/09/13/从面向对象看JavaScript（二）/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Gavin Wong">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="南国倾城">
+    </span>
 
     
       <header class="post-header">
@@ -809,27 +934,27 @@
         
         
           <h1 class="post-title" itemprop="name headline">
-            
-            
-              
                 
-                <a class="post-title-link" href="/2016/09/13/从面向对象看JavaScript（二）/" itemprop="url">
-                  从面向对象看JavaScript（二）
-                </a>
-              
-            
-          </h1>
+                <a class="post-title-link" href="/2016/09/13/从面向对象看JavaScript（二）/" itemprop="url">从面向对象看JavaScript（二）</a></h1>
         
 
         <div class="post-meta">
           <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-13T20:44:34+08:00" content="2016-09-13">
-              2016-09-13
-            </time>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-09-13T20:44:34+08:00">
+                2016-09-13
+              </time>
+            
+
+            
+
+            
           </span>
 
           
@@ -839,24 +964,28 @@
           
 
           
-
-          
           
              <span id="/2016/09/13/从面向对象看JavaScript（二）/" class="leancloud_visitors" data-flag-title="从面向对象看JavaScript（二）">
-               &nbsp; | &nbsp;
+               <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
                </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
           
 
           
+
+          
+
+          
+
         </div>
       </header>
     
-
 
     <div class="post-body" itemprop="articleBody">
 
@@ -866,12 +995,18 @@
       
         
           <h3 id="函数也是对象"><a href="#函数也是对象" class="headerlink" title="函数也是对象"></a>函数也是对象</h3><p>　　原文再续，书接上一回。话说讲到JavaScript对象里拥有属性与函数，上一讲介绍了属性，这一讲重点讲一讲函数。JavaScript的函数与Java的方法还是有很多不一样的地方，最主要的一点是，JavaScript的函数也是对象。它也可以拥有自己的属性与方法，它可以作为值像一般属性一样传递，成为其他函数的参数或者返回值。<br>
-          <div class="post-more-link text-center">
+          <!--noindex-->
+          <div class="post-button text-center">
             <a class="btn" href="/2016/09/13/从面向对象看JavaScript（二）/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
+          <!--/noindex-->
         
+      
+    </div>
+
+    <div>
       
     </div>
 
@@ -889,6 +1024,8 @@
       
 
       
+
+      
       
         <div class="post-eof"></div>
       
@@ -900,13 +1037,23 @@
       
 
   
-  
 
   
   
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://wjqwsp.github.io/2016/09/13/从面向对象看JavaScript（一））/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Gavin Wong">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="南国倾城">
+    </span>
 
     
       <header class="post-header">
@@ -914,27 +1061,27 @@
         
         
           <h1 class="post-title" itemprop="name headline">
-            
-            
-              
                 
-                <a class="post-title-link" href="/2016/09/13/从面向对象看JavaScript（一））/" itemprop="url">
-                  从面向对象看JavaScript（一）
-                </a>
-              
-            
-          </h1>
+                <a class="post-title-link" href="/2016/09/13/从面向对象看JavaScript（一））/" itemprop="url">从面向对象看JavaScript（一）</a></h1>
         
 
         <div class="post-meta">
           <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-13T11:15:38+08:00" content="2016-09-13">
-              2016-09-13
-            </time>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-09-13T11:15:38+08:00">
+                2016-09-13
+              </time>
+            
+
+            
+
+            
           </span>
 
           
@@ -944,24 +1091,28 @@
           
 
           
-
-          
           
              <span id="/2016/09/13/从面向对象看JavaScript（一））/" class="leancloud_visitors" data-flag-title="从面向对象看JavaScript（一）">
-               &nbsp; | &nbsp;
+               <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
                </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
           
 
           
+
+          
+
+          
+
         </div>
       </header>
     
-
 
     <div class="post-body" itemprop="articleBody">
 
@@ -972,12 +1123,18 @@
         
           <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　JavaScript作为一种脚本语言，语法简单（求其），易上手，适合开发；同时，作为当今前端编程方面占据垄断地位，甚至逐步向后端发展的强势语言，它的前景十分美好，功能足够强大。既然是脚本语言，自然没有c,c++,Java等传统语言的严谨，但是利用它仍然可以基本覆盖其他语言能做到的高级功能。</p>
 <p>　　下面我就从面向对象的角度，整合JavaScript里函数，对象，引用类型，原型，闭包，作用域链等知识点，去探讨JavaScript是如何定义对象，构造类，设置属性和函数的私有公有权限，实现继承，利用作用域以及管理内存的。下面的代码例子基本都出自《JavaScript高级程序设计》。<br>
-          <div class="post-more-link text-center">
+          <!--noindex-->
+          <div class="post-button text-center">
             <a class="btn" href="/2016/09/13/从面向对象看JavaScript（一））/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
+          <!--/noindex-->
         
+      
+    </div>
+
+    <div>
       
     </div>
 
@@ -995,6 +1152,8 @@
       
 
       
+
+      
       
         <div class="post-eof"></div>
       
@@ -1006,13 +1165,23 @@
       
 
   
-  
 
   
   
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://wjqwsp.github.io/2016/09/05/PostgreSQL-MVCC机制浅析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Gavin Wong">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="南国倾城">
+    </span>
 
     
       <header class="post-header">
@@ -1020,27 +1189,27 @@
         
         
           <h1 class="post-title" itemprop="name headline">
-            
-            
-              
                 
-                <a class="post-title-link" href="/2016/09/05/PostgreSQL-MVCC机制浅析/" itemprop="url">
-                  PostgreSQL MVCC机制浅析
-                </a>
-              
-            
-          </h1>
+                <a class="post-title-link" href="/2016/09/05/PostgreSQL-MVCC机制浅析/" itemprop="url">PostgreSQL MVCC机制浅析</a></h1>
         
 
         <div class="post-meta">
           <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-05T21:58:49+08:00" content="2016-09-05">
-              2016-09-05
-            </time>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-09-05T21:58:49+08:00">
+                2016-09-05
+              </time>
+            
+
+            
+
+            
           </span>
 
           
@@ -1050,24 +1219,28 @@
           
 
           
-
-          
           
              <span id="/2016/09/05/PostgreSQL-MVCC机制浅析/" class="leancloud_visitors" data-flag-title="PostgreSQL MVCC机制浅析">
-               &nbsp; | &nbsp;
+               <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
                </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
           
 
           
+
+          
+
+          
+
         </div>
       </header>
     
-
 
     <div class="post-body" itemprop="articleBody">
 
@@ -1078,12 +1251,18 @@
         
           <h3 id="从丢失更新说起"><a href="#从丢失更新说起" class="headerlink" title="从丢失更新说起"></a>从丢失更新说起</h3><p>　　上一讲提到了数据并发在数据库中的四大问题，其中一个便是丢失更新。丢失更新的产生是当两个事务同时读某一记录时，A事务先修改该记录，B事务再修改的时候把A的修改覆盖掉，导致A事务的更新丢失了。更具体的例子可以参考上一讲。数据库处理丢失更新有两种方法，分别是悲观锁方法与乐观锁方法。</p>
 <h3 id="悲观锁与乐观锁"><a href="#悲观锁与乐观锁" class="headerlink" title="悲观锁与乐观锁"></a>悲观锁与乐观锁</h3><p>　　对于某一特定的业务需求，如果实现该需求需要并发地更新数据库的同一记录，就有可能发生冲突。解决这种冲突可以选择两种办法，分别是悲观锁与乐观锁。<br>
-          <div class="post-more-link text-center">
+          <!--noindex-->
+          <div class="post-button text-center">
             <a class="btn" href="/2016/09/05/PostgreSQL-MVCC机制浅析/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
+          <!--/noindex-->
         
+      
+    </div>
+
+    <div>
       
     </div>
 
@@ -1101,6 +1280,8 @@
       
 
       
+
+      
       
         <div class="post-eof"></div>
       
@@ -1112,13 +1293,23 @@
       
 
   
-  
 
   
   
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://wjqwsp.github.io/2016/09/04/数据库事务隔离等级与锁机制浅析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Gavin Wong">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="南国倾城">
+    </span>
 
     
       <header class="post-header">
@@ -1126,27 +1317,27 @@
         
         
           <h1 class="post-title" itemprop="name headline">
-            
-            
-              
                 
-                <a class="post-title-link" href="/2016/09/04/数据库事务隔离等级与锁机制浅析/" itemprop="url">
-                  数据库事务隔离级别与锁机制实现（转载）
-                </a>
-              
-            
-          </h1>
+                <a class="post-title-link" href="/2016/09/04/数据库事务隔离等级与锁机制浅析/" itemprop="url">数据库事务隔离级别与锁机制实现（转载）</a></h1>
         
 
         <div class="post-meta">
           <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-09-04T13:17:05+08:00" content="2016-09-04">
-              2016-09-04
-            </time>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-09-04T13:17:05+08:00">
+                2016-09-04
+              </time>
+            
+
+            
+
+            
           </span>
 
           
@@ -1156,24 +1347,28 @@
           
 
           
-
-          
           
              <span id="/2016/09/04/数据库事务隔离等级与锁机制浅析/" class="leancloud_visitors" data-flag-title="数据库事务隔离级别与锁机制实现（转载）">
-               &nbsp; | &nbsp;
+               <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
                </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
           
 
           
+
+          
+
+          
+
         </div>
       </header>
     
-
 
     <div class="post-body" itemprop="articleBody">
 
@@ -1185,12 +1380,18 @@
           <h3 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h3><p>　　数据库并发处理是一个非常重要的问题，其实现本质上同应用程序一级的并发控制原理是一致的，也是通过加锁解决。而事务隔离级别相当于一段独立的代码块，具有原子性、一致性、隔离性、持久性4个特征。本来想自己写一篇总结，但看到有一篇文章总结得非常好，就直接转载过来。</p>
 <p>　　以下内容转载自：<a href="http://www.songjie.info/" title="宋杰的站点">宋杰的站点</a> » <a href="http://www.songjie.info/%E3%80%90%E8%BD%AC%E8%BD%BD%E3%80%91%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB%E5%92%8C%E9%94%81%E5%AE%9E%E7%8E%B0%E6%9C%BA%E5%88%B6/" title="【转载】数据库事务隔离级别和锁实现机制">【转载】数据库事务隔离级别和锁实现机制</a></p>
 <p>　　原文的版式我修改了一下，有些跟核心内容无关的我删去了，某一两处内容我觉得不对的在后面加了备注。<br>
-          <div class="post-more-link text-center">
+          <!--noindex-->
+          <div class="post-button text-center">
             <a class="btn" href="/2016/09/04/数据库事务隔离等级与锁机制浅析/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
+          <!--/noindex-->
         
+      
+    </div>
+
+    <div>
       
     </div>
 
@@ -1208,6 +1409,8 @@
       
 
       
+
+      
       
         <div class="post-eof"></div>
       
@@ -1219,13 +1422,23 @@
       
 
   
-  
 
   
   
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://wjqwsp.github.io/2016/08/31/从压力测试看数据库连接池配置/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Gavin Wong">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="南国倾城">
+    </span>
 
     
       <header class="post-header">
@@ -1233,27 +1446,27 @@
         
         
           <h1 class="post-title" itemprop="name headline">
-            
-            
-              
                 
-                <a class="post-title-link" href="/2016/08/31/从压力测试看数据库连接池配置/" itemprop="url">
-                  从压力测试看数据库连接池配置
-                </a>
-              
-            
-          </h1>
+                <a class="post-title-link" href="/2016/08/31/从压力测试看数据库连接池配置/" itemprop="url">从压力测试看数据库连接池配置</a></h1>
         
 
         <div class="post-meta">
           <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">发表于</span>
-            <time itemprop="dateCreated" datetime="2016-08-31T19:46:24+08:00" content="2016-08-31">
-              2016-08-31
-            </time>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-08-31T19:46:24+08:00">
+                2016-08-31
+              </time>
+            
+
+            
+
+            
           </span>
 
           
@@ -1263,24 +1476,28 @@
           
 
           
-
-          
           
              <span id="/2016/08/31/从压力测试看数据库连接池配置/" class="leancloud_visitors" data-flag-title="从压力测试看数据库连接池配置">
-               &nbsp; | &nbsp;
+               <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
                </span>
-               <span class="post-meta-item-text">阅读次数 </span>
-               <span class="leancloud-visitors-count"></span>
-              </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
           
 
           
+
+          
+
+          
+
         </div>
       </header>
     
-
 
     <div class="post-body" itemprop="articleBody">
 
@@ -1295,11 +1512,13 @@
 <li>限制客户端向数据库发起的数据库访问，避免系统宕机，也避免过多的连接被直接拒绝。</li>
 </ol>
 <h3 id="数据库连接池的配置"><a href="#数据库连接池的配置" class="headerlink" title="数据库连接池的配置"></a>数据库连接池的配置</h3><p>　　目前有很多连接池框架，使用这些框架非常简单，最主要就是对一些参数进行配置。这些参数包括最大连接数，最小连接数等，参数取值不同，对应用的性能与稳定性会造成不同的影响。下面我就以Tomcat自带的DHCP数据库连接池为例，通过对一个微博Web系统的同一条微博进行并发的疯狂评论操作作压力测试，去看看数据库连接池的参数配置对系统会产生什么样的影响。相信通过下面的压力测试分析，读者们可以体会到上述使用连接池的优点，同时也可以结合上一讲对压力测试的介绍，加深对压力测试的理解，了解到压力测试在系统优化中起到什么样的作用。<br>
-          <div class="post-more-link text-center">
+          <!--noindex-->
+          <div class="post-button text-center">
             <a class="btn" href="/2016/08/31/从压力测试看数据库连接池配置/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
+          <!--/noindex-->
         
       
     </div>
@@ -1312,7 +1531,13 @@
       
     </div>
 
+    <div>
+      
+    </div>
+
     <footer class="post-footer">
+      
+
       
 
       
@@ -1360,27 +1585,34 @@
 
       
 
-      <section class="site-overview sidebar-panel  sidebar-panel-active ">
+      <section class="site-overview sidebar-panel sidebar-panel-active">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/uploads/avatar.jpg"
                alt="Gavin Wong" />
           <p class="site-author-name" itemprop="name">Gavin Wong</p>
-          <p class="site-description motion-element" itemprop="description">广寒宫送千里香，杳杳随风入梦凉。我欲因之凌霄起，嫦娥丹桂尽入囊。</p>
+           
+              <p class="site-description motion-element" itemprop="description">广寒宫送千里香，杳杳随风入梦凉。我欲因之凌霄起，嫦娥丹桂尽入囊。</p>
+          
         </div>
         <nav class="site-state motion-element">
-          <div class="site-state-item site-state-posts">
-            <a href="/archives">
-              <span class="site-state-item-count">25</span>
-              <span class="site-state-item-name">日志</span>
-            </a>
-          </div>
 
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">25</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
           
 
           
+
+          
+            
+            
             <div class="site-state-item site-state-tags">
-              <a href="/tags">
+              <a href="/tags/index.html">
                 <span class="site-state-item-count">28</span>
                 <span class="site-state-item-name">标签</span>
               </a>
@@ -1401,7 +1633,12 @@
         
         
 
+        
+
+
       </section>
+
+      
 
       
 
@@ -1425,6 +1662,7 @@
   <span class="author" itemprop="copyrightHolder">Gavin Wong</span>
 </div>
 
+
 <div class="powered-by">
   由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
 </div>
@@ -1436,15 +1674,20 @@
   </a>
 </div>
 
+
         
 
         
       </div>
     </footer>
 
-    <div class="back-to-top">
-      <i class="fa fa-arrow-up"></i>
-    </div>
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
   </div>
 
   
@@ -1464,6 +1707,15 @@
 
 
   
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1489,173 +1741,72 @@
   
 
 
-  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.1"></script>
 
-  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
-
-
-
-  
-  
-
-
-  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
-
-  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.1"></script>
 
 
 
   
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.1"></script>
+
+
+
+  
 
   
 
 
-  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
-
-
-
-  
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.1"></script>
 
 
 
   
 
 
+  
+
+
+
+
+	
+
+
+
 
 
   
-  
-  <script type="text/javascript">
-    // Popup Window;
-    var isfetched = false;
-    // Search DB path;
-    var search_path = "search.xml";
-    if (search_path.length == 0) {
-       search_path = "search.xml";
-    }
-    var path = "/" + search_path;
-    // monitor main search box;
-
-    function proceedsearch() {
-      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
-      $('.popup').toggle();
-
-    }
-    // search function;
-    var searchFunc = function(path, search_id, content_id) {
-    'use strict';
-    $.ajax({
-        url: path,
-        dataType: "xml",
-        async: true,
-        success: function( xmlResponse ) {
-            // get the contents from search data
-            isfetched = true;
-            $('.popup').detach().appendTo('.header-inner');
-            var datas = $( "entry", xmlResponse ).map(function() {
-                return {
-                    title: $( "title", this ).text(),
-                    content: $("content",this).text(),
-                    url: $( "url" , this).text()
-                };
-            }).get();
-            var $input = document.getElementById(search_id);
-            var $resultContent = document.getElementById(content_id);
-            $input.addEventListener('input', function(){
-                var matchcounts = 0;
-                var str='<ul class=\"search-result-list\">';
-                var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
-                $resultContent.innerHTML = "";
-                if (this.value.trim().length > 1) {
-                // perform local searching
-                datas.forEach(function(data) {
-                    var isMatch = true;
-                    var content_index = [];
-                    var data_title = data.title.trim().toLowerCase();
-                    var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
-                    var data_url = data.url;
-                    var index_title = -1;
-                    var index_content = -1;
-                    var first_occur = -1;
-                    // only match artiles with not empty titles and contents
-                    if(data_title != '' && data_content != '') {
-                        keywords.forEach(function(keyword, i) {
-                            index_title = data_title.indexOf(keyword);
-                            index_content = data_content.indexOf(keyword);
-                            if( index_title < 0 && index_content < 0 ){
-                                isMatch = false;
-                            } else {
-                                if (index_content < 0) {
-                                    index_content = 0;
-                                }
-                                if (i == 0) {
-                                    first_occur = index_content;
-                                }
-                            }
-                        });
-                    }
-                    // show search results
-                    if (isMatch) {
-                        matchcounts += 1;
-                        str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
-                        var content = data.content.trim().replace(/<[^>]+>/g,"");
-                        if (first_occur >= 0) {
-                            // cut out 100 characters
-                            var start = first_occur - 20;
-                            var end = first_occur + 80;
-                            if(start < 0){
-                                start = 0;
-                            }
-                            if(start == 0){
-                                end = 50;
-                            }
-                            if(end > content.length){
-                                end = content.length;
-                            }
-                            var match_content = content.substring(start, end);
-                            // highlight all keywords
-                            keywords.forEach(function(keyword){
-                                var regS = new RegExp(keyword, "gi");
-                                match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
-                            });
-
-                            str += "<p class=\"search-result\">" + match_content +"...</p>"
-                        }
-                        str += "</li>";
-                    }
-                })};
-                str += "</ul>";
-                if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
-                if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
-                $resultContent.innerHTML = str;
-            });
-            proceedsearch();
-        }
-    });}
-
-    // handle and trigger popup window;
-    $('.popup-trigger').click(function(e) {
-      e.stopPropagation();
-      if (isfetched == false) {
-        searchFunc(path, 'local-search-input', 'local-search-result');
-      } else {
-        proceedsearch();
+    
+    <script>
+      var cloudTieConfig = {
+        url: document.location.href, 
+        sourceId: "",
+        productKey: "7186f7e53b7349c49adb69310cf73ddd",
+        target: "cloud-tie-wrapper"
       };
+    </script>
+    <script src="https://img1.ws.126.net/f2e/tie/yun/sdk/loader.js"></script>
+  
 
-    });
 
-    $('.popup-btn-close').click(function(e){
-      $('.popup').hide();
-      $(".popoverlay").remove();
-      $('body').css('overflow', '');
-    });
-    $('.popup').click(function(e){
-      e.stopPropagation();
-    });
-  </script>
+
+
+
+
+
+
 
 
   
+
+
+
+
 
   
 
@@ -1765,6 +1916,12 @@
   </script>
 
 
+
+  
+
+  
+
+  
 
   
 
