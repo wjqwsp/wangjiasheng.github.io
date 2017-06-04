@@ -1,0 +1,1266 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+  <link href="//cdn.jsdelivr.net/fancybox/2.1.5/jquery.fancybox.min.css" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Lobster Two:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+  
+
+<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.2/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="xv6,操作系统," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.1" />
+
+
+
+
+
+
+<meta name="description" content="前言　　xv6是x86处理器上用ANSI标准C重新实现的Unix第六版(Unix V6，通常直接被称为V6)，本文主要对xv6的shell实现部分的源代码进行分析，同时引申一些操作系统系统调用的内容，包括管道，重定向，进程等等基本概念。通过阅读这部分的源代码，也可以对现代操作系统的shell这个用户程序的核心实现有一个基本的认识。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="xv6 shell实现源代码分析">
+<meta property="og:url" content="http://wjqwsp.github.io/2017/06/04/xv6-shell实现源代码分析/index.html">
+<meta property="og:site_name" content="南国倾城">
+<meta property="og:description" content="前言　　xv6是x86处理器上用ANSI标准C重新实现的Unix第六版(Unix V6，通常直接被称为V6)，本文主要对xv6的shell实现部分的源代码进行分析，同时引申一些操作系统系统调用的内容，包括管道，重定向，进程等等基本概念。通过阅读这部分的源代码，也可以对现代操作系统的shell这个用户程序的核心实现有一个基本的认识。">
+<meta property="og:image" content="http://wjqwsp.github.io/img/shell代码架构.png">
+<meta property="og:image" content="http://wjqwsp.github.io/img/kernel-user-space.png">
+<meta property="og:image" content="http://wjqwsp.github.io/img/cmd-seq.png">
+<meta property="og:image" content="http://wjqwsp.github.io/img/cmd-construct.png">
+<meta property="og:updated_time" content="2017-06-04T08:43:11.250Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="xv6 shell实现源代码分析">
+<meta name="twitter:description" content="前言　　xv6是x86处理器上用ANSI标准C重新实现的Unix第六版(Unix V6，通常直接被称为V6)，本文主要对xv6的shell实现部分的源代码进行分析，同时引申一些操作系统系统调用的内容，包括管道，重定向，进程等等基本概念。通过阅读这部分的源代码，也可以对现代操作系统的shell这个用户程序的核心实现有一个基本的认识。">
+<meta name="twitter:image" content="http://wjqwsp.github.io/img/shell代码架构.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 'undefined',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://wjqwsp.github.io/2017/06/04/xv6-shell实现源代码分析/"/>
+
+
+
+
+
+  <title>xv6 shell实现源代码分析 | 南国倾城</title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">南国倾城</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">左手代码，右手年华</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://wjqwsp.github.io/2017/06/04/xv6-shell实现源代码分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Gavin Wong">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="南国倾城">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">xv6 shell实现源代码分析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-06-04T11:34:28+08:00">
+                2017-06-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a class="cloud-tie-join-count" href="/2017/06/04/xv6-shell实现源代码分析/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count join-count" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2017/06/04/xv6-shell实现源代码分析/" class="leancloud_visitors" data-flag-title="xv6 shell实现源代码分析">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　xv6是x86处理器上用ANSI标准C重新实现的Unix第六版(Unix V6，通常直接被称为V6)，本文主要对xv6的shell实现部分的源代码进行分析，同时引申一些操作系统系统调用的内容，包括管道，重定向，进程等等基本概念。通过阅读这部分的源代码，也可以对现代操作系统的shell这个用户程序的核心实现有一个基本的认识。<br><a id="more"></a></p>
+<h3 id="源代码获得"><a href="#源代码获得" class="headerlink" title="源代码获得"></a>源代码获得</h3><p>　　<a href="https://github.com/mit-pdos/xv6-public/blob/master/sh.c" target="_blank" rel="external">https://github.com/mit-pdos/xv6-public/blob/master/sh.c</a> 从github上可以获得xv6的源代码，非常精简，不到10000行，其中sh.c文件里就是shell实现的源代码。</p>
+<h3 id="总体架构"><a href="#总体架构" class="headerlink" title="总体架构"></a>总体架构</h3><p>　　整体逻辑很清晰，主要就是三部分。入口程序首先做一些预处理，包括命令字符串的过滤和一些系统初始条件的验证。然后对命令字符串进行词法分析，根据命令的类型构造起一个链式的基本命令执行串，其实就是一个链式的自定义结构体。最后是命令的执行阶段，根据构造起的链式结构体串，递归地执行所有基本命令。</p>
+<p><img src="/img/shell代码架构.png" alt="shell system structure"></p>
+<h3 id="预处理器"><a href="#预处理器" class="headerlink" title="预处理器"></a>预处理器</h3><p>　　预处理阶段就在入口函数里处理，逻辑比较简单，主要就是做两件事，一是验证标准输入，标准输出，标准错误是否正常开启；二是对cd命令单独处理。</p>
+<h4 id="验证标准输入、标准输出及标准错误正常开启"><a href="#验证标准输入、标准输出及标准错误正常开启" class="headerlink" title="验证标准输入、标准输出及标准错误正常开启"></a>验证标准输入、标准输出及标准错误正常开启</h4><p>　　xv6是用文件描述符来抽象所有的文件、设备、管道等等概念，让它们全都以输入输出流的形式来与用户程序打交道，而掩盖了底层所有与硬件相关的操作。用户程序只需要对相应的文件描述符进行读写操作就行。每个进程都维护一个文件描述表，包含了所有已经打开的文件描述符。默认会开启0，1，2三个描述符，0代表标准输入，1代表标准输出，2代表标准错误。标准输出与标准错误都是输出到屏幕上。因此，shell启动之后第一件事就是验证这三个文件描述符是否正常。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">while</span>((fd = open(<span class="string">"console"</span>, O_RDWR)) &gt;= <span class="number">0</span>)&#123;</div><div class="line">  <span class="keyword">if</span>(fd &gt;= <span class="number">3</span>)&#123;</div><div class="line">    close(fd);</div><div class="line">    <span class="keyword">break</span>;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ol>
+<li>open()打开console文件。</li>
+<li>如果标准输入、标准输出、标准错误都正常工作，那么新的文件描述符肯定大于3，从而得出判断。</li>
+<li>关闭console文件</li>
+</ol>
+<p>　　利用xv6内核提供给用户的接口–系统调用，来实现打开与关闭某个文件的操作。以上open()和close()就是相应系统调用，除此之外还有一些其他的系统调用，用来处理各种与硬件相关的动作，后面还会介绍其他一些系统调用。xv6的系统调用都是精心设计的接口，也是现代unix系列操作系统的核心系统调用。用户程序会一直在用户空间与内核空间切换。</p>
+<p><img src="/img/kernel-user-space.png" alt="kernel&amp;user space"></p>
+<p>　　操作系统通过系统调用来连接用户空间与内核空间，从而让不同的用户程序能够共享硬件资源，并对硬件资源作保护，不直接暴露给用户。shell就是这么一个用户程序。</p>
+<h4 id="cd"><a href="#cd" class="headerlink" title="cd"></a>cd</h4><p>　　shell中的其他命令都是实现好的用户程序，shell只起到一个转发用户命令，调用实际用户程序这么一个功能，例如cat,rm,cp等等命令。而cd命令必须shell本身实现。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">while</span>(getcmd(buf, <span class="keyword">sizeof</span>(buf)) &gt;= <span class="number">0</span>)&#123;</div><div class="line">   <span class="keyword">if</span>(buf[<span class="number">0</span>] == <span class="string">'c'</span> &amp;&amp; buf[<span class="number">1</span>] == <span class="string">'d'</span> &amp;&amp; buf[<span class="number">2</span>] == <span class="string">' '</span>)&#123;</div><div class="line">     <span class="comment">// Chdir must be called by the parent, not the child.</span></div><div class="line">     buf[<span class="built_in">strlen</span>(buf)<span class="number">-1</span>] = <span class="number">0</span>;  <span class="comment">// chop \n</span></div><div class="line">     <span class="keyword">if</span>(chdir(buf+<span class="number">3</span>) &lt; <span class="number">0</span>)</div><div class="line">       <span class="built_in">printf</span>(<span class="number">2</span>, <span class="string">"cannot cd %s\n"</span>, buf+<span class="number">3</span>);</div><div class="line">     <span class="keyword">continue</span>;</div><div class="line">   &#125;</div><div class="line">   <span class="keyword">if</span>(fork1() == <span class="number">0</span>)</div><div class="line">     runcmd(parsecmd(buf));</div><div class="line">   wait();</div><div class="line"> &#125;</div><div class="line"> <span class="built_in">exit</span>();</div></pre></td></tr></table></figure>
+<ol>
+<li>shell进程读取标准输入到buf这个字符数组里。</li>
+<li>判断输入的命令是不是cd。</li>
+<li>如果是cd，则用系统调用chdir()切换当前进程的工作目录。</li>
+<li>如果不是，则用系统调用fork()，派生一个子进程。</li>
+<li>在子进程里进行命令构造与执行。</li>
+<li>继续读取下一个标准输入的指令。</li>
+</ol>
+<p>　　fork()系统调用会复制父进程的所有内存空间，在该内存空间上创建一个新的进程。由于内存空间完全复制自父进程，那么代码段也自然是一样的，子进程也会执行相同的代码。fork()在父子进程里都会返回，在父进程返回的是子进程的pid；在子进程则返回0。</p>
+<p>　　shell对每一次输入的命令都会派生一个子进程来执行，因此必须在父进程里先处理cd。因为每个进程的工作目录都不同，如果把cd放到子进程中，由外部用户程序来实现，那么只会修改子进程的工作目录，shell本身的工作目录还是得不到改变。</p>
+<h3 id="命令构造器"><a href="#命令构造器" class="headerlink" title="命令构造器"></a>命令构造器</h3><p>　　从上面入口函数的代码段可以看到，命令构造实际上就是parsecmd这个函数，接收一个字符指针作为参数，该字符指针指向输入字符串的内存地址。先来看一下shell能够处理哪些命令类型。</p>
+<h4 id="命令类型"><a href="#命令类型" class="headerlink" title="命令类型"></a>命令类型</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">define</span> EXEC  1</span></div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> REDIR 2</span></div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> PIPE  3</span></div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> LIST  4</span></div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> BACK  5</span></div><div class="line"></div><div class="line"><span class="keyword">struct</span> cmd &#123;</div><div class="line">  <span class="keyword">int</span> type;</div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="keyword">struct</span> execcmd &#123;</div><div class="line">  <span class="keyword">int</span> type;</div><div class="line">  <span class="keyword">char</span> *argv[MAXARGS];</div><div class="line">  <span class="keyword">char</span> *eargv[MAXARGS];</div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="keyword">struct</span> redircmd &#123;</div><div class="line">  <span class="keyword">int</span> type;</div><div class="line">  <span class="keyword">struct</span> cmd *cmd;</div><div class="line">  <span class="keyword">char</span> *file;</div><div class="line">  <span class="keyword">char</span> *efile;</div><div class="line">  <span class="keyword">int</span> mode;</div><div class="line">  <span class="keyword">int</span> fd;</div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="keyword">struct</span> pipecmd &#123;</div><div class="line">  <span class="keyword">int</span> type;</div><div class="line">  <span class="keyword">struct</span> cmd *left;</div><div class="line">  <span class="keyword">struct</span> cmd *right;</div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="keyword">struct</span> listcmd &#123;</div><div class="line">  <span class="keyword">int</span> type;</div><div class="line">  <span class="keyword">struct</span> cmd *left;</div><div class="line">  <span class="keyword">struct</span> cmd *right;</div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="keyword">struct</span> backcmd &#123;</div><div class="line">  <span class="keyword">int</span> type;</div><div class="line">  <span class="keyword">struct</span> cmd *cmd;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>　　共有5种命令类型。</p>
+<ol>
+<li>execcmd，代表最基本的命令，包括命令名与参数，例如<code>cat y.sh</code>这样的命令。type类型取值范围就是最上面定义的5个宏。argv是参数列表，每个项都是一个字符指针，代表相应的字符串开始的内存位置。eargv的每个项也是一个字符指针，不过与argv相反，它代表的是每个字符串结束的内存位置，主要是作为字符串结束的标志。</li>
+<li>redircmd，代表重定向命令。type的定义与execcmd相同。cmd是子命令，代表实际要执行的命令。file代表重定向的文件名在内存中的其实位置。efile代表文件名在内存中的结束位置。mode代表重定向文件打开的模式，包括只读、只写、读写等等。fd代表重定向要替换的文件描述符，可以取0或1，代表是输入重定向或者是输出重定向。</li>
+<li>pipecmd，代表管道命令。它分成两部分，左命令是提供管道输入的命令，右命令是管道输出的命令。因此包含了两个cmd类型结构体。</li>
+<li>listcmd，代表并列命令。可以把多个命令合成一个命令发送给shell，命令之间以;间隔，shell会分别执行。同样，也包含左右两个命令。例如echo hello; echo world这种形式的命令。</li>
+<li>backcmd，代表后台命令。在命令的最后面加上&amp;，代表放到后台执行。也包含一个实际要执行的cmd命令。</li>
+</ol>
+<p>　　这里面有一个技巧，在命令构造的过程中，用到了递归的链式连接的形式构造命令。因为一个命令可能非常复杂，例如<code>ls &lt; y; ls | sort; who</code>这样的命令，这条命令就可以构造起如下这个链式的命令串：</p>
+<p><img src="/img/cmd-seq.png" alt="cmd sequence"></p>
+<p>　　为了统一接口，所有命令类型的子命令都采用了cmd类型，但实际可能是任何一种具体的命令类型。相当于在c语言里使用了类似面向对象的继承与多态的性质，所有的命令类型都继承自一个基础的结构体cmd。它们在实际命令执行的时候再根据type参数向下转型为真正的命令类型。这种技巧使代码变得非常简洁，命令的构造变得统一，构造命令时无需知道子命令是什么，便于递归构造命令串。</p>
+<h4 id="命令构造流程"><a href="#命令构造流程" class="headerlink" title="命令构造流程"></a>命令构造流程</h4><p><img src="/img/cmd-construct.png" alt="cmd construct"></p>
+<p>　　parsecmd()是命令构造函数，它简单地把工作转交给parseline()函数。</p>
+<p>　　parseline顾名思义就是处理一行的输入字符串，把它转化成命令。这一行的概念有点抽象，实际上应该是可以视作一个命令整体的一行字符串，在这行字符串里可以包含各种命令，也就是<code>|&amp;&lt;&gt;();</code>这些字符都可以处理。所有需要处理全部类型字符的工作都可以交给parseline()完成。parseline()里还可以递归地调用parseline()。</p>
+<p>　　parsepipe()用于处理管道命令，由于可能存在多个管道命令，因此parsepipe()可以递归调用自身。</p>
+<p>　　parseblock()处理()内的命令，把()内的命令作为一个整体命令来处理，而忽略从左到右的执行优先级。</p>
+<p>　　parseredirs()用于处理重定向命令，把子命令包裹成redircmd类型。</p>
+<p>　　这些函数通过一连串的互相调用、递归调用，构建起链式的命令串。</p>
+<h4 id="parsecmd"><a href="#parsecmd" class="headerlink" title="parsecmd()"></a>parsecmd()</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">parsecmd(<span class="keyword">char</span> *s)</div><div class="line">&#123;</div><div class="line">  <span class="keyword">char</span> *es;</div><div class="line">  <span class="keyword">struct</span> cmd *cmd;</div><div class="line"></div><div class="line">  es = s + <span class="built_in">strlen</span>(s);</div><div class="line">  cmd = parseline(&amp;s, es);</div><div class="line">  peek(&amp;s, es, <span class="string">""</span>);</div><div class="line">  <span class="keyword">if</span>(s != es)&#123;</div><div class="line">    <span class="built_in">printf</span>(<span class="number">2</span>, <span class="string">"leftovers: %s\n"</span>, s);</div><div class="line">    panic(<span class="string">"syntax"</span>);</div><div class="line">  &#125;</div><div class="line">  nulterminate(cmd);</div><div class="line">  <span class="keyword">return</span> cmd;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　s就是输入的字符指针，es指向输入字符串的结尾位置。这里主要是把工作转交给parseline()，并在构造完成后判断是否到达输入字符串的末端，否则报错。这里的peek()函数的作用是检查输入字符串从头开始除空格外的第一个字符是否是给定的字符范围中的一个，返回true或者false，同时移动字符指针指向第一个非空格字符。multerminate()是构造命令的最后一步，在后面再介绍。</p>
+<h4 id="parseline"><a href="#parseline" class="headerlink" title="parseline()"></a>parseline()</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">struct</span> cmd*</span></div><div class="line"><span class="title">parseline</span><span class="params">(<span class="keyword">char</span> **ps, <span class="keyword">char</span> *es)</span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">struct</span> cmd *cmd;</div><div class="line"></div><div class="line">  cmd = parsepipe(ps, es);</div><div class="line">  <span class="keyword">while</span>(peek(ps, es, <span class="string">"&amp;"</span>))&#123;</div><div class="line">    gettoken(ps, es, <span class="number">0</span>, <span class="number">0</span>);</div><div class="line">    cmd = backcmd(cmd);</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">if</span>(peek(ps, es, <span class="string">";"</span>))&#123;</div><div class="line">    gettoken(ps, es, <span class="number">0</span>, <span class="number">0</span>);</div><div class="line">    cmd = listcmd(cmd, parseline(ps, es));</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> cmd;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　先以管道为单位划分输入命令字符串，主要的工作都转交给parsepipe()完成。parsepipe()里可以处理<code>&lt;&gt;()</code>这几种字符，而<code>&amp;;</code>则在parseline()里完成，判断是否有并列命令与列表命令。这里处理字符有一个很关键的函数gettoken()，它是一个词法提取函数，用户提取每一个子命令，将在下面一节介绍。在构造listcmd的时候，采用了递归调用自身的方法，这种方式可以解决多个并列命令相连的情况，例如<code>echo hello;echo world;echo haha</code>。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div></pre></td><td class="code"><pre><div class="line">char whitespace[] = &quot; \t\r\n\v&quot;;</div><div class="line">char symbols[] = &quot;&lt;|&gt;&amp;;()&quot;;</div><div class="line"></div><div class="line">int</div><div class="line">gettoken(char **ps, char *es, char **q, char **eq)</div><div class="line">&#123;</div><div class="line">  char *s;</div><div class="line">  int ret;</div><div class="line"></div><div class="line">  s = *ps;</div><div class="line">  while(s &lt; es &amp;&amp; strchr(whitespace, *s))</div><div class="line">    s++;</div><div class="line">  if(q)</div><div class="line">    *q = s;</div><div class="line">  ret = *s;</div><div class="line">  switch(*s)&#123;</div><div class="line">  case 0:</div><div class="line">    break;</div><div class="line">  case &apos;|&apos;:</div><div class="line">  case &apos;(&apos;:</div><div class="line">  case &apos;)&apos;:</div><div class="line">  case &apos;;&apos;:</div><div class="line">  case &apos;&amp;&apos;:</div><div class="line">  case &apos;&lt;&apos;:</div><div class="line">    s++;</div><div class="line">    break;</div><div class="line">  case &apos;&gt;&apos;:</div><div class="line">    s++;</div><div class="line">    if(*s == &apos;&gt;&apos;)&#123;</div><div class="line">      ret = &apos;+&apos;;</div><div class="line">      s++;</div><div class="line">    &#125;</div><div class="line">    break;</div><div class="line">  default:</div><div class="line">    ret = &apos;a&apos;;</div><div class="line">    while(s &lt; es &amp;&amp; !strchr(whitespace, *s) &amp;&amp; !strchr(symbols, *s))</div><div class="line">      s++;</div><div class="line">    break;</div><div class="line">  &#125;</div><div class="line">  if(eq)</div><div class="line">    *eq = s;</div><div class="line"></div><div class="line">  while(s &lt; es &amp;&amp; strchr(whitespace, *s))</div><div class="line">    s++;</div><div class="line">  *ps = s;</div><div class="line">  return ret;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　这个词法提取函数会把一段字符串提取出来，一般是用来提取基本命令或者重定向的文件名。<em>q指向字符串的其实位置，</em>eq指向结尾位置。遇到<code>!();&amp;&lt;&gt;</code>等等则简单地忽略，把指针往后移动到下一个非空格字符；如果遇到实际命令，则返回’a’，代表这是一个真实的基本命令。</p>
+<p>　　前面parseline()里的gettoken()只是简单地把代表并列命令的<code>;</code>以及后台命令的<code>&amp;</code>跳过，让字符指针指向下一个非空格字符，并没有抽取字符串。</p>
+<h4 id="parsepipe"><a href="#parsepipe" class="headerlink" title="parsepipe()"></a>parsepipe()</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">struct</span> cmd*</span></div><div class="line"><span class="title">parsepipe</span><span class="params">(<span class="keyword">char</span> **ps, <span class="keyword">char</span> *es)</span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">struct</span> cmd *cmd;</div><div class="line"></div><div class="line">  cmd = parseexec(ps, es);</div><div class="line">  <span class="keyword">if</span>(peek(ps, es, <span class="string">"|"</span>))&#123;</div><div class="line">    gettoken(ps, es, <span class="number">0</span>, <span class="number">0</span>);</div><div class="line">    cmd = pipecmd(cmd, parsepipe(ps, es));</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> cmd;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　把命令以|分成两个个子命令，先构造左边的命令，右边的命令则通过递归调用自身来构造。通过递归调用，可以解析多个管道命令相连的情况，例如<code>{block_a} | {block_b} | {block_c} | {block_d}</code>。</p>
+<h4 id="parseexec"><a href="#parseexec" class="headerlink" title="parseexec()"></a>parseexec()</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">struct</span> cmd*</span></div><div class="line"><span class="title">parseexec</span><span class="params">(<span class="keyword">char</span> **ps, <span class="keyword">char</span> *es)</span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">char</span> *q, *eq;</div><div class="line">  <span class="keyword">int</span> tok, argc;</div><div class="line">  <span class="keyword">struct</span> execcmd *cmd;</div><div class="line">  <span class="keyword">struct</span> cmd *ret;</div><div class="line"></div><div class="line">  <span class="keyword">if</span>(peek(ps, es, <span class="string">"("</span>))</div><div class="line">    <span class="keyword">return</span> parseblock(ps, es);</div><div class="line"></div><div class="line">  ret = execcmd();</div><div class="line">  cmd = (<span class="keyword">struct</span> execcmd*)ret;</div><div class="line"></div><div class="line">  argc = <span class="number">0</span>;</div><div class="line">  ret = parseredirs(ret, ps, es);</div><div class="line">  <span class="keyword">while</span>(!peek(ps, es, <span class="string">"|)&amp;;"</span>))&#123;</div><div class="line">    <span class="keyword">if</span>((tok=gettoken(ps, es, &amp;q, &amp;eq)) == <span class="number">0</span>)</div><div class="line">      <span class="keyword">break</span>;</div><div class="line">    <span class="keyword">if</span>(tok != <span class="string">'a'</span>)</div><div class="line">      panic(<span class="string">"syntax"</span>);</div><div class="line">    cmd-&gt;argv[argc] = q;</div><div class="line">    cmd-&gt;eargv[argc] = eq;</div><div class="line">    argc++;</div><div class="line">    <span class="keyword">if</span>(argc &gt;= MAXARGS)</div><div class="line">      panic(<span class="string">"too many args"</span>);</div><div class="line">    ret = parseredirs(ret, ps, es);</div><div class="line">  &#125;</div><div class="line">  cmd-&gt;argv[argc] = <span class="number">0</span>;</div><div class="line">  cmd-&gt;eargv[argc] = <span class="number">0</span>;</div><div class="line">  <span class="keyword">return</span> ret;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　这个函数主要用于构造最基本的命令。如果遇到()的话则把工作转交给parseblock()，否则说明是基本命令，用gettoken()函数把命令字符串提取出来，用<em>q和</em>eq来指定字符串的起始与结束位置，这两个指针将作为execcmd的参数。在解析完基本命令后，很可能还存在着重定向参数，于是把execcmd作为子命令传递给parseredirs()函数，看能不能构造redircmd。</p>
+<h4 id="parseblock"><a href="#parseblock" class="headerlink" title="parseblock()"></a>parseblock()</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">struct</span> cmd*</span></div><div class="line"><span class="title">parseblock</span><span class="params">(<span class="keyword">char</span> **ps, <span class="keyword">char</span> *es)</span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">struct</span> cmd *cmd;</div><div class="line"></div><div class="line">  <span class="keyword">if</span>(!peek(ps, es, <span class="string">"("</span>))</div><div class="line">    panic(<span class="string">"parseblock"</span>);</div><div class="line">  gettoken(ps, es, <span class="number">0</span>, <span class="number">0</span>);</div><div class="line">  cmd = parseline(ps, es);</div><div class="line">  <span class="keyword">if</span>(!peek(ps, es, <span class="string">")"</span>))</div><div class="line">    panic(<span class="string">"syntax - missing )"</span>);</div><div class="line">  gettoken(ps, es, <span class="number">0</span>, <span class="number">0</span>);</div><div class="line">  cmd = parseredirs(cmd, ps, es);</div><div class="line">  <span class="keyword">return</span> cmd;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　每一个()里面的命令都可以看作一个整体命令，因此主要是递归地把工作转交给parseline()。只有在parseblock()函数里才能处理<code>)</code>字符，因此最后要判断一下是否存在该字符，否则不是一个完整的block。()内的整体命令可能跟着重定向参数，因此这里也需要用parseredirs()看能不能包装成redircmd。</p>
+<h4 id="parseredirs"><a href="#parseredirs" class="headerlink" title="parseredirs()"></a>parseredirs()</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">struct</span> cmd*</span></div><div class="line"><span class="title">parseredirs</span><span class="params">(<span class="keyword">struct</span> cmd *cmd, <span class="keyword">char</span> **ps, <span class="keyword">char</span> *es)</span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">int</span> tok;</div><div class="line">  <span class="keyword">char</span> *q, *eq;</div><div class="line"></div><div class="line">  <span class="keyword">while</span>(peek(ps, es, <span class="string">"&lt;&gt;"</span>))&#123;</div><div class="line">    tok = gettoken(ps, es, <span class="number">0</span>, <span class="number">0</span>);</div><div class="line">    <span class="keyword">if</span>(gettoken(ps, es, &amp;q, &amp;eq) != <span class="string">'a'</span>)</div><div class="line">      panic(<span class="string">"missing file for redirection"</span>);</div><div class="line">    <span class="keyword">switch</span>(tok)&#123;</div><div class="line">    <span class="keyword">case</span> <span class="string">'&lt;'</span>:</div><div class="line">      cmd = redircmd(cmd, q, eq, O_RDONLY, <span class="number">0</span>);</div><div class="line">      <span class="keyword">break</span>;</div><div class="line">    <span class="keyword">case</span> <span class="string">'&gt;'</span>:</div><div class="line">      cmd = redircmd(cmd, q, eq, O_WRONLY|O_CREATE, <span class="number">1</span>);</div><div class="line">      <span class="keyword">break</span>;</div><div class="line">    <span class="keyword">case</span> <span class="string">'+'</span>:  <span class="comment">// &gt;&gt;</span></div><div class="line">      cmd = redircmd(cmd, q, eq, O_WRONLY|O_CREATE, <span class="number">1</span>);</div><div class="line">      <span class="keyword">break</span>;</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> cmd;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　先判断是否有重定向参数，如果没有，则不作任何处理。如果有，则将子命令包装成listcmd。经过gettoken()的词法提取后，<em>q和</em>eq分别指向重定向文件名的起始与结束的内存位置，它们都作为参数构造器listcmd。</p>
+<h4 id="nulterminate"><a href="#nulterminate" class="headerlink" title="nulterminate()"></a>nulterminate()</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">struct</span> cmd*</span></div><div class="line"><span class="title">nulterminate</span><span class="params">(<span class="keyword">struct</span> cmd *cmd)</span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">int</span> i;</div><div class="line">  <span class="keyword">struct</span> backcmd *bcmd;</div><div class="line">  <span class="keyword">struct</span> execcmd *ecmd;</div><div class="line">  <span class="keyword">struct</span> listcmd *lcmd;</div><div class="line">  <span class="keyword">struct</span> pipecmd *pcmd;</div><div class="line">  <span class="keyword">struct</span> redircmd *rcmd;</div><div class="line"></div><div class="line">  <span class="keyword">if</span>(cmd == <span class="number">0</span>)</div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line"></div><div class="line">  <span class="keyword">switch</span>(cmd-&gt;type)&#123;</div><div class="line">  <span class="keyword">case</span> EXEC:</div><div class="line">    ecmd = (<span class="keyword">struct</span> execcmd*)cmd;</div><div class="line">    <span class="keyword">for</span>(i=<span class="number">0</span>; ecmd-&gt;argv[i]; i++)</div><div class="line">      *ecmd-&gt;eargv[i] = <span class="number">0</span>;</div><div class="line">    <span class="keyword">break</span>;</div><div class="line"></div><div class="line">  <span class="keyword">case</span> REDIR:</div><div class="line">    rcmd = (<span class="keyword">struct</span> redircmd*)cmd;</div><div class="line">    nulterminate(rcmd-&gt;cmd);</div><div class="line">    *rcmd-&gt;efile = <span class="number">0</span>;</div><div class="line">    <span class="keyword">break</span>;</div><div class="line"></div><div class="line">  <span class="keyword">case</span> PIPE:</div><div class="line">    pcmd = (<span class="keyword">struct</span> pipecmd*)cmd;</div><div class="line">    nulterminate(pcmd-&gt;left);</div><div class="line">    nulterminate(pcmd-&gt;right);</div><div class="line">    <span class="keyword">break</span>;</div><div class="line"></div><div class="line">  <span class="keyword">case</span> LIST:</div><div class="line">    lcmd = (<span class="keyword">struct</span> listcmd*)cmd;</div><div class="line">    nulterminate(lcmd-&gt;left);</div><div class="line">    nulterminate(lcmd-&gt;right);</div><div class="line">    <span class="keyword">break</span>;</div><div class="line"></div><div class="line">  <span class="keyword">case</span> BACK:</div><div class="line">    bcmd = (<span class="keyword">struct</span> backcmd*)cmd;</div><div class="line">    nulterminate(bcmd-&gt;cmd);</div><div class="line">    <span class="keyword">break</span>;</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> cmd;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　在parsecmd()函数的最后一步，我们看到调用了nulterminate()这个函数。我们也看到，在execcmd里用eargv数组保存每一个命令参数的字符串结束位置；在redircmd里用efile保存了重定向文件名的字符串结束位置。nulterminate()就是给每一个结束位置指针指向的内存标识上字符串的结束标志\0。让这些参数都成为完整的字符串，那么在命令执行时候就能够正确处理。</p>
+<h3 id="命令执行器"><a href="#命令执行器" class="headerlink" title="命令执行器"></a>命令执行器</h3><p>　　在经历了上述的命令构造阶段以后，我们获得了一个封装好的链式命令串，是一个cmd*类型的指针，通过把该指针传递给runcmd()，来执行命令。下面先来看看runcmd()的源代码，然后分析每一种命令是怎么被执行的。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Execute cmd.  Never returns.</span></div><div class="line"><span class="function"><span class="keyword">void</span></span></div><div class="line"><span class="title">runcmd</span><span class="params">(<span class="keyword">struct</span> cmd *cmd)</span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">int</span> p[<span class="number">2</span>];</div><div class="line">  <span class="keyword">struct</span> backcmd *bcmd;</div><div class="line">  <span class="keyword">struct</span> execcmd *ecmd;</div><div class="line">  <span class="keyword">struct</span> listcmd *lcmd;</div><div class="line">  <span class="keyword">struct</span> pipecmd *pcmd;</div><div class="line">  <span class="keyword">struct</span> redircmd *rcmd;</div><div class="line"></div><div class="line">  <span class="keyword">if</span>(cmd == <span class="number">0</span>)</div><div class="line">    <span class="built_in">exit</span>();</div><div class="line"></div><div class="line">  <span class="keyword">switch</span>(cmd-&gt;type)&#123;</div><div class="line">  <span class="keyword">default</span>:</div><div class="line">    panic(<span class="string">"runcmd"</span>);</div><div class="line"></div><div class="line">  <span class="keyword">case</span> EXEC:</div><div class="line">    ecmd = (<span class="keyword">struct</span> execcmd*)cmd;</div><div class="line">    <span class="keyword">if</span>(ecmd-&gt;argv[<span class="number">0</span>] == <span class="number">0</span>)</div><div class="line">      <span class="built_in">exit</span>();</div><div class="line">    exec(ecmd-&gt;argv[<span class="number">0</span>], ecmd-&gt;argv);</div><div class="line">    <span class="built_in">printf</span>(<span class="number">2</span>, <span class="string">"exec %s failed\n"</span>, ecmd-&gt;argv[<span class="number">0</span>]);</div><div class="line">    <span class="keyword">break</span>;</div><div class="line"></div><div class="line">  <span class="keyword">case</span> REDIR:</div><div class="line">    rcmd = (<span class="keyword">struct</span> redircmd*)cmd;</div><div class="line">    close(rcmd-&gt;fd);</div><div class="line">    <span class="keyword">if</span>(open(rcmd-&gt;file, rcmd-&gt;mode) &lt; <span class="number">0</span>)&#123;</div><div class="line">      <span class="built_in">printf</span>(<span class="number">2</span>, <span class="string">"open %s failed\n"</span>, rcmd-&gt;file);</div><div class="line">      <span class="built_in">exit</span>();</div><div class="line">    &#125;</div><div class="line">    runcmd(rcmd-&gt;cmd);</div><div class="line">    <span class="keyword">break</span>;</div><div class="line"></div><div class="line">  <span class="keyword">case</span> LIST:</div><div class="line">    lcmd = (<span class="keyword">struct</span> listcmd*)cmd;</div><div class="line">    <span class="keyword">if</span>(fork1() == <span class="number">0</span>)</div><div class="line">      runcmd(lcmd-&gt;left);</div><div class="line">    wait();</div><div class="line">    runcmd(lcmd-&gt;right);</div><div class="line">    <span class="keyword">break</span>;</div><div class="line"></div><div class="line">  <span class="keyword">case</span> PIPE:</div><div class="line">    pcmd = (<span class="keyword">struct</span> pipecmd*)cmd;</div><div class="line">    <span class="keyword">if</span>(pipe(p) &lt; <span class="number">0</span>)</div><div class="line">      panic(<span class="string">"pipe"</span>);</div><div class="line">    <span class="keyword">if</span>(fork1() == <span class="number">0</span>)&#123;</div><div class="line">      close(<span class="number">1</span>);</div><div class="line">      dup(p[<span class="number">1</span>]);</div><div class="line">      close(p[<span class="number">0</span>]);</div><div class="line">      close(p[<span class="number">1</span>]);</div><div class="line">      runcmd(pcmd-&gt;left);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span>(fork1() == <span class="number">0</span>)&#123;</div><div class="line">      close(<span class="number">0</span>);</div><div class="line">      dup(p[<span class="number">0</span>]);</div><div class="line">      close(p[<span class="number">0</span>]);</div><div class="line">      close(p[<span class="number">1</span>]);</div><div class="line">      runcmd(pcmd-&gt;right);</div><div class="line">    &#125;</div><div class="line">    close(p[<span class="number">0</span>]);</div><div class="line">    close(p[<span class="number">1</span>]);</div><div class="line">    wait();</div><div class="line">    wait();</div><div class="line">    <span class="keyword">break</span>;</div><div class="line"></div><div class="line">  <span class="keyword">case</span> BACK:</div><div class="line">    bcmd = (<span class="keyword">struct</span> backcmd*)cmd;</div><div class="line">    <span class="keyword">if</span>(fork1() == <span class="number">0</span>)</div><div class="line">      runcmd(bcmd-&gt;cmd);</div><div class="line">    <span class="keyword">break</span>;</div><div class="line">  &#125;</div><div class="line">  <span class="built_in">exit</span>();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ol>
+<li>判断cmd的type类型。</li>
+<li>如果是EXEC，说明是基本命令，用系统调用exec()来执行该命令。基本命令都是一些写好的外部用户程序，以可执行文件的形式来给用户使用。exec()会根据该文件替换掉原进程的所有内存内容，然后执行该程序的代码。这些文件都是以一定的标准格式编写的，需要指定内存的代码区，数据区，堆栈区等等。</li>
+<li>如果是REDIR，说明是重定向命令。所有用户程序都遵循一个标准，就是用文件描述符0作为输入，文件描述符1作为输出。那么要实现重定向，只需要关闭原来的0或1文件描述符，然后再用系统调用open()，让新打开的文件占用0或1文件描述符，再对子命令递归调用runcmd()函数即可。</li>
+<li>如果是LIST，说明是并列命令。需要分别执行左右子命令。</li>
+<li>如果是PIPE，说明是管道命令。也是分别执行左右子命令，对于每个执行子进程，都需要关闭0或1文件描述符，然后用系统调用dup()来让刚刚关闭的文件描述符指向管道某端的文件描述符，从而实现重定向。</li>
+<li>如果是BACK，说明是后台命令。新派生一个子进程来执行子命令即可。</li>
+</ol>
+<p>　　从上面的命令执行过程可以知道，由于命令构造是用递归实现的，那么执行过程本身也是一个递归过程。通过递归调用，最终形成一个树状的执行链，每一个叶子就是一个基本命令。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/xv6/" rel="tag"># xv6</a>
+          
+            <a href="/tags/操作系统/" rel="tag"># 操作系统</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/05/20/erlang-二进制串深度解析及优化/" rel="next" title="erlang二进制串深度解析及优化">
+                <i class="fa fa-chevron-left"></i> erlang二进制串深度解析及优化
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="cloud-tie-wrapper" class="cloud-tie-wrapper"></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/uploads/avatar.jpg"
+               alt="Gavin Wong" />
+          <p class="site-author-name" itemprop="name">Gavin Wong</p>
+           
+              <p class="site-description motion-element" itemprop="description">广寒宫送千里香，杳杳随风入梦凉。我欲因之凌霄起，嫦娥丹桂尽入囊。</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">27</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">30</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#源代码获得"><span class="nav-number">2.</span> <span class="nav-text">源代码获得</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总体架构"><span class="nav-number">3.</span> <span class="nav-text">总体架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#预处理器"><span class="nav-number">4.</span> <span class="nav-text">预处理器</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#验证标准输入、标准输出及标准错误正常开启"><span class="nav-number">4.1.</span> <span class="nav-text">验证标准输入、标准输出及标准错误正常开启</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#cd"><span class="nav-number">4.2.</span> <span class="nav-text">cd</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#命令构造器"><span class="nav-number">5.</span> <span class="nav-text">命令构造器</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#命令类型"><span class="nav-number">5.1.</span> <span class="nav-text">命令类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#命令构造流程"><span class="nav-number">5.2.</span> <span class="nav-text">命令构造流程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#parsecmd"><span class="nav-number">5.3.</span> <span class="nav-text">parsecmd()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#parseline"><span class="nav-number">5.4.</span> <span class="nav-text">parseline()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#parsepipe"><span class="nav-number">5.5.</span> <span class="nav-text">parsepipe()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#parseexec"><span class="nav-number">5.6.</span> <span class="nav-text">parseexec()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#parseblock"><span class="nav-number">5.7.</span> <span class="nav-text">parseblock()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#parseredirs"><span class="nav-number">5.8.</span> <span class="nav-text">parseredirs()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#nulterminate"><span class="nav-number">5.9.</span> <span class="nav-text">nulterminate()</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#命令执行器"><span class="nav-number">6.</span> <span class="nav-text">命令执行器</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gavin Wong</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/jquery/2.1.3/jquery.min.js"></script>
+
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/fastclick/1.0.6/fastclick.min.js"></script>
+
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/jquery.lazyload/1.9.3/jquery.lazyload.min.js"></script>
+
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/velocity/1.2.3/velocity.min.js"></script>
+
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/velocity/1.2.3/velocity.ui.min.js"></script>
+
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/fancybox/2.1.5/jquery.fancybox.pack.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+    
+    <script>
+      var cloudTieConfig = {
+        url: document.location.href, 
+        sourceId: "",
+        productKey: "7186f7e53b7349c49adb69310cf73ddd",
+        target: "cloud-tie-wrapper"
+      };
+    </script>
+    <script src="https://img1.ws.126.net/f2e/tie/yun/sdk/loader.js"></script>
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (search_path.endsWith("json")) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("EBQKkMtlkhkxwaXmaewHY2c4-gzGzoHsz", "KSypTWMBbTMgIBYw9EuDa73j");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
