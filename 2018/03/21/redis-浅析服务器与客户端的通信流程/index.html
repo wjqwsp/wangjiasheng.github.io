@@ -96,7 +96,7 @@
 <link href="/css/main.css?v=5.1.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="RESTful,后端,JAX-RS," />
+  <meta name="keywords" content="数据库,redis," />
 
 
 
@@ -112,28 +112,19 @@
 
 
 
-<meta name="description" content="搜索的过滤与排序　　搜索在RESTful API里是用GET方法实现的，URI一般是某个对象，可以是单个也可以是列表。以微博搜索为例，如果不加任何条件，其URI一般是这样的：
-/api/weibo
-/api/weibo/6
-
-　　但往往还需要限制一下搜索条件，例如评论数大于某个数，或者含有什么关键字，如果是搜索微博列表，也可能加上对日期作升序或降序排序的要求。这些附加条件，是作为query par">
+<meta name="description" content="前言　　这段时间实验室工作较忙，很难静下心来写点东西。发现还是得把做的看的记录下来，抽时间总结一下。最近研究redis的源码，本文就先简要分析一下服务器与客户端的通信流程，这一块也算是redis的核心功能了。
+接收新的客户端连接　　一切的通信都要从接收客户端的连接开始。redis把读客户端数据、写数据到客户端以及接收客户端的连接三种事件以IO多路复用的形式，在event loop中用单进程、单线程">
 <meta property="og:type" content="article">
-<meta property="og:title" content="RESTful API规范补充以及JAX-RS传递参数的方法">
-<meta property="og:url" content="http://wjqwsp.github.io/2016/08/23/RESTful-API规范补充/index.html">
+<meta property="og:title" content="redis 浅析服务器与客户端的通信流程">
+<meta property="og:url" content="http://wjqwsp.github.io/2018/03/21/redis-浅析服务器与客户端的通信流程/index.html">
 <meta property="og:site_name" content="南国倾城">
-<meta property="og:description" content="搜索的过滤与排序　　搜索在RESTful API里是用GET方法实现的，URI一般是某个对象，可以是单个也可以是列表。以微博搜索为例，如果不加任何条件，其URI一般是这样的：
-/api/weibo
-/api/weibo/6
-
-　　但往往还需要限制一下搜索条件，例如评论数大于某个数，或者含有什么关键字，如果是搜索微博列表，也可能加上对日期作升序或降序排序的要求。这些附加条件，是作为query par">
-<meta property="og:updated_time" content="2016-08-23T08:10:44.884Z">
+<meta property="og:description" content="前言　　这段时间实验室工作较忙，很难静下心来写点东西。发现还是得把做的看的记录下来，抽时间总结一下。最近研究redis的源码，本文就先简要分析一下服务器与客户端的通信流程，这一块也算是redis的核心功能了。
+接收新的客户端连接　　一切的通信都要从接收客户端的连接开始。redis把读客户端数据、写数据到客户端以及接收客户端的连接三种事件以IO多路复用的形式，在event loop中用单进程、单线程">
+<meta property="og:updated_time" content="2018-03-22T09:19:02.399Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="RESTful API规范补充以及JAX-RS传递参数的方法">
-<meta name="twitter:description" content="搜索的过滤与排序　　搜索在RESTful API里是用GET方法实现的，URI一般是某个对象，可以是单个也可以是列表。以微博搜索为例，如果不加任何条件，其URI一般是这样的：
-/api/weibo
-/api/weibo/6
-
-　　但往往还需要限制一下搜索条件，例如评论数大于某个数，或者含有什么关键字，如果是搜索微博列表，也可能加上对日期作升序或降序排序的要求。这些附加条件，是作为query par">
+<meta name="twitter:title" content="redis 浅析服务器与客户端的通信流程">
+<meta name="twitter:description" content="前言　　这段时间实验室工作较忙，很难静下心来写点东西。发现还是得把做的看的记录下来，抽时间总结一下。最近研究redis的源码，本文就先简要分析一下服务器与客户端的通信流程，这一块也算是redis的核心功能了。
+接收新的客户端连接　　一切的通信都要从接收客户端的连接开始。redis把读客户端数据、写数据到客户端以及接收客户端的连接三种事件以IO多路复用的形式，在event loop中用单进程、单线程">
 
 
 
@@ -161,13 +152,13 @@
 
 
 
-  <link rel="canonical" href="http://wjqwsp.github.io/2016/08/23/RESTful-API规范补充/"/>
+  <link rel="canonical" href="http://wjqwsp.github.io/2018/03/21/redis-浅析服务器与客户端的通信流程/"/>
 
 
 
 
 
-  <title>RESTful API规范补充以及JAX-RS传递参数的方法 | 南国倾城</title>
+  <title>redis 浅析服务器与客户端的通信流程 | 南国倾城</title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -321,7 +312,7 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://wjqwsp.github.io/2016/08/23/RESTful-API规范补充/">
+    <link itemprop="mainEntityOfPage" href="http://wjqwsp.github.io/2018/03/21/redis-浅析服务器与客户端的通信流程/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Gavin Wong">
@@ -338,7 +329,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">RESTful API规范补充以及JAX-RS传递参数的方法</h1>
+          <h1 class="post-title" itemprop="name headline">redis 浅析服务器与客户端的通信流程</h1>
         
 
         <div class="post-meta">
@@ -350,8 +341,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-08-23T13:46:01+08:00">
-                2016-08-23
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-21T20:46:25+08:00">
+                2018-03-21
               </time>
             
 
@@ -369,7 +360,7 @@
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a class="cloud-tie-join-count" href="/2016/08/23/RESTful-API规范补充/#comments" itemprop="discussionUrl">
+                <a class="cloud-tie-join-count" href="/2018/03/21/redis-浅析服务器与客户端的通信流程/#comments" itemprop="discussionUrl">
                   <span class="post-comments-count join-count" itemprop="commentCount"></span>
                 </a>
               </span>
@@ -378,7 +369,7 @@
 
           
           
-             <span id="/2016/08/23/RESTful-API规范补充/" class="leancloud_visitors" data-flag-title="RESTful API规范补充以及JAX-RS传递参数的方法">
+             <span id="/2018/03/21/redis-浅析服务器与客户端的通信流程/" class="leancloud_visitors" data-flag-title="redis 浅析服务器与客户端的通信流程">
                <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -406,71 +397,26 @@
       
 
       
-        <h3 id="搜索的过滤与排序"><a href="#搜索的过滤与排序" class="headerlink" title="搜索的过滤与排序"></a>搜索的过滤与排序</h3><p>　　搜索在RESTful API里是用GET方法实现的，URI一般是某个对象，可以是单个也可以是列表。以微博搜索为例，如果不加任何条件，其URI一般是这样的：</p>
-<pre><code>/api/weibo</code></pre>
-<pre><code>/api/weibo/6</code></pre>
-
-<p>　　但往往还需要限制一下搜索条件，例如评论数大于某个数，或者含有什么关键字，如果是搜索微博列表，也可能加上对日期作升序或降序排序的要求。这些附加条件，是作为query param附加在http请求里的。例如：<br><a id="more"></a></p>
-<ul>
-<li>GET /weibo?deleted=true - 得到所有标记为删除的微博</li>
-<li>GET /weibo?sort=-create-date - 按照创建日期反序排序得到微博列表</li>
-<li>GET /weibo?sort=comment-count,-create-date - 先按微博评论数再按创建日期反序排序得到微博列表</li>
-<li>GET /weibo?keyword=xxx - 得到包含关键字xxx的微博列表</li>
-<li>GET /weibo?keyword=xxx&amp;deleted=true&amp;sort=comment-count,-create-date - 搜索关键字包含xxx的标记为删除的微博，按照评论数再按创建日期反序排序得到微博列表</li>
-</ul>
-<p>　　确定了搜索对象，例如weibo，那么在服务器端我们就知道需要查找哪个表，或者需要连接哪几个表。where后面的条件则根据附上的参数动态选择。order by后面的属性则根据sort后面的参数添加，带-号的代表降序，很容易翻译成sql语言。</p>
-<p>　　我们还可以选择返回哪些属性，或者不返回哪些属性。例如：</p>
-<ul>
-<li>GET /weibo?fields=id,subject - 得到微博列表，每个微博里的字段只有id和subject两个，其他的都排除了。</li>
-<li>GET /weibo?fields-exclude=id,subject - 得到微博列表，每个微博里的id和subject被排除了，输出其他的字段。</li>
-</ul>
-<p>　　这些参数就是select后面的列信息。</p>
-<p>　　由于RESTful API的资源是面向对象的，我们往往是对某一个对象作查找，如果在查找里需要附带其他资源对象的信息，也可以在query param里添加，用embed字段作为key。例如：</p>
-<ul>
-<li>GET /weibo?embed=owner.id,owner.name - 得到微博列表，每个微博里的信息里加入这个微博的所有者的id和name两个属性。</li>
-</ul>
-<p>　　这些属性也是跟在select后面的，只要参数名与数据库的表名能一一对应即可。由于存在嵌入的对象属性，在数据库查找上往往便需要多表连接。</p>
-<p>　　上一讲说的翻页的页数和每页的数据项数也是作为query param传给服务器的。</p>
-<h3 id="常用的查询"><a href="#常用的查询" class="headerlink" title="常用的查询"></a>常用的查询</h3><p>　　上面说的对搜索的过滤和排序是通用的，根据传入的参数而动态构造sql语句。而对于某些特别常用的查询，例如新浪微博里的最热微博top10，则可以用专用的名字代替，例如：</p>
-<ul>
-<li>GET /weibo/top10</li>
-</ul>
-<h3 id="不太能归类的操作"><a href="#不太能归类的操作" class="headerlink" title="不太能归类的操作"></a>不太能归类的操作</h3><p>　　http是面向资源的，RESTful API是基于http的，其操作也是针对某个资源对象进行的，操作的类型则用http方法表达，例如PUT,POST,PATCH,DELETE,GET。然而，有些操作不是那么容易归类为上述的http方法，例如给微博点赞。我们可以把点赞操作理解成修改微博对象，按照这个定义是应该用PUT或PATCH方法。但是一般意义上我们说的对微博的修改是指编辑微博的文本内容。因此，有必要把点赞这个操作独立出来，会更加方便，意义也更加清晰。例如：</p>
-<ul>
-<li>PUT /weibo/12/like - 给某个微博点赞</li>
-<li>DELETE /weibo/12/like - 删除某个微博的赞</li>
-</ul>
-<h3 id="常用的status-code"><a href="#常用的status-code" class="headerlink" title="常用的status code"></a>常用的status code</h3><ul>
-<li>200 OK - 正常返回，用于GET, PUT, PATCH的这些正常操作。</li>
-<li>201 Created - 用于POST创建对象正常返回。</li>
-<li>204 No Content - 用于DELETE，成功操作但没啥返回的。</li>
-<li>304 Not Modified - 有Cache，表示没改过。</li>
-<li>400 Bad Request - 指请求里面有些参数不对。</li>
-<li>401 Unauthorized - 没有登录</li>
-<li>403 Forbidden - 登录了但是没有授权访问某个资源</li>
-<li>404 Not Found - 资源不存在</li>
-<li>405 Method Not Allowed - 登录了但是不允许做某个操作</li>
-<li>410 Gone - 表示资源不再提供了，用来做老版本提示用的</li>
-<li>415 Unsupported Media Type - 請求的Centent Type不對</li>
-<li>422 Unprocessable Entity - 一般用于validation校验</li>
-<li>429 Too Many Requests - 请求太快太多，达到限制</li>
-</ul>
-<p>　　http提供了很多的status code。但在RESTful API里常用的就这几个。我们可以根据业务需求对不同的request返回相匹配的状态码。方法就是上一讲提到的构造Response对象返回以及异常处理。</p>
-<h3 id="JAX-RS怎样接收客户端的参数"><a href="#JAX-RS怎样接收客户端的参数" class="headerlink" title="JAX-RS怎样接收客户端的参数"></a>JAX-RS怎样接收客户端的参数</h3><p>　　RESTful API的核心是URI，HTTP方法以及数据传输格式，在第一讲详细讲过。http header也十分重要，在第二讲讲过。除此之外，服务器与客户端的交互往往需要传递一些参数，例如对象id，需要更新的整个对象以及上面提到的query param等。这些参数的传递都是通过注解实现的。下面介绍一下常用的参数注解。</p>
-<h5 id="PathParam"><a href="#PathParam" class="headerlink" title="PathParam"></a>PathParam</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@PATCH</span></div><div class="line"><span class="meta">@Path</span>(<span class="string">"&#123;id&#125;/remove"</span>)</div><div class="line"><span class="meta">@Consumes</span>(&#123;<span class="string">"application/json"</span>&#125;)</div><div class="line"><span class="meta">@Produces</span>(&#123;<span class="string">"application/json"</span>&#125;)</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">remove</span><span class="params">(@PathParam(<span class="string">"id"</span>)</span> Long id,@Context HttpServletRequest request) </span>&#123;</div></pre></td></tr></table></figure>
-<p>　　需要删除某条微博，此时URI里必定含有该微博的id信息，可以用@PathParam注解从URI里提取参数。</p>
-<h5 id="QueryParam"><a href="#QueryParam" class="headerlink" title="QueryParam"></a>QueryParam</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@GET</span></div><div class="line"><span class="meta">@Path</span>(<span class="string">"danger-unsolved"</span>)</div><div class="line"><span class="meta">@Consumes</span>(&#123;<span class="string">"application/json"</span>&#125;)</div><div class="line"><span class="meta">@Produces</span>(&#123;<span class="string">"application/json;charset=UTF-8"</span>&#125;)</div><div class="line"><span class="function"><span class="keyword">public</span> Response <span class="title">findUnSolved</span><span class="params">(@QueryParam(<span class="string">"page"</span>)</span> <span class="keyword">int</span> page,@<span class="title">QueryParam</span><span class="params">(<span class="string">"per-page"</span>)</span> <span class="keyword">int</span> perPage,@Context HttpServletResponse response) </span>&#123;</div></pre></td></tr></table></figure>
-<p>　　翻页信息用query param传递，用@QueryParam注解可以提取。</p>
-<h5 id="FormParam"><a href="#FormParam" class="headerlink" title="FormParam"></a>FormParam</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@POST</span></div><div class="line"><span class="meta">@Path</span>(<span class="string">"login"</span>)</div><div class="line"><span class="meta">@PermitAll</span></div><div class="line"><span class="meta">@Consumes</span>(&#123;<span class="string">"application/x-www-form-urlencoded"</span>&#125;)</div><div class="line"><span class="function"><span class="keyword">public</span> Response <span class="title">login</span><span class="params">(@Context HttpServletRequest request,</span></span></div><div class="line">        @Context HttpServletResponse response,</div><div class="line">        @FormParam(<span class="string">"username"</span>) String username,</div><div class="line">        @<span class="title">FormParam</span><span class="params">(<span class="string">"password"</span>)</span> String password,</div><div class="line">        @<span class="title">FormParam</span><span class="params">(<span class="string">"remember_me"</span>)</span> String rememberMe) &#123;</div></pre></td></tr></table></figure>
-<p>　　用POST请求提交的表格，其表单内容可以用@FormParam获取。</p>
-<h5 id="MatrixParam"><a href="#MatrixParam" class="headerlink" title="MatrixParam"></a>MatrixParam</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Path</span>(<span class="string">"/books"</span>)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BookService</span> </span>&#123;</div><div class="line"></div><div class="line">	<span class="meta">@GET</span></div><div class="line">	<span class="meta">@Path</span>(<span class="string">"&#123;year&#125;"</span>)</div><div class="line">	<span class="function"><span class="keyword">public</span> Response <span class="title">getBooks</span><span class="params">(@PathParam(<span class="string">"year"</span>)</span> String year,</span></div><div class="line">			@<span class="title">MatrixParam</span><span class="params">(<span class="string">"author"</span>)</span> String author,</div><div class="line">			@<span class="title">MatrixParam</span><span class="params">(<span class="string">"country"</span>)</span> String country) &#123;</div><div class="line"></div><div class="line">		<span class="keyword">return</span> Response</div><div class="line">			.status(<span class="number">200</span>)</div><div class="line">			.entity(<span class="string">"getBooks is called, year : "</span> + year</div><div class="line">				+ <span class="string">", author : "</span> + author + <span class="string">", country : "</span> + country)</div><div class="line">			.build();</div><div class="line"></div><div class="line">	&#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>　　上述的request请求URI是/books/2011;author=mkyong;country=malaysia。@MatirxParam可以提取用；分隔的一组key/value对。</p>
-<h5 id="HeaderParam和CookieParam"><a href="#HeaderParam和CookieParam" class="headerlink" title="HeaderParam和CookieParam"></a>HeaderParam和CookieParam</h5><p>　　@HeaderParam和@CookieParam注解都是提取header或者cookie里某个key的value。像@HeaderParam(“Referer”)和@CookieParam(“customerId”)等，非常简单。</p>
-<h5 id="获取HttpServletRequest和HttpServletResponse"><a href="#获取HttpServletRequest和HttpServletResponse" class="headerlink" title="获取HttpServletRequest和HttpServletResponse"></a>获取HttpServletRequest和HttpServletResponse</h5><p>　　JAX-RS是基于servlet实现的。其每个资源方法都可以提取相应请求的HttpServletRequest和HttpServletResponse对象。利用这两个对象，我们可以在资源方法内构造Response对象，也可以修改header和cookie。这两个对象都可以用@Context注解获取。上面的一些例子也有体现。</p>
-<h5 id="payload对象"><a href="#payload对象" class="headerlink" title="payload对象"></a>payload对象</h5><p>　　http request的payload对象在网络中是以json或xml的格式传输的，只要JAX-RS里能保证其反序列化，那么在参数列表里直接用相应的POJO对象类名和实体名表示即可。例如：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@PATCH</span></div><div class="line"><span class="meta">@Path</span>(<span class="string">"&#123;id&#125;/block"</span>)</div><div class="line"><span class="meta">@Consumes</span>(&#123;<span class="string">"application/json"</span>&#125;)</div><div class="line"><span class="meta">@Produces</span>(&#123;<span class="string">"application/json"</span>&#125;)</div><div class="line"><span class="function"><span class="keyword">public</span> MessageDTO <span class="title">block</span><span class="params">(@PathParam(<span class="string">"id"</span>)</span> Long id,@Context HttpServletRequest request,MessageDTO messageDTO) </span>&#123;</div></pre></td></tr></table></figure>
-<p>　　上面的MessageDTO对象便是http request的payload对象。</p>
-<p>　　</p>
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　这段时间实验室工作较忙，很难静下心来写点东西。发现还是得把做的看的记录下来，抽时间总结一下。最近研究redis的源码，本文就先简要分析一下服务器与客户端的通信流程，这一块也算是redis的核心功能了。</p>
+<h3 id="接收新的客户端连接"><a href="#接收新的客户端连接" class="headerlink" title="接收新的客户端连接"></a>接收新的客户端连接</h3><p>　　一切的通信都要从接收客户端的连接开始。redis把读客户端数据、写数据到客户端以及接收客户端的连接三种事件以IO多路复用的形式，在event loop中用单进程、单线程来处理。IO多路复用可以在一次IO阻塞中监听多个文件描述符。接收客户端连接在redis中作为读事件来处理，每个redis服务器进程在初始化时候都会绑定一个端口作为客户端连接的端口，并在该端口上绑定一个事件处理函数。如果在该端口中监听到有客户端的连接请求，则会运行该事件处理函数。</p>
+<p>　　该端口可以维护一个等待队列，来缓存没有处理的连接请求，超过队列长度的会被拒绝。当redis进程监听到有新的连接请求，则连续处理最多1000个连接。每获得一个连接，会为该连接分配一个新的端口作为socket连接，redis进程就得到了该连接的一个独有的文件描述符。然后会为该描述符创建一个redisClient的结构体。redis在配置文件中定义最多的客户端连接数，超过该数目的客户端会被拒绝，redisClient结构体内存被释放，向客户端的文件符发送拒绝信息。由于此时客户端不一定可写，所以该拒绝信息不保证能成功发送，这是尽最大努力的尝试。</p>
+<p>　　创建redisClient主要是初始化各种状态，例如输入缓冲区，输出缓冲区的内存分配，参数列表的初始化等等。对于网络通信来说，这一步最重要的就是为新分配的文件描述符绑定一个读事件，也作为IO多路复用监听的事件之一。那么如果客户端有数据到达，该文件描述符就会被唤醒，执行读数据的事件处理函数。</p>
+<h3 id="读网络数据"><a href="#读网络数据" class="headerlink" title="读网络数据"></a>读网络数据</h3><p>　　如果有读事件到达，执行相应的事件处理函数。下面介绍一下redis通用的客户端读事件处理函数的逻辑。客户端向redis服务器发送的数据一般是redis命令。redis命令的格式是由严格的协议规定的，只有满足协议的命令才能得到正确解析，命令才会正确执行。而网络中数据到达的时间是不确定的，且传输层的输入缓冲区是有限的，命令参数可能非常长，例如可能客户端发了一个插入一条512MB的字符串数据到数据库中的命令，那么一次读是不一定能把命令解析完的，甚至不能把一个参数都读完整。</p>
+<p>　　针对这种问题，redis的哲学是：尽可能地读所有数据，直到不能再读为止；尽可能解析命令，如果已经读出来的数据可以解析成一条完整的命令，那么执行该命令；如果不能构成完整的命令，那么尽可能地解析一个完整的参数，然后存到redisClient的参数数组中；如果不能解析一个完整的参数，那么尽可能获得将要解析的参数的信息，例如一共有多少参数，将要解析的参数要占多少内存，然后根据这些信息去优化输入缓冲区的空间来存放将要解析的参数，避免无谓的内存拷贝。</p>
+<p>　　要满足上述要求，Redis必须为每个客户端设置一个输入缓冲区，缓存尚未能解析的命令；同时，已解析的参数可以在缓冲区中移除，加入每个客户端的参数数组中；客户端也要保存当前解析的命令的参数个数，以及当前正在解析的参数的长度。</p>
+<p>　　Redis在执行读数据事件处理函数时，会保证输入缓冲区有16MB的空闲空间存放网络数据。如果有大量的数据作为参数到达服务器，Redis也不会瞬间让输入缓冲区空间暴涨，而是以16MB为单位地增加，避免短时间内消耗大量内存，使得服务器来不及释放空间。同时一次读太多数据也会导致服务器阻塞，由于Redis采用单进程单线程IO多路复用模型，应该避免IO阻塞。输入缓冲区最多1GB，超过则客户端会被马上释放。</p>
+<p>　　每次接到读数据事件，都会更新客户端的最后互动时间，更新输入缓冲区的峰值，设置服务器的当前客户端为该客户端。在函数执行结束后，把当前客户端设为空。</p>
+<p>　　Redis客户端发来的命令的格式是非常固定的。命令的开始会有一个整数代表参数个数，后面跟着每个参数的长度以及参数数据。参数个数，参数长度，参数数据都以\r\n划分。因此，Redis会检测字符串的\r\n，用来解析参数。在解析的过程中如果发现格式不满足协议要求，则马上停止解析，向客户端写错误信息到输出缓冲区，并设置客户端为输出缓冲区清空后就马上释放。</p>
+<p>　　Redis对于非常长的参数（大于32KB），有特殊的优化方法。如果将要解析的参数的长度已经获取，那么在读数据到输入缓冲区时则不是16MB为单位读取了，而是只要该数据比16MB小，则只会读数据到刚好能解析该参数；如果比16MB大，则还是以16MB为单位读取，在读最后一小块时候还是能让输入缓冲区只存放该参数。为什么要让输入缓冲区只有该参数呢？这样就可以直接用输入缓冲区构造Redis对象加入参数数组内，而不用进行大量的内存复制，既耗时，又浪费内存。</p>
+<p>　　当命令完全解析之后，Redis就会根据参数数组（第一个参数为命令名字）查找命令表，并用相应的参数执行相应的函数了。</p>
+<h3 id="写网络数据"><a href="#写网络数据" class="headerlink" title="写网络数据"></a>写网络数据</h3><p>　　不同于读事件，如果总是把客户端的文件描述符绑定写事件监听的话，那么会频繁地提示可写，因此只会在真的写数据到输出缓冲区之后，才绑定事件处理器，且在事件处理函数执行完后，要手动解除绑定。写数据一般发生在执行命令的时候，命令函数会把一些数据写到输出缓冲区中，然后要绑定写事件。</p>
+<p>　　Redis的输出缓冲区有两个，一个是定长数组，是预分配的空间，一般是16KB。当该缓冲区没写满，且新数据能全部放进该区域时，优先写到该定长缓冲区，可以避免内存分配。一个是变长缓冲区，用列表实现，列表元素是Redis对象，且编码都是sds。之所以用Redis对象构成输出缓冲区，是可以充分利用对象的共享性。对象的共享性包括一些高频率使用的对象Redis把它们做成全局唯一的全局共享对象，还有一些数据库里保存的数据，在输出到网络时直接把数据库里的Redis对象引用计数加1即可，避免无谓的内存复制，既费时，又耗内存。</p>
+<p>　　当列表末尾的Redis对象元素的sds长度不满16KB时，新写到缓冲区的数据优先拼接到列表的最后一个元素。这是因为每次写数据到网络都是以一个列表元素为单位写的，所以要控制好每次写的长度，避免过长产生阻塞，也避免过短，影响IO效率。而且每写完一个列表元素，就会把相应的内存释放掉，这个长度也是控制内存释放的速率。</p>
+<p>　　在把数据推到变长缓冲区时，还会累加缓冲区的内存，当然这个内存只是估计值，因为有很大一部分可能都是共享对象。每次把数据写到变长缓冲区之后，都要判断一下当前输出缓冲区的大小是否超过限制，这个限制分为硬限制和软限制，超过硬限制或者在一段时间内仍然超过软限制，则会把客户端加入异步销毁列表，在服务器处理定时任务时候异步销毁掉客户端。</p>
+<p>　　Redis写缓冲区也是尽力写，但有可能socket的输出缓冲区满了使得不一定把当前要写的数据都写完，而Redis的读写都是非阻塞的，就要记录当前写的数据的位置，下次接着写。</p>
+<p>　　Redis同样会避免一个客户端写大量的数据阻塞主线程，因此一次事件处理一般只能写64KB的数据，然后把CPU时间让给别的事件。但如果此时Redis的内存占用超过上限，则希望把客户端的输出缓冲区尽快清空，以回收内存。</p>
+<p>　　如果客户端设置了清空输出缓冲区马上释放，则释放客户端。</p>
+<h3 id="释放客户端"><a href="#释放客户端" class="headerlink" title="释放客户端"></a>释放客户端</h3><p>　　对于普通客户端，释放客户端主要是把客户端的输入缓冲区、输出缓冲区、参数数组以及把redisClient结构体本身所分配的内存全部归还给操作系统。对于本文所涉及的网络通信而言，在输入缓冲区或输出缓冲区超出限制的情况下，或是协议解析错误的情况下，会释放客户端，保证Redis服务器不会有大量的内存被客户端占据，影响正常业务。</p>
 
       
     </div>
@@ -500,11 +446,9 @@
       
         <div class="post-tags">
           
-            <a href="/tags/RESTful/" rel="tag"># RESTful</a>
+            <a href="/tags/数据库/" rel="tag"># 数据库</a>
           
-            <a href="/tags/后端/" rel="tag"># 后端</a>
-          
-            <a href="/tags/JAX-RS/" rel="tag"># JAX-RS</a>
+            <a href="/tags/redis/" rel="tag"># redis</a>
           
         </div>
       
@@ -517,8 +461,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2016/08/22/RESTful-API-入门二-JAX-RS实现/" rel="next" title="RESTful API 入门二(JAX-RS实现)">
-                <i class="fa fa-chevron-left"></i> RESTful API 入门二(JAX-RS实现)
+              <a href="/2017/06/06/xv6-bootstrap部分源代码分析/" rel="next" title="xv6 bootstrap部分源代码分析">
+                <i class="fa fa-chevron-left"></i> xv6 bootstrap部分源代码分析
               </a>
             
           </div>
@@ -526,10 +470,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2016/08/26/ORM-in-JaveEE——JPA/" rel="prev" title="ORM in JaveEE——JPA">
-                ORM in JaveEE——JPA <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -651,7 +591,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#搜索的过滤与排序"><span class="nav-number">1.</span> <span class="nav-text">搜索的过滤与排序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#常用的查询"><span class="nav-number">2.</span> <span class="nav-text">常用的查询</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#不太能归类的操作"><span class="nav-number">3.</span> <span class="nav-text">不太能归类的操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#常用的status-code"><span class="nav-number">4.</span> <span class="nav-text">常用的status code</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JAX-RS怎样接收客户端的参数"><span class="nav-number">5.</span> <span class="nav-text">JAX-RS怎样接收客户端的参数</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#PathParam"><span class="nav-number">5.0.1.</span> <span class="nav-text">PathParam</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#QueryParam"><span class="nav-number">5.0.2.</span> <span class="nav-text">QueryParam</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#FormParam"><span class="nav-number">5.0.3.</span> <span class="nav-text">FormParam</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#MatrixParam"><span class="nav-number">5.0.4.</span> <span class="nav-text">MatrixParam</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#HeaderParam和CookieParam"><span class="nav-number">5.0.5.</span> <span class="nav-text">HeaderParam和CookieParam</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#获取HttpServletRequest和HttpServletResponse"><span class="nav-number">5.0.6.</span> <span class="nav-text">获取HttpServletRequest和HttpServletResponse</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#payload对象"><span class="nav-number">5.0.7.</span> <span class="nav-text">payload对象</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#接收新的客户端连接"><span class="nav-number">2.</span> <span class="nav-text">接收新的客户端连接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#读网络数据"><span class="nav-number">3.</span> <span class="nav-text">读网络数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#写网络数据"><span class="nav-number">4.</span> <span class="nav-text">写网络数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#释放客户端"><span class="nav-number">5.</span> <span class="nav-text">释放客户端</span></a></li></ol></div>
             
 
           </div>
