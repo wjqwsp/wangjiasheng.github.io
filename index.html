@@ -388,87 +388,14 @@
 
       
         
-          
-            <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　redis服务器的设计非常精巧，涵盖了内存kv数据库要考虑的方方面面。本文旨在总结和分析单机服务器部分的工作原理以及设计思想，希望能尽可能地涵盖整个单机服务器的工作流程。</p>
-<h3 id="服务器启动"><a href="#服务器启动" class="headerlink" title="服务器启动"></a>服务器启动</h3><h4 id="配置参数加载"><a href="#配置参数加载" class="headerlink" title="配置参数加载"></a>配置参数加载</h4><p>　　redis服务器可以让用户配置许多系统参数，以定制适合自己业务场景的系统，同时也对所有可配置的参数提供了默认项。这些参数包括触发数据库备份的条件，内存回收的策略，客户端的最大空闲时间（超过会被释放）等等。在启动服务器时，会加载所有系统参数。</p>
-<p>　　这里还有一个比较关键的步骤是创建了命令表。redis server以redisCommand的结构体来表示客户端要执行的命令，在服务器初始化时会把这些结构体都放到一个哈希表里，以命令名为key。当收到客户端的数据并解析成功后，就会在该哈希表里找到相应的redisCommand，并执行结构体内保存的命令函数。</p>
-<h4 id="设置redis服务器为守护进程"><a href="#设置redis服务器为守护进程" class="headerlink" title="设置redis服务器为守护进程"></a>设置redis服务器为守护进程</h4><p>　　如果配置了redis为守护进程的形式启动，则会运行daemonize()函数。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">daemonize</span><span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</div><div class="line">    <span class="keyword">int</span> fd;</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (fork() != <span class="number">0</span>) <span class="built_in">exit</span>(<span class="number">0</span>); <span class="comment">/* parent exits */</span></div><div class="line">    setsid(); <span class="comment">/* create a new session */</span></div><div class="line"></div><div class="line">    <span class="comment">/* Every output goes to /dev/null. If Redis is daemonized but</span></div><div class="line">     * the 'logfile' is set to 'stdout' in the configuration file</div><div class="line">     * it will not log at all. */</div><div class="line">    <span class="keyword">if</span> ((fd = open(<span class="string">"/dev/null"</span>, O_RDWR, <span class="number">0</span>)) != <span class="number">-1</span>) &#123;</div><div class="line">        dup2(fd, STDIN_FILENO);</div><div class="line">        dup2(fd, STDOUT_FILENO);</div><div class="line">        dup2(fd, STDERR_FILENO);</div><div class="line">        <span class="keyword">if</span> (fd &gt; STDERR_FILENO) close(fd);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>　　这里先顺便总结一下创建守护进程的一般流程：</p>
-<ol>
-<li><p>fork()创建子进程，父进程exit()退出。这是创建守护进程的第一步。确保进程不是会话首进程，让init接管该进程。</p>
-</li>
-<li><p>在子进程中调用 setsid() 函数创建新的会话。在调用了 fork() 函数后，子进程全盘拷贝了父进程的会话期、进程组、控制终端等，虽然父进程退出了，但会话期、进程组、控制终端等并没有改变，因此，这还不是真正意义上的独立开来，而 setsid() 函数能够使进程完全独立出来。</p>
-</li>
-<li><p>再次 fork() 一个子进程并让父进程退出。现在，进程已经成为无终端的会话组长，但它可以重新申请打开一个控制终端，可以通过 fork() 一个子进程，该子进程不是会话首进程，该进程将不能重新打开控制终端。退出父进程。</p>
-</li>
-<li><p>在子进程中调用 chdir() 函数，让根目录 ”/” 成为子进程的工作目录。这一步也是必要的步骤。使用fork创建的子进程继承了父进程的当前工作目录。由于在进程运行中，当前目录所在的文件系统（如“/mnt/usb”）是不能卸载的，这对以后的使用会造成诸多的麻烦（比如系统由于某种原因要进入单用户模式）。因此，通常的做法是让”/“作为守护进程的当前工作目录，这样就可以避免上述的问题，当然，如有特殊需要，也可以把当前工作目录换成其他的路径，如/tmp。改变工作目录的常见函数是chdir。</p>
-</li>
-<li><p>在子进程中调用 umask() 函数，设置进程的文件权限掩码为0。文件权限掩码是指屏蔽掉文件权限中的对应位。比如，有个文件权限掩码是050，它就屏蔽了文件组拥有者的可读与可执行权限。由于使用fork函数新建的子进程继承了父进程的文件权限掩码，这就给该子进程使用文件带来了诸多的麻烦。因此，把文件权限掩码设置为0，可以大大增强该守护进程的灵活性。设置文件权限掩码的函数是umask。在这里，通常的使用方法为umask(0)。</p>
-</li>
-<li><p>在子进程中关闭任何不需要的文件描述符。同文件权限码一样，用fork函数新建的子进程会从父进程那里继承一些已经打开了的文件。这些被打开的文件可能永远不会被守护进程读写，但它们一样消耗系统资源，而且可能导致所在的文件系统无法卸下。在上面的第二步之后，守护进程已经与所属的控制终端失去了联系。因此从终端输入的字符不可能达到守护进程，守护进程中用常规方法（如printf）输出的字符也不可能在终端上显示出来。所以，文件描述符为0、1和2 的3个文件（常说的输入、输出和报错）已经失去了存在的价值，也应被关闭。</p>
-</li>
-<li><p>守护进程退出处理。当用户需要外部停止守护进程运行时，往往会使用 kill 命令停止该守护进程。所以，守护进程中需要编码来实现 kill 发出的signal信号处理，达到进程的正常退出。</p>
-</li>
-</ol>
-<p>　　从redis的源代码中可以看到，redis创建守护进程并没有完全实现上述步骤。其中，第二次fork去掉了，只要保证redis server之后不会重新申请控制终端就行。umask和关闭文件描述符也没有，因为redis server在刚启动时就创建守护进程，没有打开文件，也没有修改文件权限掩码，之后使用文件也没有特殊的要求。之后，redis把标准输入，标准输出和标准错误都重定向到/dev/null里了。</p>
-<p>　　另外，redis还创建了pid file保存守护进程的Pid。</p>
-<p>　　作为守护进程，redis有自己的信号处理机制，后面会介绍。</p>
-<h4 id="信号处理"><a href="#信号处理" class="headerlink" title="信号处理"></a>信号处理</h4><p>　　redis首先会忽略SIGHUP和SIGPIPE两个信号。SIGHUP前面也讲过，而SIGPIPE主要是处理客户端tcp连接关闭以后，服务器还往客户端写数据的问题。这是因为：对一个对端已经关闭的socket调用两次write, 第二次将会生成SIGPIPE信号, 该信号默认结束进程。</p>
-<p>　　TCP是全双工的信道, 可以看作两条单工信道, TCP连接两端的两个端点各负责一条。当对端调用close时, 虽然本意是关闭整个两条信道, 但本端只是收到FIN包。 按照TCP协议的语义, 表示对端只是关闭了其所负责的那一条单工信道, 仍然可以继续接收数据. 也就是说, 因为TCP协议的限制, 一个端点无法获知对端的socket是调用了close还是shutdown。</p>
-<p>　　对一个已经收到FIN包的socket调用read方法, 如果接收缓冲已空, 则返回0, 这就是常说的表示连接关闭. 但第一次对其调用write方法时, 如果发送缓冲没问题, 会返回正确写入(发送). 但发送的报文会导致对端发送RST报文, 因为对端的socket已经调用了close, 完全关闭, 既不发送, 也不接收数据.。所以, 第二次调用write方法(假设在收到RST之后), 会生成SIGPIPE信号, 导致进程退出。</p>
-<p>　　redis还自定义了一些信号处理器。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">sigtermHandler</span><span class="params">(<span class="keyword">int</span> sig)</span> </span>&#123;</div><div class="line">    REDIS_NOTUSED(sig);</div><div class="line"></div><div class="line">    redisLogFromHandler(REDIS_WARNING,<span class="string">"Received SIGTERM, scheduling shutdown..."</span>);</div><div class="line">    </div><div class="line">    <span class="comment">// 打开关闭标识</span></div><div class="line">    server.shutdown_asap = <span class="number">1</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">setupSignalHandlers</span><span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</div><div class="line">    <span class="keyword">struct</span> sigaction act;</div><div class="line"></div><div class="line">    <span class="comment">/* When the SA_SIGINFO flag is set in sa_flags then sa_sigaction is used.</span></div><div class="line">     * Otherwise, sa_handler is used. */</div><div class="line">    sigemptyset(&amp;act.sa_mask);</div><div class="line">    act.sa_flags = <span class="number">0</span>;</div><div class="line">    act.sa_handler = sigtermHandler;</div><div class="line">    sigaction(SIGTERM, &amp;act, <span class="literal">NULL</span>);</div><div class="line"></div><div class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> HAVE_BACKTRACE</span></div><div class="line">    sigemptyset(&amp;act.sa_mask);</div><div class="line">    act.sa_flags = SA_NODEFER | SA_RESETHAND | SA_SIGINFO;</div><div class="line">    act.sa_sigaction = sigsegvHandler;</div><div class="line">    sigaction(SIGSEGV, &amp;act, <span class="literal">NULL</span>);</div><div class="line">    sigaction(SIGBUS, &amp;act, <span class="literal">NULL</span>);</div><div class="line">    sigaction(SIGFPE, &amp;act, <span class="literal">NULL</span>);</div><div class="line">    sigaction(SIGILL, &amp;act, <span class="literal">NULL</span>);</div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line">    <span class="keyword">return</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>　　一般的kill命令会发送SIGTERM信号，redis自定义了该信号的处理函数，该函数设置server.shutdown_asap = 1。在redis的时间处理器中，会检查该标志位，如果标记为1，则会进行一些必要的保存和清理操作，打日志，然后退出进程，更详细的过程后面介绍。建议通过该方式退出redis。</p>
-<p>　　SIGSEGV等信号则是一些运行时错误导致redis退出，redis也自定义了信号处理函数。该信号处理函数主要是打日志，打调用栈等有助于debug的信息，然后如果是守护进程形式运行redis的话，还会删除pid file。我们可以看看sigsegvHandler的最后干了什么：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">sigemptyset (&amp;act.sa_mask);</div><div class="line">act.sa_flags = SA_NODEFER | SA_ONSTACK | SA_RESETHAND;</div><div class="line">act.sa_handler = SIG_DFL;</div><div class="line">sigaction (sig, &amp;act, <span class="literal">NULL</span>);</div><div class="line">kill(getpid(),sig);</div></pre></td></tr></table></figure>
-<p>　　SIG_DFL表示默认的信号处理。redis在该信号处理函数后面又把信号处理函数设成原默认的处理方式，随即给自己发送了相同的信号，进行默认的信号处理。这里SA_RESETHAND代表当调用信号处理函数时，将信号的处理函数重置为缺省值SIG_DFL。一般情况下，当信号处理函数运行时，内核将阻塞该给定信号。但是如果设置了SA_NODEFER标记，那么在该信号处理函数运行时，内核将不会阻塞该信号。SA_NODEFER | SA_RESETHAND说明当在信号处理过程中又有相同的信号到达，那么马上执行默认的信号处理函数。</p>
-<p>　　这里的SA_ONSTACK值得探讨一下。信号处理函数是在用户态栈上运行的，如果因为栈溢出触发的该信号，那么换一个栈执行信号处理显然更合适。</p>
-<h3 id="初始化数据结构"><a href="#初始化数据结构" class="headerlink" title="初始化数据结构"></a>初始化数据结构</h3><p>　　初始化redis server的数据结构，留到创建守护进程之后，避免fork造成大量的内存拷贝。创建的数据结构很多，这里挑单机数据库里比较重要的几个介绍。</p>
-<h4 id="创建共享对象"><a href="#创建共享对象" class="headerlink" title="创建共享对象"></a>创建共享对象</h4><p>　　共享对象大量用在输出缓冲区的链表中，以及直接用作数据库的object，都是比较常用的数据。这些数据在系统启动时预先创建，以节约系统内存。</p>
-<h4 id="修改进程的最大打开文件数"><a href="#修改进程的最大打开文件数" class="headerlink" title="修改进程的最大打开文件数"></a>修改进程的最大打开文件数</h4><p>　　每一个redisClient都要维护一个socket连接，都需要一个文件描述符，redis必须保证一定的最大打开文件数来确保客户端的数量。</p>
-<h4 id="创建事件循环"><a href="#创建事件循环" class="headerlink" title="创建事件循环"></a>创建事件循环</h4><p>　　事件循环用作管理redis的所有client，封装了io多路复用和事件处理功能。</p>
-<h4 id="创建基本事件处理器"><a href="#创建基本事件处理器" class="headerlink" title="创建基本事件处理器"></a>创建基本事件处理器</h4><p>　　每个redis server进程绑定配置好的ip或者0.0.0.0在配置的端口上进行监听，等待tcp连接的到达；如果配置了unixsocket的路径，则还要监听unixsocket，默认是没有配置。并把创建的socket文件描述符绑定到事件处理器上，在event loop中进行io多路复用。同时还创建了一个时间事件处理器，定时执行serverCron函数。</p>
-<h4 id="数据库结构"><a href="#数据库结构" class="headerlink" title="数据库结构"></a>数据库结构</h4><p>　　创建系统配置文件指定的或者默认数目的数据库，主要是创建dict和expires两个dict结构。</p>
-<h3 id="判断操作系统是否允许overcommit-memory"><a href="#判断操作系统是否允许overcommit-memory" class="headerlink" title="判断操作系统是否允许overcommit_memory"></a>判断操作系统是否允许overcommit_memory</h3><p>　　操作系统可以允许申请的内存大于系统的总内存。因为很多时候进程实际使用的内存小于申请的内存，而linux系统实际的内存分配是在使用的瞬间而不是在申请的瞬间。如果不允许overcommit_memory的话，redis在执行background save的时候有可能因当前操作系统剩余的内存过低而失败。这里会检查操作系统是否允许overcommit_memory，如果不允许的话会在日志打出warning。</p>
-<h3 id="从持久化文件中加载数据库数据"><a href="#从持久化文件中加载数据库数据" class="headerlink" title="从持久化文件中加载数据库数据"></a>从持久化文件中加载数据库数据</h3><p>　　redis是内存数据库，但支持持久化，持久化方式有rdb和aof。在系统启动时候，默认会先判断是否开启aof，如果开启了则从aof文件中加载数据；否则从rdb文件中加载数据。因为如果aof开启的话，aof文件往往比rdb持久化的数据更多，但从aof文件加载数据要比rdb慢，因为rdb是二进制协议文件，体积更小，且不用进行字符解析。在加载过程中，redis server也可以响应部分事件，执行部分指令。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">processEventsWhileBlocked</span><span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</div><div class="line">    <span class="keyword">int</span> iterations = <span class="number">4</span>; <span class="comment">/* See the function top-comment. */</span></div><div class="line">    <span class="keyword">int</span> count = <span class="number">0</span>;</div><div class="line">    <span class="keyword">while</span> (iterations--) &#123;</div><div class="line">        <span class="keyword">int</span> events = aeProcessEvents(server.el, AE_FILE_EVENTS|AE_DONT_WAIT);</div><div class="line">        <span class="keyword">if</span> (!events) <span class="keyword">break</span>;</div><div class="line">        count += events;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> count;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>　　在加载过程中，每隔一段时间会执行上述函数一次。io多路复用机制会监听当前是否有文件事件到达，但不阻塞。</p>
-<h3 id="进入事件循环"><a href="#进入事件循环" class="headerlink" title="进入事件循环"></a>进入事件循环</h3><p>　　redis server的主函数核心部分就是不断地在事件循环中进行事件处理。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">aeMain</span><span class="params">(aeEventLoop *eventLoop)</span> </span>&#123;</div><div class="line"></div><div class="line">    eventLoop-&gt;stop = <span class="number">0</span>;</div><div class="line"></div><div class="line">    <span class="keyword">while</span> (!eventLoop-&gt;stop) &#123;</div><div class="line"></div><div class="line">        <span class="comment">// 如果有需要在事件处理前执行的函数，那么运行它</span></div><div class="line">        <span class="keyword">if</span> (eventLoop-&gt;beforesleep != <span class="literal">NULL</span>)</div><div class="line">            eventLoop-&gt;beforesleep(eventLoop);</div><div class="line"></div><div class="line">        <span class="comment">// 开始处理事件</span></div><div class="line">        aeProcessEvents(eventLoop, AE_ALL_EVENTS);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>　　在while循环中不断调用事件处理函数，利用io多路复用机制处理文件事件以及定期执行时间事件处理器。文件事件处理在上一篇博文中已有讲述，下一部分将重点讲述redis的时间事件处理函数serverCron，看看redis server定期处理了什么。</p>
-<h3 id="服务器定时任务"><a href="#服务器定时任务" class="headerlink" title="服务器定时任务"></a>服务器定时任务</h3><h4 id="软件看门狗"><a href="#软件看门狗" class="headerlink" title="软件看门狗"></a>软件看门狗</h4><p>　　设置信号SIGALRM的下次到达时间。如果在规定时间内定时任务还不启动的话，说明系统延迟较大，使得定时任务被推延了。这时候会进入SIGALRM的信号处理函数，该函数会打印一些有用的日志帮助用户找出系统的问题。如果系统运行足够快，那么在下次进入定时函数时，会重置看门狗的时间，使得信号SIGALRM一直不会到达。一般该时间要设置成定时函数运行的时间间隔的2倍，这样才有意义。</p>
-<h4 id="更新时间"><a href="#更新时间" class="headerlink" title="更新时间"></a>更新时间</h4><p>　　定时任务中发起系统调用，得到当前时间，以及LRU时钟。因为这些时间会被频繁查询，如果每次都进行系统调用则会影响性能，所以在定时任务中缓存一份，对于对时间精度要求不高的动作，则可以直接使用该缓存时间，而不需要进行系统调用。</p>
-<h4 id="检查是否需要关闭redis进程"><a href="#检查是否需要关闭redis进程" class="headerlink" title="检查是否需要关闭redis进程"></a>检查是否需要关闭redis进程</h4><p>　　前面说到，如果收到信号SIGTERM，则会设置server.shutdown_asap = 1，表示要异步关闭redis服务器进程。redis会在定时任务中进行清理和保存任务，然后安全退出。</p>
-<ol>
-<li>如果此时有rdb或者aof的后台进程，把它们kill掉，因为之后会重新进行rdb备份，以免发生多进程的竞态条件。redis server杀死子进程用的是SIGUSR1信号，该信号被认为是官方信号，不同于其他信号，用这种方式杀死子进程，不会被认为是备份失败。执行rdbsave，进行snapshot。</li>
-<li>移除pid文件。</li>
-<li>把所有socket连接都主动close，这样重启时候会快一点。</li>
-</ol>
-<h4 id="检查客户端"><a href="#检查客户端" class="headerlink" title="检查客户端"></a>检查客户端</h4><p>　　服务器会定期检查所有的客户端，包括销毁一些超时的客户端以及缩小客户端的查询缓冲区大小。每次会检查客户端数目（<em>1/server.hz</em>10）个客户端。由于客户端检查每秒会检查server.hz次，而server.hz最小是1，所以最多需要10秒遍历所有客户端。每次检查至少遍历50个客户端。</p>
-<p>　　检查的时候会取出客户端列表的尾端元素，放到表头，然后检查是否需要关闭。关闭的时候只需要删除表头就行。</p>
-<p>  　除了一些特殊的客户端，例如复制的master和slave，如果客户端最后通信时间超过一个设定值，则会被关闭。</p>
-<p>　　如果查询缓冲区的大小大于 BIG_ARG 以及是querybuf_peak的两倍，或者客户端不活跃，并且缓冲区大于 1k，则会把sds中free的空间释放掉。</p>
-<p>　　</p>
-<h4 id="删除过期键"><a href="#删除过期键" class="headerlink" title="删除过期键"></a>删除过期键</h4><p>　　Redis会定期清理数据库中过期的键值对。清理分两种模式，一种是慢速清理，这个是正常情况下在每次定时任务中要执行的清理动作，一般时间较长，占大约25%的CPU时间；还有一种快速清理，是在上一次慢速清理时候超时了，那么会在下次执行定时任务前快速的执行一次清理动作，一般时间较短，默认是1毫秒。每次清理会检查一定量的数据库，每个数据库检查一定量的过期键。如果数据库没有设置了过期时间的键，那么跳过该数据库。如果该数据库使用率较低，那么也跳过，因为如果检查该库，会遍历大量的空槽位，浪费CPU时间。如果在检查某个数据库的过程中发现过期的键数目较多，超过要检查键数目的25%，那么会对该数据库进行多一轮清理。</p>
-<h4 id="数据库rehash"><a href="#数据库rehash" class="headerlink" title="数据库rehash"></a>数据库rehash</h4><p>　　不同于字典类型的value，在插入和删除项的时候会检查是否需要rehash，然后把rehash分摊到每次对该值的操作中。数据库本身的字典表是在定时任务中定期检查是否需要rehash，并且执行渐进式rehash，每次检查一定量的数据库，如果需要rehash，则在每次花1毫秒的时间进行rehash，如果没有rehash结束，则留到下一次定时任务中。只要执行了一次渐进性rehash，则会结束遍历其他库，避免在定时任务中耗费时间过多，阻塞服务器。如果有rdb和aof重写的子进程在工作，那么先不进行rehash，避免copy-on-write机制触发大量的内存拷贝。</p>
-<h4 id="rdb和aof"><a href="#rdb和aof" class="headerlink" title="rdb和aof"></a>rdb和aof</h4><p>　　检查rdb备份的条件是否满足，即距离上次rdb备份是否对数据库做了足够多的修改，以及检查aof文件的大小，确定是否需要进行重写。</p>
-<p>　　如果上次aof写发生错误，则在定时任务中再执行一次flush任务，以清除错误标识，让数据库变得可写。</p>
-<p>　　用wait3系统调用以非阻塞方式检查rdb和aof重写的子进程是否结束了，执行相应的回调函数。回调函数中一般是检查子进程的返回码以及是否被信号中断，设置相应的备份状态。如果子进程失败了并且不是以官方手段正常信号终止的，那么会标记成error，只要这个error状态不被清楚，数据库就不可写。</p>
-<h3 id="beforeSleep函数"><a href="#beforeSleep函数" class="headerlink" title="beforeSleep函数"></a>beforeSleep函数</h3><p>　　在开始事件循环之前，还会执行一个beforeSleep函数。对于单机服务器来说，这个函数主要有两个功能：</p>
-<ol>
-<li>如果上次清理过期键超时了，需要执行快速模式的清理过期键，那么执行一次。</li>
-<li>把aof缓冲区的内容flush到磁盘上，保证数据的可靠性。</li>
-</ol>
-<h3 id="执行命令及内存清理"><a href="#执行命令及内存清理" class="headerlink" title="执行命令及内存清理"></a>执行命令及内存清理</h3><p>　　在文件事件中，最核心的就是执行客户端传来的命令。在介绍redis服务器和客户端通信那篇博文里，已介绍了redis如何从输入缓冲区中读取并解析命令，最终获得一个redisCommand的对象。该对象有一个字段绑定了相应的处理函数，执行该函数会对数据库做读写操作，从而执行了命令，这里并没有什么难以理解的部分。我主要想介绍一下redis的主动内存清理策略。</p>
-<p>　　如果服务器设置了最大内存，在执行任务时，Redis会检查当前Redis服务器占用的内存是否超过了设定值，如果超过则要按照配置的内存清理策略释放内存。如果内存释放失败并且该命令需要占用大量内存的话，那么拒绝执行。</p>
-<p>　　清理策略可能是对数据库表进行清理，也可能是对过期表进行清理。第一种策略是每个数据库随机选一个key删除，直到内存减少到最大内存一下；第二种策略是选择一个样本集合，从过期表中随机抽取键值对放到集合中，然后从集合中找出过期时间最长的键。最后一种策略是用了LRU算法，我想重点介绍一下该策略。</p>
-<p>　　一般而言，LRU算法是寻找最近使用时间最久的删除，因此会维护一个所有元素的有序链表。Redis为了节省内存以及插入和删除数据的时间，用一个驱逐池和比较样本集结合来代替有序链表。驱逐池实际上是一个升序数组，的每个元素有两个字段，一个是key，代表相应数据库元素的key，一个是idle time，用LRU clock来近似计算，按idle time的升序排列。默认驱逐池有16个元素。</p>
-<p>　　每次要执行内存清理时，会遍历每个数据库，每个数据库都弹出一个比较样本集，默认是16个。这里有一个优化的技巧，redis会在栈上默认分配16个字典元素的数组，只有当设置的样本数大于16个，才会在堆上分配，在样本数较少时能减少内存分配的系统调用。</p>
-<p>　　比较样本集的元素逐个与驱逐池的元素比较，驱逐池按idle time从小到大排列。在比较的时候维护一个数组索引指针，如果比较样本集的元素的idle time大于相应相应索引的驱逐池元素，则把该比较样本集的元素插入到该元素的右端，反之插入在左端，从而让驱逐池永远保持按idle time的升序排列。</p>
-<p>　　在要删除元素时，只要从右往左遍历驱逐池，把最右侧的元素删除即可。驱逐池与比较样本集越大，idle time的比较越精确，但同时要消耗更多的内存，同时在比较时会更耗时，容易造成服务器阻塞。</p>
-
-          
+          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　redis服务器的设计非常精巧，涵盖了内存kv数据库要考虑的方方面面。本文旨在总结和分析单机服务器部分的工作原理以及设计思想，希望能尽可能地涵盖整个单机服务器的工作流程。<br>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/04/16/redis-浅析单机服务器工作原理/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>

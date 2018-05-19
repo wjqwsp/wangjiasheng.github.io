@@ -6,7 +6,7 @@
     <entry>
       <title><![CDATA[redis 浅析单机服务器工作原理]]></title>
       <url>http://wjqwsp.github.io/2018/04/16/redis-%E6%B5%85%E6%9E%90%E5%8D%95%E6%9C%BA%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/</url>
-      <content type="html"><![CDATA[<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　redis服务器的设计非常精巧，涵盖了内存kv数据库要考虑的方方面面。本文旨在总结和分析单机服务器部分的工作原理以及设计思想，希望能尽可能地涵盖整个单机服务器的工作流程。</p>
+      <content type="html"><![CDATA[<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　redis服务器的设计非常精巧，涵盖了内存kv数据库要考虑的方方面面。本文旨在总结和分析单机服务器部分的工作原理以及设计思想，希望能尽可能地涵盖整个单机服务器的工作流程。<br><a id="more"></a></p>
 <h3 id="服务器启动"><a href="#服务器启动" class="headerlink" title="服务器启动"></a>服务器启动</h3><h4 id="配置参数加载"><a href="#配置参数加载" class="headerlink" title="配置参数加载"></a>配置参数加载</h4><p>　　redis服务器可以让用户配置许多系统参数，以定制适合自己业务场景的系统，同时也对所有可配置的参数提供了默认项。这些参数包括触发数据库备份的条件，内存回收的策略，客户端的最大空闲时间（超过会被释放）等等。在启动服务器时，会加载所有系统参数。</p>
 <p>　　这里还有一个比较关键的步骤是创建了命令表。redis server以redisCommand的结构体来表示客户端要执行的命令，在服务器初始化时会把这些结构体都放到一个哈希表里，以命令名为key。当收到客户端的数据并解析成功后，就会在该哈希表里找到相应的redisCommand，并执行结构体内保存的命令函数。</p>
 <h4 id="设置redis服务器为守护进程"><a href="#设置redis服务器为守护进程" class="headerlink" title="设置redis服务器为守护进程"></a>设置redis服务器为守护进程</h4><p>　　如果配置了redis为守护进程的形式启动，则会运行daemonize()函数。</p>
