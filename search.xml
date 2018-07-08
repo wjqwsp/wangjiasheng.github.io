@@ -4,6 +4,110 @@
   
     
     <entry>
+      <title><![CDATA[linux可执行文件结构及链接过程分析]]></title>
+      <url>http://wjqwsp.github.io/2018/07/07/linux%E5%8F%AF%E6%89%A7%E8%A1%8C%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84%E5%8F%8A%E9%93%BE%E6%8E%A5%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90/</url>
+      <content type="html"><![CDATA[<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　简单总结一下linux可执行文件的结构，以及有关链接的几个比较重要的概念，如符号表，重定位，静态链接，动态链接等。本文例子及部分描述摘自《深入理解计算机系统》及MIT教学操作系统xv6（Unix第6版用ANSI C重写）的源码。<br><a id="more"></a></p>
+<h3 id="elf格式"><a href="#elf格式" class="headerlink" title="elf格式"></a>elf格式</h3><p>　　gcc是linux环境里的c语言编译器，它编译得到的可执行文件都是elf文件格式，这些文件包括我们平常使用的cat,ls,mkdir,touch等等命令，还包括我们每天都在使用的shell程序。</p>
+<h3 id="从源文件到可执行文件"><a href="#从源文件到可执行文件" class="headerlink" title="从源文件到可执行文件"></a>从源文件到可执行文件</h3><p>　　在linux系统编译简单的c程序：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">gcc -Og -o prog main.c sum.c</div></pre></td></tr></table></figure>
+<p>　　该命令执行后，会编译main.c和sum.c两个源文件，生成名为prog的可执行文件。这个过程可分为4个步骤：</p>
+<ol>
+<li>预处理阶段，把#include语句以及一些宏插入程序文本中，得到main.i和sum.i文件。</li>
+<li>编译阶段，将文本文件main.i和sum.i编译成文本文件main.s和sum.c的汇编语言程序。</li>
+<li>汇编阶段，将main.s和sum.s翻译成机器语言的二进制指令，并打包成一种叫做可重定位目标程序的格式，并将结果保存在main.o和sum.o两个文件中。这种文件格式就比较接近elf格式了。</li>
+<li>链接阶段，合并main.o和sum.o，得到可执行目标文件，就是elf格式文件。</li>
+</ol>
+<h3 id="链接到底做了什么"><a href="#链接到底做了什么" class="headerlink" title="链接到底做了什么"></a>链接到底做了什么</h3><p>　　先看一个简单的例子。</p>
+<p>　　main.c的源代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">sum</span><span class="params">(<span class="keyword">int</span> *a, <span class="keyword">int</span> n)</span></span>;</div><div class="line"></div><div class="line"><span class="keyword">int</span> <span class="built_in">array</span>[<span class="number">2</span>] = &#123;<span class="number">1</span>, <span class="number">2</span>&#125;;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">int</span> val = sum(<span class="built_in">array</span>, <span class="number">2</span>);</div><div class="line">    <span class="keyword">return</span> val;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　sum.c的源代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">sum</span><span class="params">(<span class="keyword">int</span> *a, <span class="keyword">int</span> n)</span></span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">int</span> i, s = <span class="number">0</span>;</div><div class="line"></div><div class="line">    <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; n; i++)&#123;</div><div class="line">        s += a[i]</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">return</span> s;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　在汇编阶段后，可重定位目标程序main.o和sum.o得到的全是汇编的二进制指令，这些指令有很重要的一部分都涉及对内存的引用，这些内存引用就是我们在程序中定义的全局变量和函数，例如sum, array。汇编阶段会给这些全局变量和函数分配一个假的内存地址。</p>
+<p>　　由于main.c和sum.c的源代码是单独编译的，main函数知道array这个符号是真实存在的，因为它的引用和定义都在一个文件内，但它不知道sum函数的定义，它就无法给它指定地址。所以真正内存地址的指定是在链接阶段后完成的。链接完成后，所有全局变量和函数的内存地址都确定，那么在运行可执行文件的时候，操作系统就知道把这些数据和代码加载到内存的哪个位置，每一个CPU指令就知道应该把数据从哪个内存地址转移到哪个另外的内存地址，或者从哪个内存位置把数据加载到寄存器中。链接主要就是与这些符号打交道，它要把每一个源代码文件的符号的定义和引用都关联起来，让每一次符号引用（即内存引用）都能定位到正确的内存定义上（符号真正的内存地址）。</p>
+<p>　　因此，链接主要的任务有两个，符号解析与重定位。符号解析需要借助一个叫做符号表的数据结构，它把源代码中涉及到的所有符号都单独提出来，以便在链接时候帮助定位每一个符号定义和引用，把每一次引用都与一次定义关联起来。这个符号表在每个可重定位目标程序中都存在，依上例，main.o和sum.o都有一个这样的结构。重定位就是把所有可重定位目标程序的数据和代码都合到一个文件里，给它们指定符号定义的真正的内存地址，并修改每一次符号引用的地址。</p>
+<h3 id="elf文件结构"><a href="#elf文件结构" class="headerlink" title="elf文件结构"></a>elf文件结构</h3><p>　　由于链接过程涉及的符号解析和重定位都与elf文件的某个结构相关，因此先介绍一下elf文件结构。</p>
+<p><img src="/img/reconstruct-elf.jpg" alt="Test Plan"></p>
+<p>　　只介绍几个比较重要的部分。</p>
+<ol>
+<li>.text已编译的机器代码。</li>
+<li>.data已初始化的全局和静态变量。</li>
+<li>.bss未初始化的全局和静态变量，不真正分配空间，仅仅作为占位符。</li>
+<li>.symtab符号表，程序定义和引用的全局变量、静态变量及函数信息。</li>
+<li>.rel.text，.text节的可重定位信息。</li>
+<li>.rel.data，.data节的可重定位信息。</li>
+<li>.strtab, 符号表中出现的符号的名字，符号表会有很多指针指向这个部分的某个偏移。这个部分就是以null结尾的字符串序列。</li>
+</ol>
+<h3 id="符号表"><a href="#符号表" class="headerlink" title="符号表"></a>符号表</h3><p><img src="/img/symbol.jpg" alt="Test Plan"></p>
+<p><img src="/img/symbol-description.jpg" alt="Test Plan"></p>
+<h3 id="重定位"><a href="#重定位" class="headerlink" title="重定位"></a>重定位</h3><p>　　链接的主要目的是要让多个源代码文件编译生成的多个二进制机器码文件能够合并起来，给代码和数据指定真实的内存地址。符号解析是为重定位服务的。重定位分为两步：</p>
+<ol>
+<li>把.o文件（可重定位目标文件）合并成一个文件，相同类型的节合到一起，例如.text都合到一起，.data也合到一起，各自成为可执行文件的一个大的.text和.data节。把这些节的每一条代码和数据都指定运行时的内存地址。因此，符号表中的每一个符号都有了正确的运行时内存地址。</li>
+<li>重定位符号引用。修改.text和.data中的对每个符号的引用，使其指向正确的运行时地址。</li>
+</ol>
+<h4 id="rel-text和-rel-data"><a href="#rel-text和-rel-data" class="headerlink" title=".rel.text和.rel.data"></a>.rel.text和.rel.data</h4><p><img src="/img/rel.jpg" alt="Test Plan"></p>
+<p>　　type主要有两种类型。</p>
+<ol>
+<li>R_X86_64_PC32。32位PC相对地址引用</li>
+<li>R_X86_64_32。32位绝对地址引用</li>
+</ol>
+<h4 id="重定位符号引用"><a href="#重定位符号引用" class="headerlink" title="重定位符号引用"></a>重定位符号引用</h4><p><img src="/img/readdr.jpg" alt="Test Plan"></p>
+<p>　　引用《深入理解计算机系统》的例子，说明一下相对地址引用的重定位。</p>
+<p><img src="/img/rel-main.jpg" alt="Test Plan"></p>
+<p><img src="/img/rel-sum.jpg" alt="Test Plan"></p>
+<p>　　因为在执行call指令时，PC指向的实际是call指令的下一条指令，所以计算PC相对地址需要有一个-4的padding。</p>
+<h3 id="静态链接"><a href="#静态链接" class="headerlink" title="静态链接"></a>静态链接</h3><h4 id="标准库函数如何链接？"><a href="#标准库函数如何链接？" class="headerlink" title="标准库函数如何链接？"></a>标准库函数如何链接？</h4><p>　　我们平常用到的标准库函数，例如printf, scanf, atoi等等，对每个c程序都是可用的，我们只需要include相应的头文件，例如<code>#include &lt;stdlib.h&gt;</code>这样，就可以使用。但我们在编译时候并没有显式的指定相应的源代码文件，那么这些代码是怎么跟我们自己写的代码链接到一起的呢？</p>
+<p>　　在说gcc的做法之前，我们可以先思考一下，如果是自己实现编译器，会怎么处理这个问题。</p>
+<ol>
+<li>把所有的库函数硬编码到编译器代码里。但是由于标准库函数非常多，显然会令gcc的实现非常复杂，而且每当库函数有更新，都要更新编译器的版本。</li>
+<li>将所有标准c函数都编译到一个可重定位目标文件（.o）文件里，然后每次链接的时候指定一下<code>gcc main.c /usr/lib/libc.o</code>。但是，可能我们的代码只用到一个printf函数，但我们就需要把所有库函数的代码和数据段都合并到最终的可执行文件中，白白浪费磁盘空间。</li>
+<li>将每一个标准库函数单独编译成一个.o文件，在需要的时候手动链接。例如<code>gcc main.c /usr/lib/prinf.o /usr/lib/scanf.o</code>，这样编译过程就弄得非常复杂，对于大项目，我们可能要手动链接成百上千个.o文件。</li>
+</ol>
+<h4 id="linux的做法"><a href="#linux的做法" class="headerlink" title="linux的做法"></a>linux的做法</h4><p>　　静态库以归档文件的特殊格式存放在磁盘上，由.a后缀标识。将标准库函数拆分成很多的目标模块，将不同的模块一起打包成一个.a文件。在链接的时候，判断我们的程序用到哪个模块，就把哪个模块的数据段和代码段和我们的程序一起链接成可执行文件。标准库归档文件libc.a会自动作为参数传给编译器，无需显示指定。</p>
+<h4 id="静态库链接的符号解析过程"><a href="#静态库链接的符号解析过程" class="headerlink" title="静态库链接的符号解析过程"></a>静态库链接的符号解析过程</h4><p><code>gcc foo.c libx.a liby.a libz.a</code></p>
+<ol>
+<li>整个链接过程，编译器会维护两个数据集合。一个代表所有已定义的符号集合D，一个代表未解析的符号结合U。</li>
+<li>一个一个分析输入参数，如果是可重定位目标文件，将所有已定义的符号都加入到D集合中，把所有该文件引用了，但没有找到定义的符号都加入到集合U中。</li>
+<li>如果输入参数是归档文件，那么就遍历该归档文件的所有模块，看哪些模块定义了当前集合U中的符号，找到的话把这个模块加入链接，并去掉U中的相应符号。同时把模块里的所有符号按照一样的规则加入到集合D和集合U中。</li>
+</ol>
+<p>　　从链接的过程可以看到，参数的顺序非常重要。如果foo.c引用了libz.a的某个模块的符号，而该模块的某个符号又引用了libx.a的一个符号，就会链接失败。一般各个库都是相对独立的，我们只要保证把自己写的源文件放到最前面就好了。</p>
+<h3 id="动态链接"><a href="#动态链接" class="headerlink" title="动态链接"></a>动态链接</h3><p>　　现代的标准库函数都是动态链接的，即在编译时不进行链接，而在运行可执行文件时候才进行链接。</p>
+<h4 id="静态链接有什么问题？"><a href="#静态链接有什么问题？" class="headerlink" title="静态链接有什么问题？"></a>静态链接有什么问题？</h4><ol>
+<li>几乎所有程序都需要printf这样的库函数，每个可执行文件都包含该模块的代码段和数据段，浪费磁盘空间。</li>
+<li>linux采用虚拟内存管理内存分配，每个进程的内存空间是独立的，运行时所有程序都要把这些库函数代码段和数据段加载到自己的内存里，浪费内存。</li>
+</ol>
+<h4 id="如何实现动态链接"><a href="#如何实现动态链接" class="headerlink" title="如何实现动态链接"></a>如何实现动态链接</h4><ol>
+<li>共享库是.so文件，不会和我们自己的代码一起合并成可执行文件，不占磁盘空间。</li>
+<li>运行时一个共享库的代码段和数据段在物理内存中只有一份，但映射到多个虚拟内存片段上，供不同程序使用。其中代码段是只读的，整个操作系统绝对只有一份。但数据段有可能被修改，在修改的时候则会复制一个副本，每个进程有自己的一个内存副本。</li>
+<li>共享库的代码段和数据段加载到任意的内存段中，位置不固定。</li>
+<li>加载完成后，进行符号重定位。</li>
+</ol>
+<p>　　回想一下之前说过的重定位过程，需要修改所有符号引用的地址。由于动态链接在运行时才确定共享库代码段和数据段的内存地址，所以在运行时才能进行重定位。</p>
+<ol>
+<li>运行时修改代码，想想就觉得不优雅。</li>
+<li>Linux不允许在运行时修改代码段。</li>
+</ol>
+<p>　　由此，要完成动态链接，还需要引入了最后一个重要的概念，位置无关代码，即在加载时无需重定位的代码。</p>
+<h4 id="位置无关代码（Position-Independent-Code-PIC）"><a href="#位置无关代码（Position-Independent-Code-PIC）" class="headerlink" title="位置无关代码（Position-Independent Code, PIC）"></a>位置无关代码（Position-Independent Code, PIC）</h4><p>　　所有的技巧都来自于一个标准：无论是共享库还是目标模块，代码段和数据段的距离都是恒定的。由于数据段是可以在运行时修改的，所以可以把对代码段的修改转化为对数据段的修改。</p>
+<p>　　在数据段前面加入一个数据结构，全局偏移量表（GOT）。每一个被该模块引用的符号，都在GOT里有一个8字节条目，并为每个条目生成一个重定位条目。</p>
+<p><img src="/img/pic.jpg" alt="Test Plan"></p>
+<p>　　这样，在重定位时只需要重定位GOT相应条目的内容即可，不需要修改代码段。</p>
+<h3 id="加载可执行文件"><a href="#加载可执行文件" class="headerlink" title="加载可执行文件"></a>加载可执行文件</h3><h4 id="可执行文件磁盘布局"><a href="#可执行文件磁盘布局" class="headerlink" title="可执行文件磁盘布局"></a>可执行文件磁盘布局</h4><p><img src="/img/disk-structure.jpg" alt="Test Plan"></p>
+<h4 id="可执行文件内存布局"><a href="#可执行文件内存布局" class="headerlink" title="可执行文件内存布局"></a>可执行文件内存布局</h4><p><img src="/img/mem-structure.jpg" alt="Test Plan"></p>
+<h4 id="加载时需要做什么？"><a href="#加载时需要做什么？" class="headerlink" title="加载时需要做什么？"></a>加载时需要做什么？</h4><p>　　把相应的文件区域映射到内存区域，要知道从哪个文件偏移的多少字节数据是哪个程序段的，需要加载到哪个内存地址上。这就需要借助ELF头部和段头部表里。</p>
+<h4 id="xv6加载内核程序到内存"><a href="#xv6加载内核程序到内存" class="headerlink" title="xv6加载内核程序到内存"></a>xv6加载内核程序到内存</h4><p>　　内核代码也是一个elf格式的文件存放在磁盘上。以这一段xv6教学操作系统加载内核的小函数为例，分析可执行文件的加载过程。当然，这个过程是几十年前的技术了，现代</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span></span></div><div class="line"><span class="title">bootmain</span><span class="params">(<span class="keyword">void</span>)</span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">struct</span> elfhdr *elf;</div><div class="line">  <span class="keyword">struct</span> proghdr *ph, *eph;</div><div class="line">  <span class="keyword">void</span> (*entry)(<span class="keyword">void</span>);</div><div class="line">  uchar* pa;</div><div class="line"></div><div class="line">  elf = (<span class="keyword">struct</span> elfhdr*)<span class="number">0x10000</span>;  <span class="comment">// scratch space</span></div><div class="line"></div><div class="line">  <span class="comment">// Read 1st page off disk</span></div><div class="line">  readseg((uchar*)elf, <span class="number">4096</span>, <span class="number">0</span>);</div><div class="line"></div><div class="line">  <span class="comment">// Is this an ELF executable?</span></div><div class="line">  <span class="keyword">if</span>(elf-&gt;magic != ELF_MAGIC)</div><div class="line">    <span class="keyword">return</span>;  <span class="comment">// let bootasm.S handle error</span></div><div class="line"></div><div class="line">  <span class="comment">// Load each program segment (ignores ph flags).</span></div><div class="line">  ph = (<span class="keyword">struct</span> proghdr*)((uchar*)elf + elf-&gt;phoff);</div><div class="line">  eph = ph + elf-&gt;phnum;</div><div class="line">  <span class="keyword">for</span>(; ph &lt; eph; ph++)&#123;</div><div class="line">    pa = (uchar*)ph-&gt;paddr;</div><div class="line">    readseg(pa, ph-&gt;filesz, ph-&gt;off);</div><div class="line">    <span class="keyword">if</span>(ph-&gt;memsz &gt; ph-&gt;filesz)</div><div class="line">      stosb(pa + ph-&gt;filesz, <span class="number">0</span>, ph-&gt;memsz - ph-&gt;filesz);</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="comment">// Call the entry point from the ELF header.</span></div><div class="line">  <span class="comment">// Does not return!</span></div><div class="line">  entry = (<span class="keyword">void</span>(*)(<span class="keyword">void</span>))(elf-&gt;entry);</div><div class="line">  entry();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ol>
+<li>elfhdr结构体就是ELF头部的格式。首先解析elf头部。</li>
+<li>首先检查magic字段，判断该文件是否是elf格式文件。</li>
+<li>然后取出elf-&gt;phoff，找出程序头部表在文件中的位置;取出elf-&gt;phnum，找出程序头部表的数目，一般代码段是一个程序段，数据段也是一个段，phnum有两个。proghdr结构体就是程序头部表的格式。</li>
+<li>逐个程序段解析proghdr，ph-&gt;paddr代表程序段的要加载到的内存地址，ph-&gt;filesz代表在文件中的大小，ph-&gt;memsz代表加载到内存后的大小。调用readseg函数读磁盘内容到相应内存位置，memsz有可能比filesz大，因为.bss和.data一起作为一个程序段加载到内存，最后的部分可能要补0预先占位。</li>
+<li>elf-&gt;entry是入口函数的地址，这个函数最终调用main函数。</li>
+</ol>
+<p>　　</p>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[redis 浅析单机服务器工作原理]]></title>
       <url>http://wjqwsp.github.io/2018/04/16/redis-%E6%B5%85%E6%9E%90%E5%8D%95%E6%9C%BA%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/</url>
       <content type="html"><![CDATA[<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　redis服务器的设计非常精巧，涵盖了内存kv数据库要考虑的方方面面。本文旨在总结和分析单机服务器部分的工作原理以及设计思想，希望能尽可能地涵盖整个单机服务器的工作流程。<br><a id="more"></a></p>
