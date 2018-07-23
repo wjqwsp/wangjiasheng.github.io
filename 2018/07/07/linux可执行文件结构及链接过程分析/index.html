@@ -118,21 +118,21 @@
 <meta property="og:url" content="http://wjqwsp.github.io/2018/07/07/linux可执行文件结构及链接过程分析/index.html">
 <meta property="og:site_name" content="南国倾城">
 <meta property="og:description" content="前言　　简单总结一下linux可执行文件的结构，以及有关链接的几个比较重要的概念，如符号表，重定位，静态链接，动态链接等。本文例子及部分描述摘自《深入理解计算机系统》及MIT教学操作系统xv6（Unix第6版用ANSI C重写）的源码。">
-<meta property="og:image" content="http://wjqwsp.github.io/img/reconstruct-elf.jpg">
-<meta property="og:image" content="http://wjqwsp.github.io/img/symbol.jpg">
-<meta property="og:image" content="http://wjqwsp.github.io/img/symbol-description.jpg">
-<meta property="og:image" content="http://wjqwsp.github.io/img/rel.jpg">
-<meta property="og:image" content="http://wjqwsp.github.io/img/readdr.jpg">
-<meta property="og:image" content="http://wjqwsp.github.io/img/rel-main.jpg">
-<meta property="og:image" content="http://wjqwsp.github.io/img/rel-sum.jpg">
-<meta property="og:image" content="http://wjqwsp.github.io/img/pic.jpg">
-<meta property="og:image" content="http://wjqwsp.github.io/img/disk-structure.jpg">
-<meta property="og:image" content="http://wjqwsp.github.io/img/mem-structure.jpg">
-<meta property="og:updated_time" content="2018-07-08T13:19:43.269Z">
+<meta property="og:image" content="http://wjqwsp.github.io/reconstruct-elf.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/symbol.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/symbol-description.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/rel.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/readdr.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/rel-main.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/rel-sum.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/pic.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/disk-structure.jpg">
+<meta property="og:image" content="http://wjqwsp.github.io/mem-structure.jpg">
+<meta property="og:updated_time" content="2018-07-23T17:21:32.613Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="linux可执行文件结构及链接过程分析">
 <meta name="twitter:description" content="前言　　简单总结一下linux可执行文件的结构，以及有关链接的几个比较重要的概念，如符号表，重定位，静态链接，动态链接等。本文例子及部分描述摘自《深入理解计算机系统》及MIT教学操作系统xv6（Unix第6版用ANSI C重写）的源码。">
-<meta name="twitter:image" content="http://wjqwsp.github.io/img/reconstruct-elf.jpg">
+<meta name="twitter:image" content="http://wjqwsp.github.io/reconstruct-elf.jpg">
 
 
 
@@ -425,7 +425,7 @@
 <p>　　由于main.c和sum.c的源代码是单独编译的，main函数知道array这个符号是真实存在的，因为它的引用和定义都在一个文件内，但它不知道sum函数的定义，它就无法给它指定地址。所以真正内存地址的指定是在链接阶段后完成的。链接完成后，所有全局变量和函数的内存地址都确定，那么在运行可执行文件的时候，操作系统就知道把这些数据和代码加载到内存的哪个位置，每一个CPU指令就知道应该把数据从哪个内存地址转移到哪个另外的内存地址，或者从哪个内存位置把数据加载到寄存器中。链接主要就是与这些符号打交道，它要把每一个源代码文件的符号的定义和引用都关联起来，让每一次符号引用（即内存引用）都能定位到正确的内存定义上（符号真正的内存地址）。</p>
 <p>　　因此，链接主要的任务有两个，符号解析与重定位。符号解析需要借助一个叫做符号表的数据结构，它把源代码中涉及到的所有符号都单独提出来，以便在链接时候帮助定位每一个符号定义和引用，把每一次引用都与一次定义关联起来。这个符号表在每个可重定位目标程序中都存在，依上例，main.o和sum.o都有一个这样的结构。重定位就是把所有可重定位目标程序的数据和代码都合到一个文件里，给它们指定符号定义的真正的内存地址，并修改每一次符号引用的地址。</p>
 <h3 id="elf文件结构"><a href="#elf文件结构" class="headerlink" title="elf文件结构"></a>elf文件结构</h3><p>　　由于链接过程涉及的符号解析和重定位都与elf文件的某个结构相关，因此先介绍一下elf文件结构。</p>
-<p><img src="/img/reconstruct-elf.jpg" alt="Test Plan"></p>
+<p><img src="reconstruct-elf.jpg" alt=""></p>
 <p>　　只介绍几个比较重要的部分。</p>
 <ol>
 <li>.text已编译的机器代码。</li>
@@ -436,23 +436,23 @@
 <li>.rel.data，.data节的可重定位信息。</li>
 <li>.strtab, 符号表中出现的符号的名字，符号表会有很多指针指向这个部分的某个偏移。这个部分就是以null结尾的字符串序列。</li>
 </ol>
-<h3 id="符号表"><a href="#符号表" class="headerlink" title="符号表"></a>符号表</h3><p><img src="/img/symbol.jpg" alt="Test Plan"></p>
-<p><img src="/img/symbol-description.jpg" alt="Test Plan"></p>
+<h3 id="符号表"><a href="#符号表" class="headerlink" title="符号表"></a>符号表</h3><p><img src="symbol.jpg" alt=""></p>
+<p><img src="symbol-description.jpg" alt=""></p>
 <h3 id="重定位"><a href="#重定位" class="headerlink" title="重定位"></a>重定位</h3><p>　　链接的主要目的是要让多个源代码文件编译生成的多个二进制机器码文件能够合并起来，给代码和数据指定真实的内存地址。符号解析是为重定位服务的。重定位分为两步：</p>
 <ol>
 <li>把.o文件（可重定位目标文件）合并成一个文件，相同类型的节合到一起，例如.text都合到一起，.data也合到一起，各自成为可执行文件的一个大的.text和.data节。把这些节的每一条代码和数据都指定运行时的内存地址。因此，符号表中的每一个符号都有了正确的运行时内存地址。</li>
 <li>重定位符号引用。修改.text和.data中的对每个符号的引用，使其指向正确的运行时地址。</li>
 </ol>
-<h4 id="rel-text和-rel-data"><a href="#rel-text和-rel-data" class="headerlink" title=".rel.text和.rel.data"></a>.rel.text和.rel.data</h4><p><img src="/img/rel.jpg" alt="Test Plan"></p>
+<h4 id="rel-text和-rel-data"><a href="#rel-text和-rel-data" class="headerlink" title=".rel.text和.rel.data"></a>.rel.text和.rel.data</h4><p><img src="rel.jpg" alt=""></p>
 <p>　　type主要有两种类型。</p>
 <ol>
 <li>R_X86_64_PC32。32位PC相对地址引用</li>
 <li>R_X86_64_32。32位绝对地址引用</li>
 </ol>
-<h4 id="重定位符号引用"><a href="#重定位符号引用" class="headerlink" title="重定位符号引用"></a>重定位符号引用</h4><p><img src="/img/readdr.jpg" alt="Test Plan"></p>
+<h4 id="重定位符号引用"><a href="#重定位符号引用" class="headerlink" title="重定位符号引用"></a>重定位符号引用</h4><p><img src="readdr.jpg" alt=""></p>
 <p>　　引用《深入理解计算机系统》的例子，说明一下相对地址引用的重定位。</p>
-<p><img src="/img/rel-main.jpg" alt="Test Plan"></p>
-<p><img src="/img/rel-sum.jpg" alt="Test Plan"></p>
+<p><img src="rel-main.jpg" alt=""></p>
+<p><img src="rel-sum.jpg" alt=""></p>
 <p>　　因为在执行call指令时，PC指向的实际是call指令的下一条指令，所以计算PC相对地址需要有一个-4的padding。</p>
 <h3 id="静态链接"><a href="#静态链接" class="headerlink" title="静态链接"></a>静态链接</h3><h4 id="标准库函数如何链接？"><a href="#标准库函数如何链接？" class="headerlink" title="标准库函数如何链接？"></a>标准库函数如何链接？</h4><p>　　我们平常用到的标准库函数，例如printf, scanf, atoi等等，对每个c程序都是可用的，我们只需要include相应的头文件，例如<code>#include &lt;stdlib.h&gt;</code>这样，就可以使用。但我们在编译时候并没有显式的指定相应的源代码文件，那么这些代码是怎么跟我们自己写的代码链接到一起的呢？</p>
 <p>　　在说gcc的做法之前，我们可以先思考一下，如果是自己实现编译器，会怎么处理这个问题。</p>
@@ -488,10 +488,10 @@
 <p>　　由此，要完成动态链接，还需要引入了最后一个重要的概念，位置无关代码，即在加载时无需重定位的代码。</p>
 <h4 id="位置无关代码（Position-Independent-Code-PIC）"><a href="#位置无关代码（Position-Independent-Code-PIC）" class="headerlink" title="位置无关代码（Position-Independent Code, PIC）"></a>位置无关代码（Position-Independent Code, PIC）</h4><p>　　所有的技巧都来自于一个标准：无论是共享库还是目标模块，代码段和数据段的距离都是恒定的。由于数据段是可以在运行时修改的，所以可以把对代码段的修改转化为对数据段的修改。</p>
 <p>　　在数据段前面加入一个数据结构，全局偏移量表（GOT）。每一个被该模块引用的符号，都在GOT里有一个8字节条目，并为每个条目生成一个重定位条目。</p>
-<p><img src="/img/pic.jpg" alt="Test Plan"></p>
+<p><img src="pic.jpg" alt=""></p>
 <p>　　这样，在重定位时只需要重定位GOT相应条目的内容即可，不需要修改代码段。</p>
-<h3 id="加载可执行文件"><a href="#加载可执行文件" class="headerlink" title="加载可执行文件"></a>加载可执行文件</h3><h4 id="可执行文件磁盘布局"><a href="#可执行文件磁盘布局" class="headerlink" title="可执行文件磁盘布局"></a>可执行文件磁盘布局</h4><p><img src="/img/disk-structure.jpg" alt="Test Plan"></p>
-<h4 id="可执行文件内存布局"><a href="#可执行文件内存布局" class="headerlink" title="可执行文件内存布局"></a>可执行文件内存布局</h4><p><img src="/img/mem-structure.jpg" alt="Test Plan"></p>
+<h3 id="加载可执行文件"><a href="#加载可执行文件" class="headerlink" title="加载可执行文件"></a>加载可执行文件</h3><h4 id="可执行文件磁盘布局"><a href="#可执行文件磁盘布局" class="headerlink" title="可执行文件磁盘布局"></a>可执行文件磁盘布局</h4><p><img src="disk-structure.jpg" alt=""></p>
+<h4 id="可执行文件内存布局"><a href="#可执行文件内存布局" class="headerlink" title="可执行文件内存布局"></a>可执行文件内存布局</h4><p><img src="mem-structure.jpg" alt=""></p>
 <h4 id="加载时需要做什么？"><a href="#加载时需要做什么？" class="headerlink" title="加载时需要做什么？"></a>加载时需要做什么？</h4><p>　　把相应的文件区域映射到内存区域，要知道从哪个文件偏移的多少字节数据是哪个程序段的，需要加载到哪个内存地址上。这就需要借助ELF头部和段头部表里。</p>
 <h4 id="xv6加载内核程序到内存"><a href="#xv6加载内核程序到内存" class="headerlink" title="xv6加载内核程序到内存"></a>xv6加载内核程序到内存</h4><p>　　内核代码也是一个elf格式的文件存放在磁盘上。以这一段xv6教学操作系统加载内核的小函数为例，分析可执行文件的加载过程。当然，这个过程是几十年前的技术了，现代</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span></span></div><div class="line"><span class="title">bootmain</span><span class="params">(<span class="keyword">void</span>)</span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">struct</span> elfhdr *elf;</div><div class="line">  <span class="keyword">struct</span> proghdr *ph, *eph;</div><div class="line">  <span class="keyword">void</span> (*entry)(<span class="keyword">void</span>);</div><div class="line">  uchar* pa;</div><div class="line"></div><div class="line">  elf = (<span class="keyword">struct</span> elfhdr*)<span class="number">0x10000</span>;  <span class="comment">// scratch space</span></div><div class="line"></div><div class="line">  <span class="comment">// Read 1st page off disk</span></div><div class="line">  readseg((uchar*)elf, <span class="number">4096</span>, <span class="number">0</span>);</div><div class="line"></div><div class="line">  <span class="comment">// Is this an ELF executable?</span></div><div class="line">  <span class="keyword">if</span>(elf-&gt;magic != ELF_MAGIC)</div><div class="line">    <span class="keyword">return</span>;  <span class="comment">// let bootasm.S handle error</span></div><div class="line"></div><div class="line">  <span class="comment">// Load each program segment (ignores ph flags).</span></div><div class="line">  ph = (<span class="keyword">struct</span> proghdr*)((uchar*)elf + elf-&gt;phoff);</div><div class="line">  eph = ph + elf-&gt;phnum;</div><div class="line">  <span class="keyword">for</span>(; ph &lt; eph; ph++)&#123;</div><div class="line">    pa = (uchar*)ph-&gt;paddr;</div><div class="line">    readseg(pa, ph-&gt;filesz, ph-&gt;off);</div><div class="line">    <span class="keyword">if</span>(ph-&gt;memsz &gt; ph-&gt;filesz)</div><div class="line">      stosb(pa + ph-&gt;filesz, <span class="number">0</span>, ph-&gt;memsz - ph-&gt;filesz);</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="comment">// Call the entry point from the ELF header.</span></div><div class="line">  <span class="comment">// Does not return!</span></div><div class="line">  entry = (<span class="keyword">void</span>(*)(<span class="keyword">void</span>))(elf-&gt;entry);</div><div class="line">  entry();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
@@ -556,6 +556,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/07/23/redis复制过程浅析/" rel="prev" title="redis复制过程浅析">
+                redis复制过程浅析 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -629,7 +633,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">32</span>
+                <span class="site-state-item-count">33</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -642,7 +646,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">32</span>
+                <span class="site-state-item-count">33</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

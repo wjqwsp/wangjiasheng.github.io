@@ -1,0 +1,1215 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+  <link href="//cdn.jsdelivr.net/fancybox/2.1.5/jquery.fancybox.min.css" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Lobster Two:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+  
+
+<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.2/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="数据库,redis,分布式," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.1" />
+
+
+
+
+
+
+<meta name="description" content="复制　　在分布式系统遇到网络分区故障时，往往需要依赖分区容错性来对外提供可用性和一致性服务，这就要求同一份数据在分布式环境中存在数据冗余，并在某部分数据损坏或不可访问后，仍然能够不影响用户的使用。复制便是提供这种分区容错性的常用手段，它要求同一份数据在多台机器各保存一份完整的版本。之前几篇文章介绍了redis单机版本的一些工作原理，本文便开始扩展到分布式环境，简单分析一下redis的多机版本是如何">
+<meta property="og:type" content="article">
+<meta property="og:title" content="redis复制过程浅析">
+<meta property="og:url" content="http://wjqwsp.github.io/2018/07/23/redis复制过程浅析/index.html">
+<meta property="og:site_name" content="南国倾城">
+<meta property="og:description" content="复制　　在分布式系统遇到网络分区故障时，往往需要依赖分区容错性来对外提供可用性和一致性服务，这就要求同一份数据在分布式环境中存在数据冗余，并在某部分数据损坏或不可访问后，仍然能够不影响用户的使用。复制便是提供这种分区容错性的常用手段，它要求同一份数据在多台机器各保存一份完整的版本。之前几篇文章介绍了redis单机版本的一些工作原理，本文便开始扩展到分布式环境，简单分析一下redis的多机版本是如何">
+<meta property="og:updated_time" content="2018-07-23T17:20:01.405Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="redis复制过程浅析">
+<meta name="twitter:description" content="复制　　在分布式系统遇到网络分区故障时，往往需要依赖分区容错性来对外提供可用性和一致性服务，这就要求同一份数据在分布式环境中存在数据冗余，并在某部分数据损坏或不可访问后，仍然能够不影响用户的使用。复制便是提供这种分区容错性的常用手段，它要求同一份数据在多台机器各保存一份完整的版本。之前几篇文章介绍了redis单机版本的一些工作原理，本文便开始扩展到分布式环境，简单分析一下redis的多机版本是如何">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 'undefined',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://wjqwsp.github.io/2018/07/23/redis复制过程浅析/"/>
+
+
+
+
+
+  <title>redis复制过程浅析 | 南国倾城</title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">南国倾城</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">左手代码，右手年华</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://wjqwsp.github.io/2018/07/23/redis复制过程浅析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Gavin Wong">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="南国倾城">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">redis复制过程浅析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-23T21:01:00+08:00">
+                2018-07-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a class="cloud-tie-join-count" href="/2018/07/23/redis复制过程浅析/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count join-count" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2018/07/23/redis复制过程浅析/" class="leancloud_visitors" data-flag-title="redis复制过程浅析">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="复制"><a href="#复制" class="headerlink" title="复制"></a>复制</h3><p>　　在分布式系统遇到网络分区故障时，往往需要依赖分区容错性来对外提供可用性和一致性服务，这就要求同一份数据在分布式环境中存在数据冗余，并在某部分数据损坏或不可访问后，仍然能够不影响用户的使用。复制便是提供这种分区容错性的常用手段，它要求同一份数据在多台机器各保存一份完整的版本。之前几篇文章介绍了redis单机版本的一些工作原理，本文便开始扩展到分布式环境，简单分析一下redis的多机版本是如何实现复制这一功能的。整个复制过程可分为master和slave两个部分介绍。<br><a id="more"></a></p>
+<h3 id="slave"><a href="#slave" class="headerlink" title="slave"></a>slave</h3><p>　　每一个redis进程都有两种身份，一种是master，另一种是slave。master负责接收数据写入，同时有一个或多个slave作为数据备份，一般的业务场景是一个master维护多个slave，slave同时也可以是其他slave的master。master和slave之间是客户端-服务器的形式通信，与单机版本服务器处理客户端的模型一样，也是IO多路复用，读写绑定不同的事件处理器。其中master是slave的客户端，把其他客户端的命令原封不动转发给slave。slave也是master的客户端，定期向master汇报当前的复制偏移量。</p>
+<p>　　由于复制过程是slave发起的，便先从slave这一端介绍。无论master还是slave，在处理复制这一过程里实际上便是实现了一套通信协议，这个协议涉及master和slave在多个状态之间转换，因此master和slave都相当于状态机。我们只要关注这几个状态的转移，便可以理清整个复制过程。</p>
+<h4 id="REDIS-REPL-NONE"><a href="#REDIS-REPL-NONE" class="headerlink" title="REDIS_REPL_NONE"></a>REDIS_REPL_NONE</h4><p>　　第一个状态是REDIS_REPL_NONE，代表不进行复制，该进程是单机进程。</p>
+<h4 id="REDIS-REPL-CONNECT"><a href="#REDIS-REPL-CONNECT" class="headerlink" title="REDIS_REPL_CONNECT"></a>REDIS_REPL_CONNECT</h4><p>　　第二个状态是REDIS_REPL_CONNECT,这个状态的含义是尝试连接master。REDIS_REPL_NONE与REDIS_REPL_CONNECT之间转移是通过命令slaveof实现的。<code>slaveof no one</code>取消复制，从REDIS_REPL_CONNECT转移到REDIS_REPL_NONE；<code>slaveof ip port</code>开始复制，设置master服务器的ip和port，同时完成从REDIS_REPL_NONE到REDIS_REPL_CONNECT的状态转移。</p>
+<h4 id="REDIS-REPL-CONNECTING"><a href="#REDIS-REPL-CONNECTING" class="headerlink" title="REDIS_REPL_CONNECTING"></a>REDIS_REPL_CONNECTING</h4><p>　　第三个状态是REDIS_REPL_CONNECTING，代表正在连接。redis的定时函数serverCron里，每秒钟会调用一次replicationCron函数，这个函数会检查当进程状态是REDIS_REPL_CONNECTING时，尝试建立与master的socket连接。前面说过，复制过程的master和slave也是沿用了redis单机版的客户端-服务器通信模型，并且在slaveof命令时已然获取了master的ip和port，那么就可以建立socket连接了。由于redis采用单线程Io多路复用模型，注重高性能，不能容忍任何形式的长时间阻塞，因此尝试建立socket的过程也是无阻塞的，如果失败立即返回。socket建立成功后，则正式进入REDIS_REPL_CONNECTING状态，并且给socket绑定读写事件处理器syncWithMaster，这个事件处理器会完成开启数据同步的任务。</p>
+<h4 id="REDIS-REPL-RECEIVE-PONG"><a href="#REDIS-REPL-RECEIVE-PONG" class="headerlink" title="REDIS_REPL_RECEIVE_PONG"></a>REDIS_REPL_RECEIVE_PONG</h4><p>　　第四个状态是REDIS_REPL_RECEIVE_PONG，代表等待PONG到达。由于之后的数据传输非常耗时，同时需要占用大量带宽，这个状态主要是测试master和slave之间的网络是否健康，能否承担起之后的数据传输重任。redis的IO多路复用模型检查master的socket是否可写，可写则调用syncWithMaster函数，当检测到当前状态是REDIS_REPL_CONNECTING时，会往master发送PING，等待PONG到达，此时状态转换为REDIS_REPL_RECEIVE_PONG，并解除写事件处理器的绑定，以防再次因为可写而反复调用syncWithMaster。如果超过一定时间，redis进程状态仍为REDIS_REPL_CONNECTING或REDIS_REPL_RECEIVE_PONG，那么说明网络条件不好，状态退回到REDIS_REPL_CONNECT，关闭socket连接，解除事件处理器绑定，等到在定时函数中再次尝试连接master。</p>
+<h4 id="REDIS-REPL-TRANSFER"><a href="#REDIS-REPL-TRANSFER" class="headerlink" title="REDIS_REPL_TRANSFER"></a>REDIS_REPL_TRANSFER</h4><p>　　第五个状态是REDIS_REPL_TRANSFER，代表开始接受master的数据传输。在规定时间内收到PONG，那么首先会开启部分重同步或者完整重同步。这里先介绍一下部分重同步和完整重同步，以及涉及到的几个技术点。</p>
+<h5 id="部分重同步"><a href="#部分重同步" class="headerlink" title="部分重同步"></a>部分重同步</h5><p>　　对于不是第一次进行复制的redis进程，可能之前已经有master的大部分数据了，只是由于网络故障等原因断开了连接，此时不需要把master的全部数据都传输一遍，只需要传输缺少的部分就可以。redis进程的主要业务就是执行命令，因此维护了一个叫复制缓冲区的东西，每当有命令到达，就把该命令语句追加到复制缓冲区中，同时维护一个只增的复制偏移量，一直往上加命令语句的字节数。复制缓冲区在内部是用在内存的环形列表实现的，其大小一般设为2<em>平均每秒产生的写命令长度总和</em>断线到重连接的平均时间。这个区域越大，则重连接时传输的数据越少，同步越快，同时消耗的内存也会增加。</p>
+<h5 id="完整重同步"><a href="#完整重同步" class="headerlink" title="完整重同步"></a>完整重同步</h5><p>　　如果slave的复制偏移量已经不在复制缓冲区的范围内，就需要进行完整重同步了。完整重同步会传输一个RDB文件到slave上，然后由slave加载。之所以选择RDB文件，是因为它是二进制文件，体积小，便于传输，同时包含了完整的数据。</p>
+<p>　　slave在REDIS_REPL_RECEIVE_PONG状态下在规定时间内收到PONG，会解除读事件处理器的绑定，因为暂时不再需要了，同时向master发送PSYNC命令<code>PSYNC master_id offset</code>。由于之前可能有master连接过，所以这里可以带上master对应的redis进程的id， offset代表当前slave的复制偏移量。master会判断id是否是自身的id，并且offset是否在复制缓冲区内，如果是则进行部分重同步，向slave发送”+CONTINUE”回复；如果有一个条件不满足，则向slave发送”+FULLRESYNC”回复，进行完整重同步。如果是第一次进行复制，那么slave向master发送<code>PSYNC ？ -1</code>，在master返回”+FULLRESYNC”后进行完整重同步。这个过程redis涉及到对socket的读和写，在一般情况下，读写绑定了不同的事件处理器，是异步进行的，但在这里是同步地发出psync命令，然后同步地收取回复。具体的实现就是立即等待单个socket的数据，并设置超时时间。</p>
+<p>　　如果是完整重同步的情况，收到psync回复后，绑定新的读事件处理器readSyncBulkPayload，这个函数会读取master传来的RDB文件，然后写入到一个临时文件中，状态转换为REDIS_REPL_TRANSFER。如果是部分重同步，就比较简单了，状态直接转换为REDIS_REPL_CONNECTED，绑定读写事件处理器readQueryFromClient和sendReplyToClient。这两个事件处理器就和普通的客户端-服务器形式没有任何区别了，仅仅是用来处理各种redis命令。</p>
+<h4 id="REDIS-REPL-CONNECTED"><a href="#REDIS-REPL-CONNECTED" class="headerlink" title="REDIS_REPL_CONNECTED"></a>REDIS_REPL_CONNECTED</h4><p>　　第六个状态是REDIS_REPL_CONNECTED，代表已连接。这个状态可以在完整重同步完成后由REDIS_REPL_TRANSFER转换得到。当处在REDIS_REPL_TRANSFER状态时，首先会等待master完成写RDB文件，在写完后，会先往slave发送RDB文件的大小，然后开始发送RDB文件。每次读事件发生，slave会以4k为单位读取数据，剩余的数据留到下次再读，避免阻塞其他客户端。同时每写一定的数据到磁盘，都会手动sync一次，避免一次写磁盘用满IO，导致响应缓慢。当判断已读数据达到RDB文件的大小时，解除读事件处理器，清空原来数据库，然后加载RDB文件。这个过程会一直阻塞，直到数据加载成功。然后状态转换为REDIS_REPL_CONNECTED。</p>
+<p>　　在每次读事件发生时，会更新slave与master的交互时间，如果长时间没有数据到达，那么会在replicationCron函数里停掉这个传输过程，并把状态回退到REDIS_REPL_CONNECT。由于master写RDB文件可能耗时较长，因此master会在replicationCron里发送\0给这个状态的slave，slave收到以后仅仅更新交互时间。同时由于slave在清空数据库或者载入RDB文件时，可能会耗时较久，为了避免master认为slave断开，slave也会定时发送\0到master。</p>
+<p>　　master会在replicationCron里向所有online的slave发送ping命令，以让slave更新与服务器的交互时间。当处在REDIS_REPL_CONNECTED状态的slave超过一定时间没有收到master的命令，那么便认为连接中断了，会关闭socket，状态回退到REDIS_REPL_CONNECT。</p>
+<h3 id="master"><a href="#master" class="headerlink" title="master"></a>master</h3><p>　　master这端维护多个slave，每个slave对应的client也是一个状态机，其状态与slave的状态也是有一定的对应关系的。</p>
+<h4 id="REDIS-REPL-NONE-1"><a href="#REDIS-REPL-NONE-1" class="headerlink" title="REDIS_REPL_NONE"></a>REDIS_REPL_NONE</h4><p>　　这个状态与slave的REDIS_REPL_NONE是完全对应的，代表该客户端不是slave。</p>
+<h4 id="REDIS-REPL-ONLINE"><a href="#REDIS-REPL-ONLINE" class="headerlink" title="REDIS_REPL_ONLINE"></a>REDIS_REPL_ONLINE</h4><p>　　这个状态代表slave就绪，与master的复制关系已经建立。master开始复制的生命周期，是从slave发送psync指令开始的，如果可以进行部分重同步，那么直接跳到这个状态，并且把复制缓冲区中slave缺失的部分发给它。</p>
+<h4 id="REDIS-REPL-WAIT-BGSAVE-START"><a href="#REDIS-REPL-WAIT-BGSAVE-START" class="headerlink" title="REDIS_REPL_WAIT_BGSAVE_START"></a>REDIS_REPL_WAIT_BGSAVE_START</h4><p>　　如果在开启完整重同步后，发现之前已经有后台的写rdb进程在工作，并且这个进程不是为其他slave的复制准备的，那么进入REDIS_REPL_WAIT_BGSAVE_START状态，等待下一次写RDB文件开启。redis会在rdb进程结束的回调函数里把所有处于该状态的slave的状态转换为REDIS_REPL_WAIT_BGSAVE_END。该状态对应slave的REDIS_REPL_TRANSFER状态。</p>
+<h4 id="REDIS-REPL-WAIT-BGSAVE-END"><a href="#REDIS-REPL-WAIT-BGSAVE-END" class="headerlink" title="REDIS_REPL_WAIT_BGSAVE_END"></a>REDIS_REPL_WAIT_BGSAVE_END</h4><p>　　如果在开启完整重同步后，之前并没有rdb进程在工作，那么开始新的写rdb进程，进入REDIS_REPL_WAIT_BGSAVE_END状态，等待rdb进程结束。或者rdb进程为其他slave的复制作准备，那么复制其他slave的输出缓冲区，以共用之后的rdb数据。该状态也对应slave的REDIS_REPL_TRANSFER状态。</p>
+<h4 id="REDIS-REPL-SEND-BULK"><a href="#REDIS-REPL-SEND-BULK" class="headerlink" title="REDIS_REPL_SEND_BULK"></a>REDIS_REPL_SEND_BULK</h4><p>　　当RDB文件写入完毕，会调用回调函数，该函数会遍历所有slave，把状态为REDIS_REPL_WAIT_BGSAVE_END<br>的slave转换为REDIS_REPL_SEND_BULK，然后重新绑定新的写事件处理器sendBulkToSlave，打开RDB文件，准备传输。该状态同样对应slave的REDIS_REPL_TRANSFER状态。</p>
+<p>　　IO多路复用模型每次发现slave可写，就调用sendBulkToSlave函数，读取一定的RDB数据，然后写到网络上。每次不能写太多数据，避免阻塞其他客户端。当RDB文件传送完毕后，状态转移到REDIS_REPL_ONLINE。</p>
+<h3 id="异步复制"><a href="#异步复制" class="headerlink" title="异步复制"></a>异步复制</h3><p>　　当复制建立完成，数据完成同步后，之后master的每次写操作都会在slave端回放一遍。redis为了高性能，复制是异步完成的，命令返回的时候slave不一定能把命令执行完。但slave会在replicationCron函数里向master发送命令<code>REPLCONF ACK offset</code>，汇报自己的复制偏移量。master收到以后更新client的复制偏移量，以及交互时间。当超过一定数量的slave的交互时间相隔过长，就会禁止写入新数据。</p>
+<h3 id="同步复制"><a href="#同步复制" class="headerlink" title="同步复制"></a>同步复制</h3><p>　　redis的复制默认是异步的，如果需要同步复制，那么可以用WAIT命令来实现。每当有命令执行时，redis都会记录当前的复制偏移量到客户端状态里。当调用WAIT命令时，用户指定至少多少个replication成功以及超时时间。redis会把客户端加到等待slave响应的队列里，并把客户端状态设置为REDIS_BLOCKED_WAIT。处于该状态的客户端无法处理socket的输入数据，后续命令会在输入缓冲区堆积，直到WAIT之前的命令复制完成或者超时。</p>
+<p>　　在每次进入IO多路复用的等待事件前，会调用beforeSleep函数，该函数会给所有slave发送<code>REPLCONF GETACK</code>命令，收到该命令的slave会马上发送自己的复制偏移量给master。beforeSleep函数还会检查等待slave响应队列里是否有客户端的有足够多的slave的复制偏移量不少于要求的值，足够的话就解除block，把客户端状态设为REDIS_UNBLOCKED，并让这些客户端开始处理输入缓冲区的命令。</p>
+<p>　　在serverCron里还会对所有block的客户端进行检查，如果达到超时时间，就解除这些客户端的block，并通知这些客户端超时。</p>
+<p>　　</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/数据库/" rel="tag"># 数据库</a>
+          
+            <a href="/tags/redis/" rel="tag"># redis</a>
+          
+            <a href="/tags/分布式/" rel="tag"># 分布式</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/07/linux可执行文件结构及链接过程分析/" rel="next" title="linux可执行文件结构及链接过程分析">
+                <i class="fa fa-chevron-left"></i> linux可执行文件结构及链接过程分析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="cloud-tie-wrapper" class="cloud-tie-wrapper"></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/uploads/avatar.jpg"
+               alt="Gavin Wong" />
+          <p class="site-author-name" itemprop="name">Gavin Wong</p>
+           
+              <p class="site-description motion-element" itemprop="description">蟾宫桂花千里香，暖风拂面惹人狂。我欲因之凌霄起，嫦娥丹桂尽入囊。</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">33</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">33</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#复制"><span class="nav-number">1.</span> <span class="nav-text">复制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#slave"><span class="nav-number">2.</span> <span class="nav-text">slave</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#REDIS-REPL-NONE"><span class="nav-number">2.1.</span> <span class="nav-text">REDIS_REPL_NONE</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#REDIS-REPL-CONNECT"><span class="nav-number">2.2.</span> <span class="nav-text">REDIS_REPL_CONNECT</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#REDIS-REPL-CONNECTING"><span class="nav-number">2.3.</span> <span class="nav-text">REDIS_REPL_CONNECTING</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#REDIS-REPL-RECEIVE-PONG"><span class="nav-number">2.4.</span> <span class="nav-text">REDIS_REPL_RECEIVE_PONG</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#REDIS-REPL-TRANSFER"><span class="nav-number">2.5.</span> <span class="nav-text">REDIS_REPL_TRANSFER</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#部分重同步"><span class="nav-number">2.5.1.</span> <span class="nav-text">部分重同步</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#完整重同步"><span class="nav-number">2.5.2.</span> <span class="nav-text">完整重同步</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#REDIS-REPL-CONNECTED"><span class="nav-number">2.6.</span> <span class="nav-text">REDIS_REPL_CONNECTED</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#master"><span class="nav-number">3.</span> <span class="nav-text">master</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#REDIS-REPL-NONE-1"><span class="nav-number">3.1.</span> <span class="nav-text">REDIS_REPL_NONE</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#REDIS-REPL-ONLINE"><span class="nav-number">3.2.</span> <span class="nav-text">REDIS_REPL_ONLINE</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#REDIS-REPL-WAIT-BGSAVE-START"><span class="nav-number">3.3.</span> <span class="nav-text">REDIS_REPL_WAIT_BGSAVE_START</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#REDIS-REPL-WAIT-BGSAVE-END"><span class="nav-number">3.4.</span> <span class="nav-text">REDIS_REPL_WAIT_BGSAVE_END</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#REDIS-REPL-SEND-BULK"><span class="nav-number">3.5.</span> <span class="nav-text">REDIS_REPL_SEND_BULK</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#异步复制"><span class="nav-number">4.</span> <span class="nav-text">异步复制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#同步复制"><span class="nav-number">5.</span> <span class="nav-text">同步复制</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gavin Wong</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/jquery/2.1.3/jquery.min.js"></script>
+
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/fastclick/1.0.6/fastclick.min.js"></script>
+
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/jquery.lazyload/1.9.3/jquery.lazyload.min.js"></script>
+
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/velocity/1.2.3/velocity.min.js"></script>
+
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/velocity/1.2.3/velocity.ui.min.js"></script>
+
+  
+  <script type="text/javascript" src="//cdn.jsdelivr.net/fancybox/2.1.5/jquery.fancybox.pack.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+    
+    <script>
+      var cloudTieConfig = {
+        url: document.location.href, 
+        sourceId: "",
+        productKey: "7186f7e53b7349c49adb69310cf73ddd",
+        target: "cloud-tie-wrapper"
+      };
+    </script>
+    <script src="https://img1.ws.126.net/f2e/tie/yun/sdk/loader.js"></script>
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (search_path.endsWith("json")) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("EBQKkMtlkhkxwaXmaewHY2c4-gzGzoHsz", "KSypTWMBbTMgIBYw9EuDa73j");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
