@@ -394,7 +394,7 @@
 
       
         
-          <h3 id="redis的高可用性"><a href="#redis的高可用性" class="headerlink" title="redis的高可用性"></a>redis的高可用性</h3><p>　　前一篇文章提到，redis用复制来解决可靠性，一份数据做多份冗余。但是，当master节点因为某种原因下线，还必须有一种机制能让slave节点自动地转化成master节点，对外提供写服务，保证系统的高可用性。redis的sentinel就是这样的一种机制。<br>
+          <h3 id="redis的高可用性"><a href="#redis的高可用性" class="headerlink" title="redis的高可用性"></a>redis的高可用性</h3><p>　　前一篇文章提到，redis用复制来解决可靠性，一份数据做多份冗余。但是，当master节点因为某种原因下线，还必须有一种机制能让slave节点自动地转化成master节点，对外提供写服务，保证系统的高可用性。redis的sentinel就是这样的一种机制。<br></p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2018/08/03/redis-sentinel与raft协议/#more" rel="contents">
@@ -529,7 +529,7 @@
 
       
         
-          <h3 id="复制"><a href="#复制" class="headerlink" title="复制"></a>复制</h3><p>　　在分布式系统遇到网络分区故障时，往往需要依赖分区容错性来对外提供可用性和一致性服务，这就要求同一份数据在分布式环境中存在数据冗余，并在某部分数据损坏或不可访问后，仍然能够不影响用户的使用。复制便是提供这种分区容错性的常用手段，它要求同一份数据在多台机器各保存一份完整的版本。之前几篇文章介绍了redis单机版本的一些工作原理，本文便开始扩展到分布式环境，简单分析一下redis的多机版本是如何实现复制这一功能的。整个复制过程可分为master和slave两个部分介绍。<br>
+          <h3 id="复制"><a href="#复制" class="headerlink" title="复制"></a>复制</h3><p>　　在分布式系统遇到网络分区故障时，往往需要依赖分区容错性来对外提供可用性和一致性服务，这就要求同一份数据在分布式环境中存在数据冗余，并在某部分数据损坏或不可访问后，仍然能够不影响用户的使用。复制便是提供这种分区容错性的常用手段，它要求同一份数据在多台机器各保存一份完整的版本。之前几篇文章介绍了redis单机版本的一些工作原理，本文便开始扩展到分布式环境，简单分析一下redis的多机版本是如何实现复制这一功能的。整个复制过程可分为master和slave两个部分介绍。<br></p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2018/07/23/redis复制过程浅析/#more" rel="contents">
@@ -799,7 +799,7 @@
 
       
         
-          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　redis服务器的设计非常精巧，涵盖了内存kv数据库要考虑的方方面面。本文旨在总结和分析单机服务器部分的工作原理以及设计思想，希望能尽可能地涵盖整个单机服务器的工作流程。<br>
+          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　redis服务器的设计非常精巧，涵盖了内存kv数据库要考虑的方方面面。本文旨在总结和分析单机服务器部分的工作原理以及设计思想，希望能尽可能地涵盖整个单机服务器的工作流程。<br></p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2018/04/16/redis-浅析单机服务器工作原理/#more" rel="contents">
@@ -1208,7 +1208,7 @@
 
       
         
-          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　xv6是x86处理器上用ANSI标准C重新实现的Unix第六版(Unix V6，通常直接被称为V6)，本文主要对xv6的bootstrap实现部分的源代码进行分析，分析一下机器开机之后，从BIOS引导boot loader，boot loader从磁盘加载内核到内存，到执行内核程序的全过程。<br>
+          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　xv6是x86处理器上用ANSI标准C重新实现的Unix第六版(Unix V6，通常直接被称为V6)，本文主要对xv6的bootstrap实现部分的源代码进行分析，分析一下机器开机之后，从BIOS引导boot loader，boot loader从磁盘加载内核到内存，到执行内核程序的全过程。<br></p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2017/06/06/xv6-bootstrap部分源代码分析/#more" rel="contents">
@@ -1343,7 +1343,7 @@
 
       
         
-          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　xv6是x86处理器上用ANSI标准C重新实现的Unix第六版(Unix V6，通常直接被称为V6)，本文主要对xv6的shell实现部分的源代码进行分析，同时引申一些操作系统系统调用的内容，包括管道，重定向，进程等等基本概念。通过阅读这部分的源代码，也可以对现代操作系统的shell这个用户程序的核心实现有一个基本的认识。<br>
+          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　xv6是x86处理器上用ANSI标准C重新实现的Unix第六版(Unix V6，通常直接被称为V6)，本文主要对xv6的shell实现部分的源代码进行分析，同时引申一些操作系统系统调用的内容，包括管道，重定向，进程等等基本概念。通过阅读这部分的源代码，也可以对现代操作系统的shell这个用户程序的核心实现有一个基本的认识。<br></p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2017/06/04/xv6-shell实现源代码分析/#more" rel="contents">
@@ -1478,7 +1478,7 @@
 
       
         
-          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　erlang作为函数式与天生并发的语言，其内存管理与垃圾回收无疑便是重点话题。本文并不想详细解析其内存管理与垃圾回收机制，而关注的是与这个主题密切相关的二进制串型。二进制串型是erlang的一种数据类型，目的是用二进制数编码erlang的其他类型，通常是用做进程间的大数据量传输。其设计非常精妙，特别是erlang的R12B版本以后对其做了大幅度的优化，有必要分析一下它对于erlang内存管理方面的影响。<br>
+          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　erlang作为函数式与天生并发的语言，其内存管理与垃圾回收无疑便是重点话题。本文并不想详细解析其内存管理与垃圾回收机制，而关注的是与这个主题密切相关的二进制串型。二进制串型是erlang的一种数据类型，目的是用二进制数编码erlang的其他类型，通常是用做进程间的大数据量传输。其设计非常精妙，特别是erlang的R12B版本以后对其做了大幅度的优化，有必要分析一下它对于erlang内存管理方面的影响。<br></p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2017/05/20/erlang-二进制串深度解析及优化/#more" rel="contents">
@@ -1613,7 +1613,7 @@
 
       
         
-          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　SSH是linux系统远程登录及命令操作的常用协议与指令，基本用法非常简单。最近在做持续集成工作时候，在SSH上面遇到一些坑，因此在这里总结一下。<br>
+          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　SSH是linux系统远程登录及命令操作的常用协议与指令，基本用法非常简单。最近在做持续集成工作时候，在SSH上面遇到一些坑，因此在这里总结一下。<br></p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2017/05/02/SSH协议基本原理及用法/#more" rel="contents">

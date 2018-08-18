@@ -529,7 +529,7 @@
 
       
         
-          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　之前在做Gitlab源代码的扩展工作，一直没有时间总结一下Ruby和Rails的内容。最近在看《Effective Ruby》，顺便总结一下Ruby的一些语言特性与进阶内容。此博文将持续不定期更新。<br>
+          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　之前在做Gitlab源代码的扩展工作，一直没有时间总结一下Ruby和Rails的内容。最近在看《Effective Ruby》，顺便总结一下Ruby的一些语言特性与进阶内容。此博文将持续不定期更新。<br></p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2016/12/22/ruby语言特性总结/#more" rel="contents">
@@ -664,7 +664,7 @@
 
       
         
-          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　Docker作为容器是越来越被广泛使用了，里面的知识也比较庞杂，但关于Docker Engine最核心的就是存储和网络了。这篇文章主要围绕这两个方面，做一些简单的总结。<br>
+          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　Docker作为容器是越来越被广泛使用了，里面的知识也比较庞杂，但关于Docker Engine最核心的就是存储和网络了。这篇文章主要围绕这两个方面，做一些简单的总结。<br></p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2016/11/28/简析Docker的存储策略与网桥通信机制/#more" rel="contents">
@@ -799,7 +799,7 @@
 
       
         
-          <h3 id="什么是Gitlab-CI"><a href="#什么是Gitlab-CI" class="headerlink" title="什么是Gitlab CI"></a>什么是Gitlab CI</h3><p>　　Gitlab CI是一个持续集成的工具，目前已经与Gitlab完美整合在一起。它提供一个虚拟的代码测试、打包的环境，这个环境与Gitlab Repo勾连在一起，让每一次的push或者merge request触发这个虚拟环境的创建，自动运行测试与打包的脚本，得出脚本的运行结果呈现在Gitlab 的web页面上，然后再销毁这个虚拟的环境。并且，它能与我们的真正的产品部署环境连接起来，让我们能在Gitlab的web页面上看到部署环境的一些结果，让整个代码的生产线变得完整。通过Gitlab CI与Gitlab的整合，源代码开发、自动测试、自动打包、自动部署成为一条流水线，能极大地加快产品的迭代速度。<br>
+          <h3 id="什么是Gitlab-CI"><a href="#什么是Gitlab-CI" class="headerlink" title="什么是Gitlab CI"></a>什么是Gitlab CI</h3><p>　　Gitlab CI是一个持续集成的工具，目前已经与Gitlab完美整合在一起。它提供一个虚拟的代码测试、打包的环境，这个环境与Gitlab Repo勾连在一起，让每一次的push或者merge request触发这个虚拟环境的创建，自动运行测试与打包的脚本，得出脚本的运行结果呈现在Gitlab 的web页面上，然后再销毁这个虚拟的环境。并且，它能与我们的真正的产品部署环境连接起来，让我们能在Gitlab的web页面上看到部署环境的一些结果，让整个代码的生产线变得完整。通过Gitlab CI与Gitlab的整合，源代码开发、自动测试、自动打包、自动部署成为一条流水线，能极大地加快产品的迭代速度。<br></p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2016/11/23/Gitlab-CI-与-Docker-的配置与整合流程/#more" rel="contents">
@@ -934,7 +934,7 @@
 
       
         
-          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　最近做Gitlab CI的自动测试方面的工作，用简单的Java工程来做测试，在学习Gitlab CI和Docker的过程中又回顾了一下Java的编译，解释，执行的过程。以前做Java的项目多是借助IDE，有种感觉就是离开IDE就不会做Java开发了。这次因为Docker自动测试无法使用IDE，被迫回顾了一下如何用命令行去运行Java程序，以及如何部署在Tomcat上，挺有意义的。<br>
+          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　最近做Gitlab CI的自动测试方面的工作，用简单的Java工程来做测试，在学习Gitlab CI和Docker的过程中又回顾了一下Java的编译，解释，执行的过程。以前做Java的项目多是借助IDE，有种感觉就是离开IDE就不会做Java开发了。这次因为Docker自动测试无法使用IDE，被迫回顾了一下如何用命令行去运行Java程序，以及如何部署在Tomcat上，挺有意义的。<br></p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2016/11/20/java的解释执行过程及Tomcat部署/#more" rel="contents">
@@ -1069,7 +1069,7 @@
 
       
         
-          <h3 id="Gitlab扩展"><a href="#Gitlab扩展" class="headerlink" title="Gitlab扩展"></a>Gitlab扩展</h3><p>　　Gitlab扩展即对官方的Gitlab源代码进行二次开发，在原有Gitlab的基础上定制属于自己的项目与代码管理的工具。Gitlab是开源项目，其源代码在官网上可以查阅，我们一般使用的是免费的Gitlab社区版，即Gitlab-CE。下面将从开发，打包，部署三个部分谈谈从源代码到部署成自己的应用是一个怎么样的流程，整个环境的搭建需要注意些什么。<br>
+          <h3 id="Gitlab扩展"><a href="#Gitlab扩展" class="headerlink" title="Gitlab扩展"></a>Gitlab扩展</h3><p>　　Gitlab扩展即对官方的Gitlab源代码进行二次开发，在原有Gitlab的基础上定制属于自己的项目与代码管理的工具。Gitlab是开源项目，其源代码在官网上可以查阅，我们一般使用的是免费的Gitlab社区版，即Gitlab-CE。下面将从开发，打包，部署三个部分谈谈从源代码到部署成自己的应用是一个怎么样的流程，整个环境的搭建需要注意些什么。<br></p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2016/11/02/Gitlab扩展环境配置流程/#more" rel="contents">
@@ -1210,7 +1210,7 @@
 <li>If the two linked lists have no intersection at all, return null.</li>
 <li>The linked lists must retain their original structure after the function returns.</li>
 <li>You may assume there are no cycles anywhere in the entire linked structure.</li>
-<li>Your code should preferably run in O(n) time and use only O(1) memory.
+<li>Your code should preferably run in O(n) time and use only O(1) memory.</li></ul>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2016/09/24/LeetCode-160-Intersection-of-Two-Linked-Lists-题解/#more" rel="contents">
@@ -1348,7 +1348,7 @@
           <h3 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h3><p>　　Remove all elements from a linked list of integers that have value val.</p>
 <p>　　Example</p>
 <p>　　Given: 1 –&gt; 2 –&gt; 6 –&gt; 3 –&gt; 4 –&gt; 5 –&gt; 6, val = 6</p>
-<p>　　Return: 1 –&gt; 2 –&gt; 3 –&gt; 4 –&gt; 5<br>
+<p>　　Return: 1 –&gt; 2 –&gt; 3 –&gt; 4 –&gt; 5<br></p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2016/09/24/LeetCode-203-Remove-Linked-List-Elements-题解/#more" rel="contents">
@@ -1491,7 +1491,7 @@
 <p>　　“abcdefgfedcba”</p>
 <p>　　1-&gt;2-&gt;3-&gt;3-&gt;2-&gt;1</p>
 <p>　　我们现在要做的，就是判断给定的链表是否满足这个特性。</p>
-<p>　　这题还有一个难点，就是时间复杂度与空间复杂度的限制。特别是空间复杂度限制太严格了。<br>
+<p>　　这题还有一个难点，就是时间复杂度与空间复杂度的限制。特别是空间复杂度限制太严格了。<br></p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2016/09/24/LeetCode-234-Palindrome-Linked-List-题解/#more" rel="contents">
@@ -1627,7 +1627,7 @@
       
         
           <h3 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h3><p>　　Write a function to delete a node (except the tail) in a singly linked list, given only access to that node.</p>
-<p>　　Supposed the linked list is 1 -&gt; 2 -&gt; 3 -&gt; 4 and you are given the third node with value 3, the linked list should become 1 -&gt; 2 -&gt; 4 after calling your function.<br>
+<p>　　Supposed the linked list is 1 -&gt; 2 -&gt; 3 -&gt; 4 and you are given the third node with value 3, the linked list should become 1 -&gt; 2 -&gt; 4 after calling your function.<br></p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2016/09/24/LeetCode-237-Delete-Node-in-a-LinkedList-题解/#more" rel="contents">
