@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+  <link href="//cdn.jsdelivr.net/fancybox/2.1.5/jquery.fancybox.min.css" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Lobster Two:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+  
+
+<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.2/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="操作系统,内存管理,进程,xv6," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前言　　xv6是x86处理器上用ANSI标准C重新实现的Unix第六版(Unix V6，通常直接被称为V6)，本文主要对其虚拟内存管理以及进程调度的部分进行分析，从源码入手去总结一下其中要点。这部分内容其实一年前就看过了，一直没时间动笔写下来，在看过了CSAPP的相关内容后，又有了新的认识，也勾起了一年前已有点模糊的记忆，还是得记录下来。本文将按内核执行的时间顺序，梳理一遍在启动内核的过程中涉及进">
+<meta property="og:type" content="article">
+<meta property="og:title" content="xv6内存管理与进程调度过程浅析">
+<meta property="og:url" content="http://wjqwsp.github.io/2018/09/01/xv6内存管理与进程初始化过程浅析/index.html">
+<meta property="og:site_name" content="南国倾城">
+<meta property="og:description" content="前言　　xv6是x86处理器上用ANSI标准C重新实现的Unix第六版(Unix V6，通常直接被称为V6)，本文主要对其虚拟内存管理以及进程调度的部分进行分析，从源码入手去总结一下其中要点。这部分内容其实一年前就看过了，一直没时间动笔写下来，在看过了CSAPP的相关内容后，又有了新的认识，也勾起了一年前已有点模糊的记忆，还是得记录下来。本文将按内核执行的时间顺序，梳理一遍在启动内核的过程中涉及进">
+<meta property="og:image" content="http://wjqwsp.github.io/img/kernel-stack.png">
+<meta property="og:image" content="http://wjqwsp.github.io/img/user-stack.png">
+<meta property="og:updated_time" content="2018-09-15T12:59:25.672Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="xv6内存管理与进程调度过程浅析">
+<meta name="twitter:description" content="前言　　xv6是x86处理器上用ANSI标准C重新实现的Unix第六版(Unix V6，通常直接被称为V6)，本文主要对其虚拟内存管理以及进程调度的部分进行分析，从源码入手去总结一下其中要点。这部分内容其实一年前就看过了，一直没时间动笔写下来，在看过了CSAPP的相关内容后，又有了新的认识，也勾起了一年前已有点模糊的记忆，还是得记录下来。本文将按内核执行的时间顺序，梳理一遍在启动内核的过程中涉及进">
+<meta name="twitter:image" content="http://wjqwsp.github.io/img/kernel-stack.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: 'undefined',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://wjqwsp.github.io/2018/09/01/xv6内存管理与进程初始化过程浅析/"/>
+
+
+
+
+
+  <title>xv6内存管理与进程调度过程浅析 | 南国倾城</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">南国倾城</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">左手代码，右手年华</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://wjqwsp.github.io/2018/09/01/xv6内存管理与进程初始化过程浅析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Gavin Wong">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="南国倾城">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">xv6内存管理与进程调度过程浅析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-01T11:29:59+08:00">
+                2018-09-01
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2018/09/01/xv6内存管理与进程初始化过程浅析/" class="leancloud_visitors" data-flag-title="xv6内存管理与进程调度过程浅析">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　xv6是x86处理器上用ANSI标准C重新实现的Unix第六版(Unix V6，通常直接被称为V6)，本文主要对其虚拟内存管理以及进程调度的部分进行分析，从源码入手去总结一下其中要点。这部分内容其实一年前就看过了，一直没时间动笔写下来，在看过了CSAPP的相关内容后，又有了新的认识，也勾起了一年前已有点模糊的记忆，还是得记录下来。本文将按内核执行的时间顺序，梳理一遍在启动内核的过程中涉及进程调度和内存管理的部分，并由此扩展开来，进行简要分析。<br><a id="more"></a></p>
+<h3 id="万物之源——内存资源池"><a href="#万物之源——内存资源池" class="headerlink" title="万物之源——内存资源池"></a>万物之源——内存资源池</h3><p>　　看本文前需要一点虚拟内存的知识，可以参考之前写的文章<a href="https://wjqwsp.github.io/2018/08/18/linux系统内存管理/" title="linux系统内存管理">linux系统内存管理</a>。最好也把xv6内核引导部分了解一下，参考之前写的文章<a href="https://wjqwsp.github.io/2017/06/06/xv6-bootstrap部分源代码分析/" title="xv6-bootstrap部分源代码分析">xv6-bootstrap部分源代码分析</a>。</p>
+<p>　　内核负责动态分配空闲的物理内存给进程的内存页表、用户的堆栈、内核栈以及管道buffer这些在运行时消耗内存的结构。因此内核必须维护一个内存的资源池，统一管理所有空闲的内存，就像用户态的malloc内存分配器一样，只不过前者更底层一点，负责内核态的内存管理，后者负责用户进程的内存管理。</p>
+<p>　　我们主要看一下这个资源池是怎么初始化，以及怎么分配和释放空闲内存的。内核是用虚拟内存地址来管理内存池的，这就有一个鸡生蛋和蛋生鸡的问题：资源池的初始化需要先有虚拟内存页表，但虚拟内存页表的分配则需要依赖资源池的存在。xv6的解决办法是在创建资源池前，先以一个简陋的内存页表作为过渡，在该内存页表的控制下，创建资源池，重新分配一个复杂的内存页表。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="number">__</span>attribute__((<span class="number">__</span>aligned__(PGSIZE)))</div><div class="line"><span class="keyword">pde_t</span> entrypgdir[NPDENTRIES] = &#123;</div><div class="line">  <span class="comment">// Map VA's [0, 4MB) to PA's [0, 4MB)</span></div><div class="line">  [<span class="number">0</span>] = (<span class="number">0</span>) | PTE_P | PTE_W | PTE_PS,</div><div class="line">  <span class="comment">// Map VA's [KERNBASE, KERNBASE+4MB) to PA's [0, 4MB)</span></div><div class="line">  [KERNBASE&gt;&gt;PDXSHIFT] = (<span class="number">0</span>) | PTE_P | PTE_W | PTE_PS,</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>　　上面的代码就是在内核里定义的在内存资源池创建前的过渡性的内存页表。把虚拟内存的0~4MB以及KERNBASE~ KERNBASE+4MB映射到物理内存的0~4MB。KERNBASE是高地址区，在xv6里是0x80000000。linux的传统是把高地址区域分配给内核的代码和数据。至于0~4MB的虚拟内存低地址映射，是为了处理开启CPU的页表寻址功能前后CPU都能正常执行指令。这是因为于在开启虚拟内存寻址前，CPU是用物理地址寻址的，此时当前执行的指令在低地址区域，而开启虚拟内存寻址后，必须要把虚拟地址映射到相同的物理地址，代码才能正常工作，实现无缝衔接。好了，有了这个过渡的页表，我们可以最多使用4MB的内存，暂时足够了。下面我们看看内核代码的main函数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">int</span></span></div><div class="line"><span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></div><div class="line">&#123;</div><div class="line">  kinit1(end, P2V(<span class="number">4</span>*<span class="number">1024</span>*<span class="number">1024</span>)); <span class="comment">// phys page allocator</span></div><div class="line">  kvmalloc();      <span class="comment">// kernel page table</span></div><div class="line">  mpinit();        <span class="comment">// detect other processors</span></div><div class="line">  lapicinit();     <span class="comment">// interrupt controller</span></div><div class="line">  seginit();       <span class="comment">// segment descriptors</span></div><div class="line">  cprintf(<span class="string">"\ncpu%d: starting xv6\n\n"</span>, cpunum());</div><div class="line">  picinit();       <span class="comment">// another interrupt controller</span></div><div class="line">  ioapicinit();    <span class="comment">// another interrupt controller</span></div><div class="line">  consoleinit();   <span class="comment">// console hardware</span></div><div class="line">  uartinit();      <span class="comment">// serial port</span></div><div class="line">  pinit();         <span class="comment">// process table</span></div><div class="line">  tvinit();        <span class="comment">// trap vectors</span></div><div class="line">  binit();         <span class="comment">// buffer cache</span></div><div class="line">  fileinit();      <span class="comment">// file table</span></div><div class="line">  ideinit();       <span class="comment">// disk</span></div><div class="line">  <span class="keyword">if</span>(!ismp)</div><div class="line">    timerinit();   <span class="comment">// uniprocessor timer</span></div><div class="line">  startothers();   <span class="comment">// start other processors</span></div><div class="line">  kinit2(P2V(<span class="number">4</span>*<span class="number">1024</span>*<span class="number">1024</span>), P2V(PHYSTOP)); <span class="comment">// must come after startothers()</span></div><div class="line">  userinit();      <span class="comment">// first user process</span></div><div class="line">  mpmain();        <span class="comment">// finish this processor's setup</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　kinit1和kinit2函数就是内存资源池的初始化函数了。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">extern</span> <span class="keyword">char</span> end[]; <span class="comment">// first address after kernel loaded from ELF file</span></div><div class="line"></div><div class="line"><span class="keyword">struct</span> run &#123;</div><div class="line">  <span class="keyword">struct</span> run *next;</div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="keyword">struct</span> &#123;</div><div class="line">  <span class="keyword">struct</span> spinlock lock;</div><div class="line">  <span class="keyword">int</span> use_lock;</div><div class="line">  <span class="keyword">struct</span> run *freelist;</div><div class="line">&#125; kmem;</div><div class="line"></div><div class="line"><span class="comment">// Initialization happens in two phases.</span></div><div class="line"><span class="comment">// 1. main() calls kinit1() while still using entrypgdir to place just</span></div><div class="line"><span class="comment">// the pages mapped by entrypgdir on free list.</span></div><div class="line"><span class="comment">// 2. main() calls kinit2() with the rest of the physical pages</span></div><div class="line"><span class="comment">// after installing a full page table that maps them on all cores.</span></div><div class="line"><span class="function"><span class="keyword">void</span></span></div><div class="line"><span class="title">kinit1</span><span class="params">(<span class="keyword">void</span> *vstart, <span class="keyword">void</span> *vend)</span></div><div class="line">&#123;</div><div class="line">  initlock(&amp;kmem.lock, <span class="string">"kmem"</span>);</div><div class="line">  kmem.use_lock = <span class="number">0</span>;</div><div class="line">  freerange(vstart, vend);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">void</span></span></div><div class="line"><span class="title">kinit2</span><span class="params">(<span class="keyword">void</span> *vstart, <span class="keyword">void</span> *vend)</span></div><div class="line">&#123;</div><div class="line">  freerange(vstart, vend);</div><div class="line">  kmem.use_lock = <span class="number">1</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">void</span></span></div><div class="line"><span class="title">freerange</span><span class="params">(<span class="keyword">void</span> *vstart, <span class="keyword">void</span> *vend)</span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">char</span> *p;</div><div class="line">  p = (<span class="keyword">char</span>*)PGROUNDUP((uint)vstart);</div><div class="line">  <span class="keyword">for</span>(; p + PGSIZE &lt;= (<span class="keyword">char</span>*)vend; p += PGSIZE)</div><div class="line">    kfree(p);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">//PAGEBREAK: 21</span></div><div class="line"><span class="comment">// Free the page of physical memory pointed at by v,</span></div><div class="line"><span class="comment">// which normally should have been returned by a</span></div><div class="line"><span class="comment">// call to kalloc().  (The exception is when</span></div><div class="line"><span class="comment">// initializing the allocator; see kinit above.)</span></div><div class="line"><span class="function"><span class="keyword">void</span></span></div><div class="line"><span class="title">kfree</span><span class="params">(<span class="keyword">char</span> *v)</span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">struct</span> run *r;</div><div class="line"></div><div class="line">  <span class="keyword">if</span>((uint)v % PGSIZE || v &lt; end || V2P(v) &gt;= PHYSTOP)</div><div class="line">    panic(<span class="string">"kfree"</span>);</div><div class="line"></div><div class="line">  <span class="comment">// Fill with junk to catch dangling refs.</span></div><div class="line">  <span class="built_in">memset</span>(v, <span class="number">1</span>, PGSIZE);</div><div class="line"></div><div class="line">  <span class="keyword">if</span>(kmem.use_lock)</div><div class="line">    acquire(&amp;kmem.lock);</div><div class="line">  r = (<span class="keyword">struct</span> run*)v;</div><div class="line">  r-&gt;next = kmem.freelist;</div><div class="line">  kmem.freelist = r;</div><div class="line">  <span class="keyword">if</span>(kmem.use_lock)</div><div class="line">    release(&amp;kmem.lock);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Allocate one 4096-byte page of physical memory.</span></div><div class="line"><span class="comment">// Returns a pointer that the kernel can use.</span></div><div class="line"><span class="comment">// Returns 0 if the memory cannot be allocated.</span></div><div class="line"><span class="function"><span class="keyword">char</span>*</span></div><div class="line"><span class="title">kalloc</span><span class="params">(<span class="keyword">void</span>)</span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">struct</span> run *r;</div><div class="line"></div><div class="line">  <span class="keyword">if</span>(kmem.use_lock)</div><div class="line">    acquire(&amp;kmem.lock);</div><div class="line">  r = kmem.freelist;</div><div class="line">  <span class="keyword">if</span>(r)</div><div class="line">    kmem.freelist = r-&gt;next;</div><div class="line">  <span class="keyword">if</span>(kmem.use_lock)</div><div class="line">    release(&amp;kmem.lock);</div><div class="line">  <span class="keyword">return</span> (<span class="keyword">char</span>*)r;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　<code>kinit1(end, P2V(4*1024*1024))</code>的意思是把虚拟地址end开始，到物理地址4MB所对应的虚拟地址这段区域，分配给内存池。end就是内核代码段和数据段后面的空闲区域的第一个字节位置。因为内核使用虚拟地址管理内存池的，所以要把4MB转化成虚拟地址。kinit1主要是通过freerange函数初始化内存池。初始化其实直接用了释放内存的函数，freerange函数把某段虚拟内存地址段释放回内存池。freearange函数把要释放的内存段分成4k内存页为单位，调用kfree函数释放。</p>
+<p>　　内存池在xv6里是用链表简单实现的，就是上面代码里的run结构体组成的kmem.freelist链表，每一个run结构体直接存储在4k空闲内存块的头部，释放内存就相当于把4k的内存块的头部写上run结构信息，然后放到链表首部。这种把元信息记录在空闲数据内部的思想，非常精巧，不占用任何已分配的内存。</p>
+<p>　　与此相反，分配内存的kalloc函数就是从kmem.freelist链表头部取出一个run结点，把首地址返回。</p>
+<p>　　这里内存池的初始化实际上有两次。第一次只是把过渡页表分配的0~4MB里除去内核、BIOS等占用的内存，剩下的内存作为资源，kinit1只适用于单个CPU，没有加锁。在重新分配内存页表后，便有了更多的可用内存，不仅仅是4MB了，这时候可以用kinit2进一步初始化。kinit2是在多个CPU使能起来后，把所有内存都放到内存池里，此时内存的分配和释放就要加锁了。</p>
+<p>　　kalloc和kfree函数就是内核里的动态分配内存的工具。</p>
+<h3 id="内核内存页表"><a href="#内核内存页表" class="headerlink" title="内核内存页表"></a>内核内存页表</h3><p>　　内存资源池初始化完毕后，end到4MB的空间足以分配一个真正的内存页表了，是时候抛弃过渡的内存页表。内核在main函数里调用kvmalloc函数进行内核内存页表的分配。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// This table defines the kernel's mappings, which are present in</span></div><div class="line"><span class="comment">// every process's page table.</span></div><div class="line"><span class="keyword">static</span> <span class="keyword">struct</span> kmap &#123;</div><div class="line">  <span class="keyword">void</span> *virt;</div><div class="line">  uint phys_start;</div><div class="line">  uint phys_end;</div><div class="line">  <span class="keyword">int</span> perm;</div><div class="line">&#125; kmap[] = &#123;</div><div class="line"> &#123; (<span class="keyword">void</span>*)KERNBASE, <span class="number">0</span>,             EXTMEM,    PTE_W&#125;, <span class="comment">// I/O space</span></div><div class="line"> &#123; (<span class="keyword">void</span>*)KERNLINK, V2P(KERNLINK), V2P(data), <span class="number">0</span>&#125;,     <span class="comment">// kern text+rodata</span></div><div class="line"> &#123; (<span class="keyword">void</span>*)data,     V2P(data),     PHYSTOP,   PTE_W&#125;, <span class="comment">// kern data+memory</span></div><div class="line"> &#123; (<span class="keyword">void</span>*)DEVSPACE, DEVSPACE,      <span class="number">0</span>,         PTE_W&#125;, <span class="comment">// more devices</span></div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="comment">// Set up kernel part of a page table.</span></div><div class="line"><span class="keyword">pde_t</span>*</div><div class="line">setupkvm(<span class="keyword">void</span>)</div><div class="line">&#123;</div><div class="line">  <span class="keyword">pde_t</span> *pgdir;</div><div class="line">  <span class="keyword">struct</span> kmap *k;</div><div class="line"></div><div class="line">  <span class="keyword">if</span>((pgdir = (<span class="keyword">pde_t</span>*)kalloc()) == <span class="number">0</span>)</div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">  <span class="built_in">memset</span>(pgdir, <span class="number">0</span>, PGSIZE);</div><div class="line">  <span class="keyword">if</span> (P2V(PHYSTOP) &gt; (<span class="keyword">void</span>*)DEVSPACE)</div><div class="line">    panic(<span class="string">"PHYSTOP too high"</span>);</div><div class="line">  <span class="keyword">for</span>(k = kmap; k &lt; &amp;kmap[NELEM(kmap)]; k++)</div><div class="line">    <span class="keyword">if</span>(mappages(pgdir, k-&gt;virt, k-&gt;phys_end - k-&gt;phys_start,</div><div class="line">                (uint)k-&gt;phys_start, k-&gt;perm) &lt; <span class="number">0</span>)</div><div class="line">      <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">  <span class="keyword">return</span> pgdir;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Allocate one page table for the machine for the kernel address</span></div><div class="line"><span class="comment">// space for scheduler processes.</span></div><div class="line"><span class="function"><span class="keyword">void</span></span></div><div class="line"><span class="title">kvmalloc</span><span class="params">(<span class="keyword">void</span>)</span></div><div class="line">&#123;</div><div class="line">  kpgdir = setupkvm();</div><div class="line">  switchkvm();</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Switch h/w page table register to the kernel-only page table,</span></div><div class="line"><span class="comment">// for when no process is running.</span></div><div class="line"><span class="function"><span class="keyword">void</span></span></div><div class="line"><span class="title">switchkvm</span><span class="params">(<span class="keyword">void</span>)</span></div><div class="line">&#123;</div><div class="line">  lcr3(V2P(kpgdir));   <span class="comment">// switch to the kernel page table</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　kvmalloc调用setupkvm来进行内存页表分配，然后再通过switchkvm函数把新内存页表的首地址写到cr3寄存器上，那么在CPU进行地址翻译的时候就可以查询该内存页表进行地址映射。setupkvm首先用kalloc函数分配一个4k的空闲页作为新的内存页表。xv6采用两级内存页表，最多可以映射4GB的虚拟内存，其中第一级页表就是4k大小。mappages把内核代码段、数据段等内存段的物理地址映射成虚拟地址，并记录在新的内存页表上。mappages这个函数功能就是修改内存页表，构造虚拟内存和物理内存的映射关系。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Return the address of the PTE in page table pgdir</span></div><div class="line"><span class="comment">// that corresponds to virtual address va.  If alloc!=0,</span></div><div class="line"><span class="comment">// create any required page table pages.</span></div><div class="line"><span class="function"><span class="keyword">static</span> pte_t *</span></div><div class="line"><span class="title">walkpgdir</span><span class="params">(<span class="keyword">pde_t</span> *pgdir, <span class="keyword">const</span> <span class="keyword">void</span> *va, <span class="keyword">int</span> alloc)</span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">pde_t</span> *pde;</div><div class="line">  <span class="keyword">pte_t</span> *pgtab;</div><div class="line"></div><div class="line">  pde = &amp;pgdir[PDX(va)];</div><div class="line">  <span class="keyword">if</span>(*pde &amp; PTE_P)&#123;</div><div class="line">    pgtab = (<span class="keyword">pte_t</span>*)P2V(PTE_ADDR(*pde));</div><div class="line">  &#125; <span class="keyword">else</span> &#123;</div><div class="line">    <span class="keyword">if</span>(!alloc || (pgtab = (<span class="keyword">pte_t</span>*)kalloc()) == <span class="number">0</span>)</div><div class="line">      <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">    <span class="comment">// Make sure all those PTE_P bits are zero.</span></div><div class="line">    <span class="built_in">memset</span>(pgtab, <span class="number">0</span>, PGSIZE);</div><div class="line">    <span class="comment">// The permissions here are overly generous, but they can</span></div><div class="line">    <span class="comment">// be further restricted by the permissions in the page table</span></div><div class="line">    <span class="comment">// entries, if necessary.</span></div><div class="line">    *pde = V2P(pgtab) | PTE_P | PTE_W | PTE_U;</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> &amp;pgtab[PTX(va)];</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Create PTEs for virtual addresses starting at va that refer to</span></div><div class="line"><span class="comment">// physical addresses starting at pa. va and size might not</span></div><div class="line"><span class="comment">// be page-aligned.</span></div><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span></span></div><div class="line"><span class="title">mappages</span><span class="params">(<span class="keyword">pde_t</span> *pgdir, <span class="keyword">void</span> *va, uint size, uint pa, <span class="keyword">int</span> perm)</span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">char</span> *a, *last;</div><div class="line">  <span class="keyword">pte_t</span> *pte;</div><div class="line"></div><div class="line">  a = (<span class="keyword">char</span>*)PGROUNDDOWN((uint)va);</div><div class="line">  last = (<span class="keyword">char</span>*)PGROUNDDOWN(((uint)va) + size - <span class="number">1</span>);</div><div class="line">  <span class="keyword">for</span>(;;)&#123;</div><div class="line">    <span class="keyword">if</span>((pte = walkpgdir(pgdir, a, <span class="number">1</span>)) == <span class="number">0</span>)</div><div class="line">      <span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">    <span class="keyword">if</span>(*pte &amp; PTE_P)</div><div class="line">      panic(<span class="string">"remap"</span>);</div><div class="line">    *pte = pa | perm | PTE_P;</div><div class="line">    <span class="keyword">if</span>(a == last)</div><div class="line">      <span class="keyword">break</span>;</div><div class="line">    a += PGSIZE;</div><div class="line">    pa += PGSIZE;</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　mappages把需要映射的虚拟内存段分成4k为单位，对于每个4k的内存页，调用walkpgdir查询是否在内存页表里已分配虚拟内存页，如果分配了，则返回PTE；没有分配，则分配该内存页，并返回PTE。得到PTE后，在该PTE中写入对应的物理地址。walkpgdir模拟了CPU的地址翻译功能，把虚拟地址拆分成3部分，用前10个bit找出二级页表，如果二级页表已分配，则返回PTE；如果没有分配，则调用kalloc函数分配二级页表，然后返回PTE。</p>
+<p>　　这里总结一下xv6分配内存的过程：</p>
+<ol>
+<li>调用kalloc，从内存资源池中取出4KB的空闲内存块。如果本来就不在资源池中的，例如内核代码段、数据段，则可以跳过这一步。但大部分时候是必须的。</li>
+<li>调用mappages函数，把新取出来的空闲内存块映射成虚拟地址。</li>
+<li>mappages会调用walkpgdir，根据要映射的虚拟地址，找出二级页表，如果二级页表没有分配，则调用kalloc分配；如果已分配，则在二级页表中找到PTE并返回。</li>
+</ol>
+<p>　　要注意的是，kalloc分配的内存本来就是虚拟内存，是已经进行过内存映射的，只是映射到高地址的内核区域。由于该虚拟地址是在内核区域中，如果用户进程要使用的话，是访问不了内核区域的地址的，因此仅仅kalloc是不够的，还需要通过mappages进行重复映射，在低地址也映射一次，这实际上是一种内存共享。但像分配二级页表这种动作，只是内核代码内部用到的，就可以直接用kalloc分配的地址了，不需要再次映射。</p>
+<h3 id="第一个进程"><a href="#第一个进程" class="headerlink" title="第一个进程"></a>第一个进程</h3><h4 id="分配及初始化内核栈"><a href="#分配及初始化内核栈" class="headerlink" title="分配及初始化内核栈"></a>分配及初始化内核栈</h4><p>　　时至今日，linux系统仍然保留着init进程作为1号进程。在xv6里，init进程正是系统的第一个进程，由内核直接创建的，它是所有进程的祖先。我将通过这个进程的启动与调度过程，来分析xv6的进程调度机制。再看回xv6的main函数，里面的userinit函数创建了这个init进程。userinit函数首先调用了allocproc函数，我们先从allocproc函数开始分析。除了userinit，fork系统调用也用了allocproc函数。xv6创建第一个进程，就是要模拟普通进程的fork动作，其行为和fork调用后派生的进程区别不大。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Per-process state</span></div><div class="line"><span class="keyword">struct</span> proc &#123;</div><div class="line">  uint sz;                     <span class="comment">// Size of process memory (bytes)</span></div><div class="line">  <span class="keyword">pde_t</span>* pgdir;                <span class="comment">// Page table</span></div><div class="line">  <span class="keyword">char</span> *kstack;                <span class="comment">// Bottom of kernel stack for this process</span></div><div class="line">  <span class="keyword">enum</span> procstate state;        <span class="comment">// Process state</span></div><div class="line">  <span class="keyword">int</span> pid;                     <span class="comment">// Process ID</span></div><div class="line">  <span class="keyword">struct</span> proc *parent;         <span class="comment">// Parent process</span></div><div class="line">  <span class="keyword">struct</span> trapframe *tf;        <span class="comment">// Trap frame for current syscall</span></div><div class="line">  <span class="keyword">struct</span> context *context;     <span class="comment">// swtch() here to run process</span></div><div class="line">  <span class="keyword">void</span> *chan;                  <span class="comment">// If non-zero, sleeping on chan</span></div><div class="line">  <span class="keyword">int</span> killed;                  <span class="comment">// If non-zero, have been killed</span></div><div class="line">  <span class="keyword">struct</span> file *ofile[NOFILE];  <span class="comment">// Open files</span></div><div class="line">  <span class="keyword">struct</span> inode *cwd;           <span class="comment">// Current directory</span></div><div class="line">  <span class="keyword">char</span> name[<span class="number">16</span>];               <span class="comment">// Process name (debugging)</span></div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="comment">// Look in the process table for an UNUSED proc.</span></div><div class="line"><span class="comment">// If found, change state to EMBRYO and initialize</span></div><div class="line"><span class="comment">// state required to run in the kernel.</span></div><div class="line"><span class="comment">// Otherwise return 0.</span></div><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">struct</span> proc*</span></div><div class="line"><span class="title">allocproc</span><span class="params">(<span class="keyword">void</span>)</span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">struct</span> proc *p;</div><div class="line">  <span class="keyword">char</span> *sp;</div><div class="line"></div><div class="line">  acquire(&amp;ptable.lock);</div><div class="line"></div><div class="line">  <span class="keyword">for</span>(p = ptable.proc; p &lt; &amp;ptable.proc[NPROC]; p++)</div><div class="line">    <span class="keyword">if</span>(p-&gt;state == UNUSED)</div><div class="line">      <span class="keyword">goto</span> found;</div><div class="line"></div><div class="line">  release(&amp;ptable.lock);</div><div class="line">  <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line"></div><div class="line">found:</div><div class="line">  p-&gt;state = EMBRYO;</div><div class="line">  p-&gt;pid = nextpid++;</div><div class="line"></div><div class="line">  release(&amp;ptable.lock);</div><div class="line"></div><div class="line">  <span class="comment">// Allocate kernel stack.</span></div><div class="line">  <span class="keyword">if</span>((p-&gt;kstack = kalloc()) == <span class="number">0</span>)&#123;</div><div class="line">    p-&gt;state = UNUSED;</div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">  &#125;</div><div class="line">  sp = p-&gt;kstack + KSTACKSIZE;</div><div class="line"></div><div class="line">  <span class="comment">// Leave room for trap frame.</span></div><div class="line">  sp -= <span class="keyword">sizeof</span> *p-&gt;tf;</div><div class="line">  p-&gt;tf = (<span class="keyword">struct</span> trapframe*)sp;</div><div class="line"></div><div class="line">  <span class="comment">// Set up new context to start executing at forkret,</span></div><div class="line">  <span class="comment">// which returns to trapret.</span></div><div class="line">  sp -= <span class="number">4</span>;</div><div class="line">  *(uint*)sp = (uint)trapret;</div><div class="line"></div><div class="line">  sp -= <span class="keyword">sizeof</span> *p-&gt;context;</div><div class="line">  p-&gt;context = (<span class="keyword">struct</span> context*)sp;</div><div class="line">  <span class="built_in">memset</span>(p-&gt;context, <span class="number">0</span>, <span class="keyword">sizeof</span> *p-&gt;context);</div><div class="line">  p-&gt;context-&gt;eip = (uint)forkret;</div><div class="line"></div><div class="line">  <span class="keyword">return</span> p;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　先忽略所有锁相关的代码，本文不打算讨论xv6的并发机制。内核维护了一个进程表，保存所有进程的元信息，这些元信息就是proc结构体的字段。allocproc函数遍历内核维护的进程表，找到没被使用的进程位置，然后标记成used。内核会为该进程分配一个内核栈。操作系统里内核态和用户态的栈是分离的，这样有利于保护内核不被恶意用户程序破坏。用户进程无法直接使用内核栈。allocproc在内核栈中保存了两个结构体，trapframe和context，这两个都是寄存器上下文，是一些寄存器的值。trapframe保存了用户进程使用的所有寄存器的值，context则保存了内核使用的寄存器的值。在进程调度的时候，需要恢复原进程的上下文，这个上下文包括内存页表和寄存器。内存页表在p-&gt;pgdir里保存，而寄存器上下文则在p-&gt;tr和p-&gt;context里保存。它们的具体作用在后面会展开分析。内核栈的视图如下图所示：</p>
+<p><img src="/img/kernel-stack.png" alt="kernel-stack"></p>
+<h4 id="分配及初始化进程内存页表"><a href="#分配及初始化进程内存页表" class="headerlink" title="分配及初始化进程内存页表"></a>分配及初始化进程内存页表</h4><p>　　下面看一看userinit的代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Set up first user process.</span></div><div class="line"><span class="function"><span class="keyword">void</span></span></div><div class="line"><span class="title">userinit</span><span class="params">(<span class="keyword">void</span>)</span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">struct</span> proc *p;</div><div class="line">  <span class="keyword">extern</span> <span class="keyword">char</span> <span class="number">_b</span>inary_initcode_start[], <span class="number">_b</span>inary_initcode_size[];</div><div class="line"></div><div class="line">  p = allocproc();</div><div class="line">  </div><div class="line">  initproc = p;</div><div class="line">  <span class="keyword">if</span>((p-&gt;pgdir = setupkvm()) == <span class="number">0</span>)</div><div class="line">    panic(<span class="string">"userinit: out of memory?"</span>);</div><div class="line">  inituvm(p-&gt;pgdir, <span class="number">_b</span>inary_initcode_start, (<span class="keyword">int</span>)<span class="number">_b</span>inary_initcode_size);</div><div class="line">  p-&gt;sz = PGSIZE;</div><div class="line">  <span class="built_in">memset</span>(p-&gt;tf, <span class="number">0</span>, <span class="keyword">sizeof</span>(*p-&gt;tf));</div><div class="line">  p-&gt;tf-&gt;cs = (SEG_UCODE &lt;&lt; <span class="number">3</span>) | DPL_USER;</div><div class="line">  p-&gt;tf-&gt;ds = (SEG_UDATA &lt;&lt; <span class="number">3</span>) | DPL_USER;</div><div class="line">  p-&gt;tf-&gt;es = p-&gt;tf-&gt;ds;</div><div class="line">  p-&gt;tf-&gt;ss = p-&gt;tf-&gt;ds;</div><div class="line">  p-&gt;tf-&gt;eflags = FL_IF;</div><div class="line">  p-&gt;tf-&gt;esp = PGSIZE;</div><div class="line">  p-&gt;tf-&gt;eip = <span class="number">0</span>;  <span class="comment">// beginning of initcode.S</span></div><div class="line"></div><div class="line">  safestrcpy(p-&gt;name, <span class="string">"initcode"</span>, <span class="keyword">sizeof</span>(p-&gt;name));</div><div class="line">  p-&gt;cwd = namei(<span class="string">"/"</span>);</div><div class="line"></div><div class="line">  <span class="comment">// this assignment to p-&gt;state lets other cores</span></div><div class="line">  <span class="comment">// run this process. the acquire forces the above</span></div><div class="line">  <span class="comment">// writes to be visible, and the lock is also needed</span></div><div class="line">  <span class="comment">// because the assignment might not be atomic.</span></div><div class="line">  acquire(&amp;ptable.lock);</div><div class="line"></div><div class="line">  p-&gt;state = RUNNABLE;</div><div class="line"></div><div class="line">  release(&amp;ptable.lock);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　allocproc函数主要是在进程表的slot位置找出可以使用的进程号，然后分配内存给内核栈。userinit还需要用setupkvm来创建新的内存页表。setupkvm会将该虚拟内存的高地址映射到内核所在的物理内存里。每一个用户进程的内存里，都有内核的数据和代码，这样在进入和退出内核态的时候就不需要切换内存页表。在映射了内核的代码和数据后，还需要映射新进程的用户态程序的代码和数据。第一个进程使用init程序，其代码段和数据段被硬编码到内核，首地址便是_binary_initcode_start[]。userinit函数调用inituvm来进行用户进程的地址映射。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Load the initcode into address 0 of pgdir.</span></div><div class="line"><span class="comment">// sz must be less than a page.</span></div><div class="line"><span class="function"><span class="keyword">void</span></span></div><div class="line"><span class="title">inituvm</span><span class="params">(<span class="keyword">pde_t</span> *pgdir, <span class="keyword">char</span> *init, uint sz)</span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">char</span> *mem;</div><div class="line"></div><div class="line">  <span class="keyword">if</span>(sz &gt;= PGSIZE)</div><div class="line">    panic(<span class="string">"inituvm: more than a page"</span>);</div><div class="line">  mem = kalloc();</div><div class="line">  <span class="built_in">memset</span>(mem, <span class="number">0</span>, PGSIZE);</div><div class="line">  mappages(pgdir, <span class="number">0</span>, PGSIZE, V2P(mem), PTE_W|PTE_U);</div><div class="line">  memmove(mem, init, sz);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　再介绍了mappages和walkpgdir后，理解inituvm就非常容易了，它的逻辑是：</p>
+<ol>
+<li>kalloc函数分配4KB的内存。</li>
+<li>将该内存用mappages进行内存映射，映射到虚拟内存的低地址区。</li>
+<li>memmove拷贝init的二进制代码段和数据段到用户态内存中。</li>
+</ol>
+<p>　　userinit剩下的动作就是更新trapframe，其中更新esp字段是让用户栈指针指向用户态内存的最高地址处，然后更新eip字段是让指令寄存器的值指向地址0处。这样在进程调度的时候，通过恢复寄存器上下文，就可以从地址0处开始运行了。最后把进程标记成可调度RUNNABLE。</p>
+<h4 id="第一个进程与fork调用的异同"><a href="#第一个进程与fork调用的异同" class="headerlink" title="第一个进程与fork调用的异同"></a>第一个进程与fork调用的异同</h4><p>　　先给出xv6的fork函数代码。走一遍fork调用的逻辑，就可以发现xv6进程初始化的共性。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Create a new process copying p as the parent.</span></div><div class="line"><span class="comment">// Sets up stack to return as if from system call.</span></div><div class="line"><span class="comment">// Caller must set state of returned proc to RUNNABLE.</span></div><div class="line"><span class="function"><span class="keyword">int</span></span></div><div class="line"><span class="title">fork</span><span class="params">(<span class="keyword">void</span>)</span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">int</span> i, pid;</div><div class="line">  <span class="keyword">struct</span> proc *np;</div><div class="line"></div><div class="line">  <span class="comment">// Allocate process.</span></div><div class="line">  <span class="keyword">if</span>((np = allocproc()) == <span class="number">0</span>)&#123;</div><div class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="comment">// Copy process state from p.</span></div><div class="line">  <span class="keyword">if</span>((np-&gt;pgdir = copyuvm(proc-&gt;pgdir, proc-&gt;sz)) == <span class="number">0</span>)&#123;</div><div class="line">    kfree(np-&gt;kstack);</div><div class="line">    np-&gt;kstack = <span class="number">0</span>;</div><div class="line">    np-&gt;state = UNUSED;</div><div class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">  &#125;</div><div class="line">  np-&gt;sz = proc-&gt;sz;</div><div class="line">  np-&gt;parent = proc;</div><div class="line">  *np-&gt;tf = *proc-&gt;tf;</div><div class="line"></div><div class="line">  <span class="comment">// Clear %eax so that fork returns 0 in the child.</span></div><div class="line">  np-&gt;tf-&gt;eax = <span class="number">0</span>;</div><div class="line"></div><div class="line">  <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; NOFILE; i++)</div><div class="line">    <span class="keyword">if</span>(proc-&gt;ofile[i])</div><div class="line">      np-&gt;ofile[i] = filedup(proc-&gt;ofile[i]);</div><div class="line">  np-&gt;cwd = idup(proc-&gt;cwd);</div><div class="line"></div><div class="line">  safestrcpy(np-&gt;name, proc-&gt;name, <span class="keyword">sizeof</span>(proc-&gt;name));</div><div class="line"></div><div class="line">  pid = np-&gt;pid;</div><div class="line"></div><div class="line">  acquire(&amp;ptable.lock);</div><div class="line"></div><div class="line">  np-&gt;state = RUNNABLE;</div><div class="line"></div><div class="line">  release(&amp;ptable.lock);</div><div class="line"></div><div class="line">  <span class="keyword">return</span> pid;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Given a parent process's page table, create a copy</span></div><div class="line"><span class="comment">// of it for a child.</span></div><div class="line"><span class="keyword">pde_t</span>*</div><div class="line">copyuvm(<span class="keyword">pde_t</span> *pgdir, uint sz)</div><div class="line">&#123;</div><div class="line">  <span class="keyword">pde_t</span> *d;</div><div class="line">  <span class="keyword">pte_t</span> *pte;</div><div class="line">  uint pa, i, flags;</div><div class="line">  <span class="keyword">char</span> *mem;</div><div class="line"></div><div class="line">  <span class="keyword">if</span>((d = setupkvm()) == <span class="number">0</span>)</div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">  <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; sz; i += PGSIZE)&#123;</div><div class="line">    <span class="keyword">if</span>((pte = walkpgdir(pgdir, (<span class="keyword">void</span> *) i, <span class="number">0</span>)) == <span class="number">0</span>)</div><div class="line">      panic(<span class="string">"copyuvm: pte should exist"</span>);</div><div class="line">    <span class="keyword">if</span>(!(*pte &amp; PTE_P))</div><div class="line">      panic(<span class="string">"copyuvm: page not present"</span>);</div><div class="line">    pa = PTE_ADDR(*pte);</div><div class="line">    flags = PTE_FLAGS(*pte);</div><div class="line">    <span class="keyword">if</span>((mem = kalloc()) == <span class="number">0</span>)</div><div class="line">      <span class="keyword">goto</span> bad;</div><div class="line">    memmove(mem, (<span class="keyword">char</span>*)P2V(pa), PGSIZE);</div><div class="line">    <span class="keyword">if</span>(mappages(d, (<span class="keyword">void</span>*)i, PGSIZE, V2P(mem), flags) &lt; <span class="number">0</span>)</div><div class="line">      <span class="keyword">goto</span> bad;</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> d;</div><div class="line"></div><div class="line">bad:</div><div class="line">  freevm(d);</div><div class="line">  <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ol>
+<li>调用allocproc函数，如同userinit()里一般，分配及初始化内核栈。</li>
+<li>仍然是分配进程的内存页表，这里调用了copyuvm函数。copyuvm函数开头依然是调用setupkvm函数，先建立内核代码段与数据段在虚拟内存高地址处的映射。但copyuvm不仅仅是新分配一段4KB的内存，然后与新页表建立映射，而是需要把当前进程的页表内容复制一份到新页表里。这就需要把当前进程的用户内存部分，一页一页地拷贝出来，然后再用新拷贝好的内存段与新页表建立映射。</li>
+<li>修改进程表的proc结构体的元信息。主要是更新进程大小以及父进程信息，以及把父进程的tf复制给子进程，这样子进程就继承了父进程的寄存器上下文了。其中eip寄存器存放了当前执行的代码地址，从而子进程在被调度后能接着父进程运行的地方继续运行。</li>
+<li>将tf里的ax置为0，那么新进程被CPU调度后，恢复寄存器上下文的时候，ax寄存器会被置为0，所以子进程的fork函数返回值是0。</li>
+<li>拷贝父进程的文件打开表。</li>
+</ol>
+<p>　　总结一下xv6里新进程创建的步骤：</p>
+<ol>
+<li>向内存资源池请求4KB，作为内核栈，在栈上分配tf和context的空间。</li>
+<li>向内存资源池请求4KB，作为进程内存页表，并建立对内核数据段和代码段的映射。</li>
+<li>初始化用户空间的内存。在初始化的过程中，会根据用户进程所需内存的大小向内存资源池请求一个或多个4KB内存段，并与内存页表建立映射。对于init进程来说，就是把init程序的代码段和数据段拷贝到用户内存空间里；对于一般的fork出来的子进程，则需要拷贝父进程的内存页表。</li>
+<li>对于fork调用产生的子进程，还需要拷贝父进程tf里的寄存器上下文，并把ax置为0。</li>
+</ol>
+<h3 id="进程调度"><a href="#进程调度" class="headerlink" title="进程调度"></a>进程调度</h3><p>　　初始化了进程的内存空间以后，进程变成可调度状态。我们再回到内核的main函数，main函数里绝大部分动作都是开机的初始化操作。初始化结束后，最后一个mpmain函数就是让内核进入无限循环的进程调度阶段。这个函数里主要是一个核心函数起作用，这个函数叫scheduler。我们来看看scheduler的代码。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//PAGEBREAK: 42</span></div><div class="line"><span class="comment">// Per-CPU process scheduler.</span></div><div class="line"><span class="comment">// Each CPU calls scheduler() after setting itself up.</span></div><div class="line"><span class="comment">// Scheduler never returns.  It loops, doing:</span></div><div class="line"><span class="comment">//  - choose a process to run</span></div><div class="line"><span class="comment">//  - swtch to start running that process</span></div><div class="line"><span class="comment">//  - eventually that process transfers control</span></div><div class="line"><span class="comment">//      via swtch back to the scheduler.</span></div><div class="line"><span class="function"><span class="keyword">void</span></span></div><div class="line"><span class="title">scheduler</span><span class="params">(<span class="keyword">void</span>)</span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">struct</span> proc *p;</div><div class="line"></div><div class="line">  <span class="keyword">for</span>(;;)&#123;</div><div class="line">    <span class="comment">// Enable interrupts on this processor.</span></div><div class="line">    sti();</div><div class="line"></div><div class="line">    <span class="comment">// Loop over process table looking for process to run.</span></div><div class="line">    acquire(&amp;ptable.lock);</div><div class="line">    <span class="keyword">for</span>(p = ptable.proc; p &lt; &amp;ptable.proc[NPROC]; p++)&#123;</div><div class="line">      <span class="keyword">if</span>(p-&gt;state != RUNNABLE)</div><div class="line">        <span class="keyword">continue</span>;</div><div class="line"></div><div class="line">      <span class="comment">// Switch to chosen process.  It is the process's job</span></div><div class="line">      <span class="comment">// to release ptable.lock and then reacquire it</span></div><div class="line">      <span class="comment">// before jumping back to us.</span></div><div class="line">      proc = p;</div><div class="line">      switchuvm(p);</div><div class="line">      p-&gt;state = RUNNING;</div><div class="line">      swtch(&amp;cpu-&gt;scheduler, p-&gt;context);</div><div class="line">      switchkvm();</div><div class="line"></div><div class="line">      <span class="comment">// Process is done running for now.</span></div><div class="line">      <span class="comment">// It should have changed its p-&gt;state before coming back.</span></div><div class="line">      proc = <span class="number">0</span>;</div><div class="line">    &#125;</div><div class="line">    release(&amp;ptable.lock);</div><div class="line"></div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　xv6的进程调度逻辑还是非常简单粗暴，循环遍历进程表，找出可调度的进程，然后调用swithuvm切换内存页表，这个函数主要是把要调度的进程的内存页表的物理地址首地址加载到cr3寄存器里。swtch函数是上下文切换的关键，它会把当前内核的寄存器上下文保存在scheduler的内核栈上，然后切换加载被调度进程内核栈上的寄存器。这个上下文最主要的就是栈指针寄存器esp和程序寄存器eip。下面我们来分析一下swtch代码，这个函数是用汇编实现的。</p>
+<h4 id="上下文切换"><a href="#上下文切换" class="headerlink" title="上下文切换"></a>上下文切换</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line"># Context switch</div><div class="line">#</div><div class="line">#   void swtch(struct context **old, struct context *new);</div><div class="line"># </div><div class="line"># Save current register context in old</div><div class="line"># and then load register context from new.</div><div class="line"></div><div class="line">.globl swtch</div><div class="line">swtch:</div><div class="line">  movl 4(%esp), %eax</div><div class="line">  movl 8(%esp), %edx</div><div class="line"></div><div class="line">  # Save old callee-save registers</div><div class="line">  pushl %ebp</div><div class="line">  pushl %ebx</div><div class="line">  pushl %esi</div><div class="line">  pushl %edi</div><div class="line"></div><div class="line">  # Switch stacks</div><div class="line">  movl %esp, (%eax)</div><div class="line">  movl %edx, %esp</div><div class="line"></div><div class="line">  # Load new callee-save registers</div><div class="line">  popl %edi</div><div class="line">  popl %esi</div><div class="line">  popl %ebx</div><div class="line">  popl %ebp</div><div class="line">  ret</div></pre></td></tr></table></figure>
+<p>　　c语言编译器在处理函数调用时候，会把传入参数压入栈内。<code>4(%esp)</code>保存的是<code>**old</code>，<code>8(%esp)</code>保存的是<code>*new</code>。而且，c语言编译器在函数调用的时候，遵循着这么一个函数间上下文保存的规则：有些寄存器是调用者函数负责保存的，有些寄存器则是被调用者需要保存的，分别称为caller-save寄存器和callee-save寄存器。caller-save寄存器代表这些寄存器调用者是需要保证在函数返回后保持不变的，这些寄存器往往是调用者自己使用的；callee-save寄存器代表这些寄存器是需要在函数调用过程中保持不变的，这些寄存器往往是被调用者要使用的寄存器。内核在调用swtch函数的时候，caller-save寄存器已经在内核栈上保存了，而swtch只需要保存callee-save寄存器即可。所以我们看到ebp,ebx,esi,edi寄存器作为context被压入栈内。context还需要保存eip，但这个不需要显式地压栈，因为在scheduler函数调用swtch的时候，eip已经作为父函数的下一条指令地址保存在<code>%esp</code>里了，这也是c编译器的规范。</p>
+<p>　　在保存了寄存器上下文后，就可以切换栈了，p-&gt;context是进程调度上下文切换的时候在内核栈上最后保存的数据，所以p-&gt;context的地址就是内核栈的地址了。</p>
+<p>　　切换栈以后，就可以恢复要调度进程的上下文了，将callee-save寄存器弹栈，ret自动将eip弹栈。这样，程序便切换到另一个进程的上下文运行了，sheduler函数暂时被挂起。在进程时间片用完了以后，会再次swtch到sheduler的上下文里，由于用户进程同样映射了内核的代码段和数据段到同样的虚拟地址，所以可以直接访问sheduler函数的代码和数据，因此可以无缝切换到shecduler的上下文，然后scheduler函数会继续运行，第一件事就是switchkvm，把内存页表切换到专门供内核运行的页表。</p>
+<h3 id="用户态现场恢复"><a href="#用户态现场恢复" class="headerlink" title="用户态现场恢复"></a>用户态现场恢复</h3><p>　　在allocproc函数里，我们看到在内核栈里先后分配了trapframe和context的空间，context上节说了是用来做不同进程间上下文切换的，而trapframe则是从内核态回到用户态所要恢复的现场。进程大部分的逻辑应该是在用户态完成的，只有当硬件中断或者发生系统调用时候，才会保存trapframe然后进入内核态。在allocproc函数里，进程调度上下文切换会在forkret中运行，然后forkret返回后就是trapret函数了。我们直接看一下trapret的代码以及trapframe的定义。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">.globl trapret</div><div class="line">trapret:</div><div class="line">  popal</div><div class="line">  popl %gs</div><div class="line">  popl %fs</div><div class="line">  popl %es</div><div class="line">  popl %ds</div><div class="line">  addl $0x8, %esp  # trapno and errcode</div><div class="line">  iret</div></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//PAGEBREAK: 36</span></div><div class="line"><span class="comment">// Layout of the trap frame built on the stack by the</span></div><div class="line"><span class="comment">// hardware and by trapasm.S, and passed to trap().</span></div><div class="line"><span class="keyword">struct</span> trapframe &#123;</div><div class="line">  <span class="comment">// registers as pushed by pusha</span></div><div class="line">  uint edi;</div><div class="line">  uint esi;</div><div class="line">  uint ebp;</div><div class="line">  uint oesp;      <span class="comment">// useless &amp; ignored</span></div><div class="line">  uint ebx;</div><div class="line">  uint edx;</div><div class="line">  uint ecx;</div><div class="line">  uint eax;</div><div class="line"></div><div class="line">  <span class="comment">// rest of trap frame</span></div><div class="line">  ushort gs;</div><div class="line">  ushort padding1;</div><div class="line">  ushort fs;</div><div class="line">  ushort padding2;</div><div class="line">  ushort es;</div><div class="line">  ushort padding3;</div><div class="line">  ushort ds;</div><div class="line">  ushort padding4;</div><div class="line">  uint trapno;</div><div class="line"></div><div class="line">  <span class="comment">// below here defined by x86 hardware</span></div><div class="line">  uint err;</div><div class="line">  uint eip;</div><div class="line">  ushort cs;</div><div class="line">  ushort padding5;</div><div class="line">  uint eflags;</div><div class="line"></div><div class="line">  <span class="comment">// below here only when crossing rings, such as from user to kernel</span></div><div class="line">  uint esp;</div><div class="line">  ushort ss;</div><div class="line">  ushort padding6;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>　　trapret就是把寄存器上下文全部弹栈，iret以后eip指向了原进程用户态的下一条指令的地址。</p>
+<h3 id="exec"><a href="#exec" class="headerlink" title="exec"></a>exec</h3><p>　　在了解了进程调度以后，我们回到init进程。当内核初始化结束后，目前只有init唯一一个进程，它将被调度，然后从eip的地方开始执行。inituvm函数里拷贝的init代码段和数据段，其实只是一个过渡的程序，主要是为了精简短小，不能把真正的代码和数据塞到内核程序里。这段过渡代码主要是发起了exec系统调用，在磁盘里加载真正的init程序。我们来看看exec的逻辑。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">int</span></span></div><div class="line"><span class="title">exec</span><span class="params">(<span class="keyword">char</span> *path, <span class="keyword">char</span> **argv)</span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">char</span> *s, *last;</div><div class="line">  <span class="keyword">int</span> i, off;</div><div class="line">  uint argc, sz, sp, ustack[<span class="number">3</span>+MAXARG+<span class="number">1</span>];</div><div class="line">  <span class="keyword">struct</span> elfhdr elf;</div><div class="line">  <span class="keyword">struct</span> inode *ip;</div><div class="line">  <span class="keyword">struct</span> proghdr ph;</div><div class="line">  <span class="keyword">pde_t</span> *pgdir, *oldpgdir;</div><div class="line"></div><div class="line">  begin_op();</div><div class="line"></div><div class="line">  <span class="keyword">if</span>((ip = namei(path)) == <span class="number">0</span>)&#123;</div><div class="line">    end_op();</div><div class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">  &#125;</div><div class="line">  ilock(ip);</div><div class="line">  pgdir = <span class="number">0</span>;</div><div class="line"></div><div class="line">  <span class="comment">// Check ELF header</span></div><div class="line">  <span class="keyword">if</span>(readi(ip, (<span class="keyword">char</span>*)&amp;elf, <span class="number">0</span>, <span class="keyword">sizeof</span>(elf)) != <span class="keyword">sizeof</span>(elf))</div><div class="line">    <span class="keyword">goto</span> bad;</div><div class="line">  <span class="keyword">if</span>(elf.magic != ELF_MAGIC)</div><div class="line">    <span class="keyword">goto</span> bad;</div><div class="line"></div><div class="line">  <span class="keyword">if</span>((pgdir = setupkvm()) == <span class="number">0</span>)</div><div class="line">    <span class="keyword">goto</span> bad;</div><div class="line"></div><div class="line">  <span class="comment">// Load program into memory.</span></div><div class="line">  sz = <span class="number">0</span>;</div><div class="line">  <span class="keyword">for</span>(i=<span class="number">0</span>, off=elf.phoff; i&lt;elf.phnum; i++, off+=<span class="keyword">sizeof</span>(ph))&#123;</div><div class="line">    <span class="keyword">if</span>(readi(ip, (<span class="keyword">char</span>*)&amp;ph, off, <span class="keyword">sizeof</span>(ph)) != <span class="keyword">sizeof</span>(ph))</div><div class="line">      <span class="keyword">goto</span> bad;</div><div class="line">    <span class="keyword">if</span>(ph.type != ELF_PROG_LOAD)</div><div class="line">      <span class="keyword">continue</span>;</div><div class="line">    <span class="keyword">if</span>(ph.memsz &lt; ph.filesz)</div><div class="line">      <span class="keyword">goto</span> bad;</div><div class="line">    <span class="keyword">if</span>(ph.vaddr + ph.memsz &lt; ph.vaddr)</div><div class="line">      <span class="keyword">goto</span> bad;</div><div class="line">    <span class="keyword">if</span>((sz = allocuvm(pgdir, sz, ph.vaddr + ph.memsz)) == <span class="number">0</span>)</div><div class="line">      <span class="keyword">goto</span> bad;</div><div class="line">    <span class="keyword">if</span>(ph.vaddr % PGSIZE != <span class="number">0</span>)</div><div class="line">      <span class="keyword">goto</span> bad;</div><div class="line">    <span class="keyword">if</span>(loaduvm(pgdir, (<span class="keyword">char</span>*)ph.vaddr, ip, ph.off, ph.filesz) &lt; <span class="number">0</span>)</div><div class="line">      <span class="keyword">goto</span> bad;</div><div class="line">  &#125;</div><div class="line">  iunlockput(ip);</div><div class="line">  end_op();</div><div class="line">  ip = <span class="number">0</span>;</div><div class="line"></div><div class="line">  <span class="comment">// Allocate two pages at the next page boundary.</span></div><div class="line">  <span class="comment">// Make the first inaccessible.  Use the second as the user stack.</span></div><div class="line">  sz = PGROUNDUP(sz);</div><div class="line">  <span class="keyword">if</span>((sz = allocuvm(pgdir, sz, sz + <span class="number">2</span>*PGSIZE)) == <span class="number">0</span>)</div><div class="line">    <span class="keyword">goto</span> bad;</div><div class="line">  clearpteu(pgdir, (<span class="keyword">char</span>*)(sz - <span class="number">2</span>*PGSIZE));</div><div class="line">  sp = sz;</div><div class="line"></div><div class="line">  <span class="comment">// Push argument strings, prepare rest of stack in ustack.</span></div><div class="line">  <span class="keyword">for</span>(argc = <span class="number">0</span>; argv[argc]; argc++) &#123;</div><div class="line">    <span class="keyword">if</span>(argc &gt;= MAXARG)</div><div class="line">      <span class="keyword">goto</span> bad;</div><div class="line">    sp = (sp - (<span class="built_in">strlen</span>(argv[argc]) + <span class="number">1</span>)) &amp; ~<span class="number">3</span>;</div><div class="line">    <span class="keyword">if</span>(copyout(pgdir, sp, argv[argc], <span class="built_in">strlen</span>(argv[argc]) + <span class="number">1</span>) &lt; <span class="number">0</span>)</div><div class="line">      <span class="keyword">goto</span> bad;</div><div class="line">    ustack[<span class="number">3</span>+argc] = sp;</div><div class="line">  &#125;</div><div class="line">  ustack[<span class="number">3</span>+argc] = <span class="number">0</span>;</div><div class="line"></div><div class="line">  ustack[<span class="number">0</span>] = <span class="number">0xffffffff</span>;  <span class="comment">// fake return PC</span></div><div class="line">  ustack[<span class="number">1</span>] = argc;</div><div class="line">  ustack[<span class="number">2</span>] = sp - (argc+<span class="number">1</span>)*<span class="number">4</span>;  <span class="comment">// argv pointer</span></div><div class="line"></div><div class="line">  sp -= (<span class="number">3</span>+argc+<span class="number">1</span>) * <span class="number">4</span>;</div><div class="line">  <span class="keyword">if</span>(copyout(pgdir, sp, ustack, (<span class="number">3</span>+argc+<span class="number">1</span>)*<span class="number">4</span>) &lt; <span class="number">0</span>)</div><div class="line">    <span class="keyword">goto</span> bad;</div><div class="line"></div><div class="line">  <span class="comment">// Save program name for debugging.</span></div><div class="line">  <span class="keyword">for</span>(last=s=path; *s; s++)</div><div class="line">    <span class="keyword">if</span>(*s == <span class="string">'/'</span>)</div><div class="line">      last = s+<span class="number">1</span>;</div><div class="line">  safestrcpy(proc-&gt;name, last, <span class="keyword">sizeof</span>(proc-&gt;name));</div><div class="line"></div><div class="line">  <span class="comment">// Commit to the user image.</span></div><div class="line">  oldpgdir = proc-&gt;pgdir;</div><div class="line">  proc-&gt;pgdir = pgdir;</div><div class="line">  proc-&gt;sz = sz;</div><div class="line">  proc-&gt;tf-&gt;eip = elf.entry;  <span class="comment">// main</span></div><div class="line">  proc-&gt;tf-&gt;esp = sp;</div><div class="line">  switchuvm(proc);</div><div class="line">  freevm(oldpgdir);</div><div class="line">  <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line"></div><div class="line"> bad:</div><div class="line">  <span class="keyword">if</span>(pgdir)</div><div class="line">    freevm(pgdir);</div><div class="line">  <span class="keyword">if</span>(ip)&#123;</div><div class="line">    iunlockput(ip);</div><div class="line">    end_op();</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　在上面的代码中，有不少关于磁盘数据加载的内容，我们先不用深究，只需知道函数的功能就行。exec的第一个传入参数是要加载的应用程序的路径。<code>namei</code>函数是通过路径取出对应文件的inode。由于linux的可执行文件格式是elf格式，所以先用<code>readi</code>通过inode读出文件的elf头部。setupkvm之前提过很多次了，会创建一个内存页表，并建立与内核数据段和代码段的映射，这个页表将成为init进程未来的内存页表。<code>readi(ip, (char*)&amp;ph, off, sizeof(ph)</code>将分段读取程序头部表，根据程序头部表里的待加载程序段的虚拟地址首地址以及程序段总大小，分配内存空间。这一步我们将看看allocuvm函数干了什么。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Allocate page tables and physical memory to grow process from oldsz to</span></div><div class="line"><span class="comment">// newsz, which need not be page aligned.  Returns new size or 0 on error.</span></div><div class="line"><span class="function"><span class="keyword">int</span></span></div><div class="line"><span class="title">allocuvm</span><span class="params">(<span class="keyword">pde_t</span> *pgdir, uint oldsz, uint newsz)</span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">char</span> *mem;</div><div class="line">  uint a;</div><div class="line"></div><div class="line">  <span class="keyword">if</span>(newsz &gt;= KERNBASE)</div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">  <span class="keyword">if</span>(newsz &lt; oldsz)</div><div class="line">    <span class="keyword">return</span> oldsz;</div><div class="line"></div><div class="line">  a = PGROUNDUP(oldsz);</div><div class="line">  <span class="keyword">for</span>(; a &lt; newsz; a += PGSIZE)&#123;</div><div class="line">    mem = kalloc();</div><div class="line">    <span class="keyword">if</span>(mem == <span class="number">0</span>)&#123;</div><div class="line">      cprintf(<span class="string">"allocuvm out of memory\n"</span>);</div><div class="line">      deallocuvm(pgdir, newsz, oldsz);</div><div class="line">      <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="built_in">memset</span>(mem, <span class="number">0</span>, PGSIZE);</div><div class="line">    <span class="keyword">if</span>(mappages(pgdir, (<span class="keyword">char</span>*)a, PGSIZE, V2P(mem), PTE_W|PTE_U) &lt; <span class="number">0</span>)&#123;</div><div class="line">      cprintf(<span class="string">"allocuvm out of memory (2)\n"</span>);</div><div class="line">      deallocuvm(pgdir, newsz, oldsz);</div><div class="line">      kfree(mem);</div><div class="line">      <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> newsz;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　这个函数会不断增加进程用户空间的内存大小。仍然是以4KB内存段为单位，不断向内存资源池申请空闲内存，然后将该内存与内存页表建立映射。</p>
+<p>　　在分配完了程序段的内存空间后，就要加载程序段到该内存里了。这一步由loaduvm负责。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Load a program segment into pgdir.  addr must be page-aligned</span></div><div class="line"><span class="comment">// and the pages from addr to addr+sz must already be mapped.</span></div><div class="line"><span class="function"><span class="keyword">int</span></span></div><div class="line"><span class="title">loaduvm</span><span class="params">(<span class="keyword">pde_t</span> *pgdir, <span class="keyword">char</span> *addr, <span class="keyword">struct</span> inode *ip, uint offset, uint sz)</span></div><div class="line">&#123;</div><div class="line">  uint i, pa, n;</div><div class="line">  <span class="keyword">pte_t</span> *pte;</div><div class="line"></div><div class="line">  <span class="keyword">if</span>((uint) addr % PGSIZE != <span class="number">0</span>)</div><div class="line">    panic(<span class="string">"loaduvm: addr must be page aligned"</span>);</div><div class="line">  <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; sz; i += PGSIZE)&#123;</div><div class="line">    <span class="keyword">if</span>((pte = walkpgdir(pgdir, addr+i, <span class="number">0</span>)) == <span class="number">0</span>)</div><div class="line">      panic(<span class="string">"loaduvm: address should exist"</span>);</div><div class="line">    pa = PTE_ADDR(*pte);</div><div class="line">    <span class="keyword">if</span>(sz - i &lt; PGSIZE)</div><div class="line">      n = sz - i;</div><div class="line">    <span class="keyword">else</span></div><div class="line">      n = PGSIZE;</div><div class="line">    <span class="keyword">if</span>(readi(ip, P2V(pa), offset+i, n) != n)</div><div class="line">      <span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　这个函数也是以4KB内存页为单位，通过内存页表找出对应内存段的物理地址，然后用readi函数把磁盘数据加载到相应的内存里。这里之所以要通过新创建的内存页表去寻找物理地址，是因为当前内存页表并没有映射这些新分配的内存。我们知道，每一个字节的物理内存，除了有可能被映射到某个进程的用户空间以外，肯定也是映射到了内核空间的，也就是每个进程的高地址处。这种内存共享策略非常适合于进行跨页表的内存访问，因为我们可以使用它在内核空间的地址。</p>
+<p>　　加载完了代码段、数据段这些程序段以后，还要分配用户栈空间。exec里用allocuvm继续分配两个内存页，其中高地址的内存页作为用户栈，低地址的之后要取消内存映射，作为保护，当发生栈溢出的时候会产生异常中断。</p>
+<p>　　用户栈的最开头是该程序执行时的传入参数，每一个进程的用户栈布局都会如下图所示：</p>
+<p><img src="/img/user-stack.png" alt="user-stack"></p>
+<p>　　在创建这个用户栈布局时，主要关注一下copyout这个函数。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//PAGEBREAK!</span></div><div class="line"><span class="comment">// Map user virtual address to kernel address.</span></div><div class="line"><span class="function"><span class="keyword">char</span>*</span></div><div class="line"><span class="title">uva2ka</span><span class="params">(<span class="keyword">pde_t</span> *pgdir, <span class="keyword">char</span> *uva)</span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">pte_t</span> *pte;</div><div class="line"></div><div class="line">  pte = walkpgdir(pgdir, uva, <span class="number">0</span>);</div><div class="line">  <span class="keyword">if</span>((*pte &amp; PTE_P) == <span class="number">0</span>)</div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">  <span class="keyword">if</span>((*pte &amp; PTE_U) == <span class="number">0</span>)</div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">  <span class="keyword">return</span> (<span class="keyword">char</span>*)P2V(PTE_ADDR(*pte));</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Copy len bytes from p to user address va in page table pgdir.</span></div><div class="line"><span class="comment">// Most useful when pgdir is not the current page table.</span></div><div class="line"><span class="comment">// uva2ka ensures this only works for PTE_U pages.</span></div><div class="line"><span class="function"><span class="keyword">int</span></span></div><div class="line"><span class="title">copyout</span><span class="params">(<span class="keyword">pde_t</span> *pgdir, uint va, <span class="keyword">void</span> *p, uint len)</span></div><div class="line">&#123;</div><div class="line">  <span class="keyword">char</span> *buf, *pa0;</div><div class="line">  uint n, va0;</div><div class="line"></div><div class="line">  buf = (<span class="keyword">char</span>*)p;</div><div class="line">  <span class="keyword">while</span>(len &gt; <span class="number">0</span>)&#123;</div><div class="line">    va0 = (uint)PGROUNDDOWN(va);</div><div class="line">    pa0 = uva2ka(pgdir, (<span class="keyword">char</span>*)va0);</div><div class="line">    <span class="keyword">if</span>(pa0 == <span class="number">0</span>)</div><div class="line">      <span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">    n = PGSIZE - (va - va0);</div><div class="line">    <span class="keyword">if</span>(n &gt; len)</div><div class="line">      n = len;</div><div class="line">    memmove(pa0 + (va - va0), buf, n);</div><div class="line">    len -= n;</div><div class="line">    buf += n;</div><div class="line">    va = va0 + PGSIZE;</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　由于当前传入参数的地址是映射到了当前内存页表，要把这些参数拷贝到新内存页表，就需要涉及到跨页表拷贝。可以利用之前提到的跨页表内存访问技术。把目标内存页表的目的地址转化为内核映射的地址，由于当前进程高地址处也映射了同样的内容，所以可以通过这个共有地址进行内存拷贝。</p>
+<p>　　最后需要进行内存页表切换。先把tf-&gt;ip指向init程序的main函数地址，sp指向新分配的用户栈，然后切换内存页表，销毁旧内存页表。由于exec是内核的代码段，在切换内存页表后这部分代码仍然被映射到新内存页表的高地址处，因此可以实现无缝切换。</p>
+<h3 id="init进程"><a href="#init进程" class="headerlink" title="init进程"></a>init进程</h3><p>　　第一个进程终于要正式开始运行了！exec系统调用加载磁盘上的init可执行文件到内存，init进程在被调度返回用户态的时候，就可以运行真正的init程序了。xv6的init进程其实也非常短，有些功能与现代操作系统的init进程是一样的，本文就先按下不表，留待日后讲现代操作系统的进程部分时候再一起总结一下。有关xv6内存管理和进程调度部分，通过跟踪内核main函数的初始化过程，应该也讲得差不多。</p>
+<p>　　</p>
+<p>　　
+　　</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/操作系统/" rel="tag"># 操作系统</a>
+          
+            <a href="/tags/内存管理/" rel="tag"># 内存管理</a>
+          
+            <a href="/tags/进程/" rel="tag"># 进程</a>
+          
+            <a href="/tags/xv6/" rel="tag"># xv6</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/08/18/linux系统内存管理/" rel="next" title="linux系统内存管理">
+                <i class="fa fa-chevron-left"></i> linux系统内存管理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="Gavin Wong" />
+            
+              <p class="site-author-name" itemprop="name">Gavin Wong</p>
+              <p class="site-description motion-element" itemprop="description">蟾宫桂花千里香，暖风拂面惹人狂。我欲因之凌霄起，嫦娥丹桂尽入囊。</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">36</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">35</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#万物之源——内存资源池"><span class="nav-number">2.</span> <span class="nav-text">万物之源——内存资源池</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内核内存页表"><span class="nav-number">3.</span> <span class="nav-text">内核内存页表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#第一个进程"><span class="nav-number">4.</span> <span class="nav-text">第一个进程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#分配及初始化内核栈"><span class="nav-number">4.1.</span> <span class="nav-text">分配及初始化内核栈</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分配及初始化进程内存页表"><span class="nav-number">4.2.</span> <span class="nav-text">分配及初始化进程内存页表</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#第一个进程与fork调用的异同"><span class="nav-number">4.3.</span> <span class="nav-text">第一个进程与fork调用的异同</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#进程调度"><span class="nav-number">5.</span> <span class="nav-text">进程调度</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#上下文切换"><span class="nav-number">5.1.</span> <span class="nav-text">上下文切换</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#用户态现场恢复"><span class="nav-number">6.</span> <span class="nav-text">用户态现场恢复</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#exec"><span class="nav-number">7.</span> <span class="nav-text">exec</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#init进程"><span class="nav-number">8.</span> <span class="nav-text">init进程</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gavin Wong</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="//cdn.jsdelivr.net/jquery/2.1.3/jquery.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="//cdn.jsdelivr.net/fastclick/1.0.6/fastclick.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="//cdn.jsdelivr.net/jquery.lazyload/1.9.3/jquery.lazyload.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="//cdn.jsdelivr.net/velocity/1.2.3/velocity.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="//cdn.jsdelivr.net/velocity/1.2.3/velocity.ui.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="//cdn.jsdelivr.net/fancybox/2.1.5/jquery.fancybox.pack.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("EBQKkMtlkhkxwaXmaewHY2c4-gzGzoHsz", "KSypTWMBbTMgIBYw9EuDa73j");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
