@@ -127,22 +127,19 @@
 
 
 
-<meta name="description" content="前言　　最近在项目里面用到了fuse文件系统，在使用过程中遇到了一个内核在做mmap write的一个bug，目前并没有从根本上解决这个bug，而是通过修改fuse kernel module的一些参数，绕开了这个bug。这里记录一下这个问题，并顺便梳理一下fuse在做mmap write的过程，包括如何与项目里的后台服务程序交互的。&amp;lt;!– more –!&amp;gt;
-背景知识内存映射　　在讲述">
+<meta name="description" content="前言　　最近在项目里面用到了fuse文件系统，在使用过程中遇到了一个内核在做mmap write的一个bug，目前并没有从根本上解决这个bug，而是通过修改fuse kernel module的一些参数，绕开了这个bug。这里记录一下这个问题，并顺便梳理一下fuse在做mmap write的过程，包括如何与项目里的后台服务程序交互的。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="浅析fuse kernel mmap write过程及性能问题">
 <meta property="og:url" content="http://wjqwsp.github.io/2018/11/04/浅析fuse-kernel-mmap-write过程及性能问题/index.html">
 <meta property="og:site_name" content="南国倾城">
-<meta property="og:description" content="前言　　最近在项目里面用到了fuse文件系统，在使用过程中遇到了一个内核在做mmap write的一个bug，目前并没有从根本上解决这个bug，而是通过修改fuse kernel module的一些参数，绕开了这个bug。这里记录一下这个问题，并顺便梳理一下fuse在做mmap write的过程，包括如何与项目里的后台服务程序交互的。&amp;lt;!– more –!&amp;gt;
-背景知识内存映射　　在讲述">
+<meta property="og:description" content="前言　　最近在项目里面用到了fuse文件系统，在使用过程中遇到了一个内核在做mmap write的一个bug，目前并没有从根本上解决这个bug，而是通过修改fuse kernel module的一些参数，绕开了这个bug。这里记录一下这个问题，并顺便梳理一下fuse在做mmap write的过程，包括如何与项目里的后台服务程序交互的。">
 <meta property="og:image" content="http://wjqwsp.github.io/img/mmap.png">
 <meta property="og:image" content="http://wjqwsp.github.io/img/fuse-structure.png">
 <meta property="og:image" content="http://wjqwsp.github.io/img/backing-device-info.png">
-<meta property="og:updated_time" content="2018-11-05T12:58:29.407Z">
+<meta property="og:updated_time" content="2018-11-05T13:01:58.105Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="浅析fuse kernel mmap write过程及性能问题">
-<meta name="twitter:description" content="前言　　最近在项目里面用到了fuse文件系统，在使用过程中遇到了一个内核在做mmap write的一个bug，目前并没有从根本上解决这个bug，而是通过修改fuse kernel module的一些参数，绕开了这个bug。这里记录一下这个问题，并顺便梳理一下fuse在做mmap write的过程，包括如何与项目里的后台服务程序交互的。&amp;lt;!– more –!&amp;gt;
-背景知识内存映射　　在讲述">
+<meta name="twitter:description" content="前言　　最近在项目里面用到了fuse文件系统，在使用过程中遇到了一个内核在做mmap write的一个bug，目前并没有从根本上解决这个bug，而是通过修改fuse kernel module的一些参数，绕开了这个bug。这里记录一下这个问题，并顺便梳理一下fuse在做mmap write的过程，包括如何与项目里的后台服务程序交互的。">
 <meta name="twitter:image" content="http://wjqwsp.github.io/img/mmap.png">
 
 
@@ -408,7 +405,7 @@
       
 
       
-        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　最近在项目里面用到了fuse文件系统，在使用过程中遇到了一个内核在做mmap write的一个bug，目前并没有从根本上解决这个bug，而是通过修改fuse kernel module的一些参数，绕开了这个bug。这里记录一下这个问题，并顺便梳理一下fuse在做mmap write的过程，包括如何与项目里的后台服务程序交互的。<br>&lt;!– more –!&gt;</p>
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　最近在项目里面用到了fuse文件系统，在使用过程中遇到了一个内核在做mmap write的一个bug，目前并没有从根本上解决这个bug，而是通过修改fuse kernel module的一些参数，绕开了这个bug。这里记录一下这个问题，并顺便梳理一下fuse在做mmap write的过程，包括如何与项目里的后台服务程序交互的。<br><a id="more"></a></p>
 <h3 id="背景知识"><a href="#背景知识" class="headerlink" title="背景知识"></a>背景知识</h3><h4 id="内存映射"><a href="#内存映射" class="headerlink" title="内存映射"></a>内存映射</h4><p>　　在讲述这个问题之前，先来看看操作系统的mmap操作到底做了什么。</p>
 <p><img src="/img/mmap.png" alt="mmap"> </p>
 <p>　　上图是每一个运行时程序（进程）的内存布局，整体上可以分为两大部分，内核态内存和用户态内存，我们平时开发的应用大都运行在用户态，代码、数据、栈、堆，都在内存布局的下方，而内存的上方高字节是内核的代码、数据、栈、堆。重点是内存跟文件的映射部分。内存可以看作是磁盘的缓存，一般的read操作，都会先把数据从磁盘拷贝到内核的page cache部分，以4KB页为单位缓存磁盘页，然后再从page cache拷贝到用户态内存的堆或栈里分配的buffer中；一般的写操作，则从用户态内存的堆或栈里分配的buffer中，先拷贝到page cache，最后再异步地写到磁盘里。之所以这里有内存的两次拷贝，是因为内核空间是映射到每个用户进程的虚拟内存里的，而用户态内存大部分情况下是进程独立的，为了每个进程都能用到文件缓存，所以Page cache要放到内核空间，所以存在着两次拷贝的性能损耗。</p>
