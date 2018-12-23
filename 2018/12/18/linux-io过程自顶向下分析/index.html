@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+  <link href="//cdn.jsdelivr.net/fancybox/2.1.5/jquery.fancybox.min.css" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Lobster Two:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+  
+
+<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.2/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="操作系统,存储,文件系统," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前言　　IO是操作系统内核最重要的组成部分之一，它的概念很广，本文主要针对的是普通文件与设备文件的IO原理，采用自顶向下的方式，去探究从用户态的fread,fwrite函数到底层的数据是如何被读出和写入磁盘的的全过程。为了突出文件的抽象概念，还将介绍一个基于fuse的用户态网络文件系统案例及其内核部分的IO原理。希望通过本文，能梳理出一条清晰的linux io过程的脉络。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="linux io过程自顶向下分析">
+<meta property="og:url" content="http://wjqwsp.github.io/2018/12/18/linux-io过程自顶向下分析/index.html">
+<meta property="og:site_name" content="南国倾城">
+<meta property="og:description" content="前言　　IO是操作系统内核最重要的组成部分之一，它的概念很广，本文主要针对的是普通文件与设备文件的IO原理，采用自顶向下的方式，去探究从用户态的fread,fwrite函数到底层的数据是如何被读出和写入磁盘的的全过程。为了突出文件的抽象概念，还将介绍一个基于fuse的用户态网络文件系统案例及其内核部分的IO原理。希望通过本文，能梳理出一条清晰的linux io过程的脉络。">
+<meta property="og:image" content="http://wjqwsp.github.io/img/io-structure.png">
+<meta property="og:image" content="http://wjqwsp.github.io/img/vfs-model.png">
+<meta property="og:image" content="http://wjqwsp.github.io/img/mmap.png">
+<meta property="og:image" content="http://wjqwsp.github.io/img/radix-tree.png">
+<meta property="og:image" content="http://wjqwsp.github.io/img/read-ahead.png">
+<meta property="og:image" content="http://wjqwsp.github.io/img/buffer-page.png">
+<meta property="og:image" content="http://wjqwsp.github.io/img/sector-block.png">
+<meta property="og:image" content="http://wjqwsp.github.io/img/bio-vec.png">
+<meta property="og:image" content="http://wjqwsp.github.io/img/block-device.png">
+<meta property="og:image" content="http://wjqwsp.github.io/img/deadline.png">
+<meta property="og:updated_time" content="2018-12-23T13:42:30.378Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="linux io过程自顶向下分析">
+<meta name="twitter:description" content="前言　　IO是操作系统内核最重要的组成部分之一，它的概念很广，本文主要针对的是普通文件与设备文件的IO原理，采用自顶向下的方式，去探究从用户态的fread,fwrite函数到底层的数据是如何被读出和写入磁盘的的全过程。为了突出文件的抽象概念，还将介绍一个基于fuse的用户态网络文件系统案例及其内核部分的IO原理。希望通过本文，能梳理出一条清晰的linux io过程的脉络。">
+<meta name="twitter:image" content="http://wjqwsp.github.io/img/io-structure.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: 'undefined',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://wjqwsp.github.io/2018/12/18/linux-io过程自顶向下分析/"/>
+
+
+
+
+
+  <title>linux io过程自顶向下分析 | 南国倾城</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">南国倾城</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">左手代码，右手年华</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://wjqwsp.github.io/2018/12/18/linux-io过程自顶向下分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Gavin Wong">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="南国倾城">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">linux io过程自顶向下分析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-18T21:13:20+08:00">
+                2018-12-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2018/12/18/linux-io过程自顶向下分析/" class="leancloud_visitors" data-flag-title="linux io过程自顶向下分析">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　IO是操作系统内核最重要的组成部分之一，它的概念很广，本文主要针对的是普通文件与设备文件的IO原理，采用自顶向下的方式，去探究从用户态的fread,fwrite函数到底层的数据是如何被读出和写入磁盘的的全过程。为了突出文件的抽象概念，还将介绍一个基于fuse的用户态网络文件系统案例及其内核部分的IO原理。希望通过本文，能梳理出一条清晰的linux io过程的脉络。<br><a id="more"></a></p>
+<h3 id="文件与存储"><a href="#文件与存储" class="headerlink" title="文件与存储"></a>文件与存储</h3><p>　　普通文件与设备文件的IO集中解决了数据的存储与持久化的问题。正如进程是内核对CPU的抽象，虚拟内存是对物理内存的抽象，文件是对所有IO对象的抽象（在本文，则主要是指对磁盘的抽象）。为了解决数据存储与持久化问题，有很多不同类型的文件系统（ext2,ext3,ext4,xfs,…)，它们大多数是工作在内核态的，也有少数的用户态文件系统（fuse）。linux为了便于管理这些不同的文件系统，提出了一个虚拟文件系统（VFS）的概念，对这些不同的文件系统提供了一套统一的对外接口。本文将会从虚拟文件系统说起，自顶向下地去阐述io的每一层的概念。</p>
+<h3 id="linux-io体系结构"><a href="#linux-io体系结构" class="headerlink" title="linux io体系结构"></a>linux io体系结构</h3><p><img src="/img/io-structure.png" alt="linux io体系结构"></p>
+<p>　　本文将按照上图的架构自顶向下依次分析每一层的要点。</p>
+<h3 id="从Hello-world说起"><a href="#从Hello-world说起" class="headerlink" title="从Hello world说起"></a>从Hello world说起</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"apue.h"</span></span></div><div class="line">      </div><div class="line">      <span class="meta">#<span class="meta-keyword">define</span> BUFFSIZE        4096</span></div><div class="line">       </div><div class="line">      <span class="function"><span class="keyword">int</span></span></div><div class="line">      <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></div><div class="line">      &#123;</div><div class="line">              <span class="keyword">int</span>             n;</div><div class="line">              <span class="keyword">char</span>    buf[BUFFSIZE];</div><div class="line">              <span class="keyword">int</span> fd1;</div><div class="line">              <span class="keyword">int</span> fd2;</div><div class="line">             </div><div class="line">              fd1 = open(<span class="string">"helloworld.in"</span>, O_RONLY);</div><div class="line">              fd2 = open(<span class="string">"helloworld.out"</span>, O_WRONLY);</div><div class="line">              <span class="keyword">while</span> ((n = read(fd, buf, BUFFSIZE)) &gt; <span class="number">0</span>)</div><div class="line">                     <span class="keyword">if</span> (write(STDOUT_FILENO, buf, n) != n)</div><div class="line">                             err_sys(<span class="string">"write error"</span>);</div><div class="line">     </div><div class="line">              <span class="keyword">if</span> (n &lt; <span class="number">0</span>)</div><div class="line">                      err_sys(<span class="string">"read error"</span>);</div><div class="line">      </div><div class="line">              <span class="built_in">exit</span>(<span class="number">0</span>);</div><div class="line">     &#125;</div></pre></td></tr></table></figure>
+<p>　　看一个简单的hello world程序，它的功能非常简单，就是在栈空间里分配4096个字节作为buffer，从helloworld.in文件里读4KB到该buffer里，然后将该buffer的数据写到helloworld.out文件中。这个hello world进程是工作于用户态的，但由于操作系统的隔离性，用户态程序是无法直接操作硬件的，所以要通过read,write系统调用进入内核态，执行内核的相应代码。</p>
+<p>　　现在我们看看read,write系统调用做了什么。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line">SYSCALL_DEFINE3(read, <span class="keyword">unsigned</span> <span class="keyword">int</span>, fd, <span class="keyword">char</span> <span class="number">__u</span>ser *, buf, <span class="keyword">size_t</span>, count)</div><div class="line">&#123;</div><div class="line">	<span class="keyword">struct</span> fd f = fdget_pos(fd);</div><div class="line">	<span class="keyword">ssize_t</span> ret = -EBADF;</div><div class="line"></div><div class="line">	<span class="keyword">if</span> (f.file) &#123;</div><div class="line">		<span class="keyword">loff_t</span> pos = file_pos_read(f.file);</div><div class="line">		ret = vfs_read(f.file, buf, count, &amp;pos);</div><div class="line">		file_pos_write(f.file, pos);</div><div class="line">		fdput_pos(f);</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">return</span> ret;</div><div class="line">&#125;</div><div class="line"></div><div class="line">SYSCALL_DEFINE3(write, <span class="keyword">unsigned</span> <span class="keyword">int</span>, fd, <span class="keyword">const</span> <span class="keyword">char</span> <span class="number">__u</span>ser *, buf,</div><div class="line">		<span class="keyword">size_t</span>, count)</div><div class="line">&#123;</div><div class="line">	<span class="keyword">struct</span> fd f = fdget_pos(fd);</div><div class="line">	<span class="keyword">ssize_t</span> ret = -EBADF;</div><div class="line"></div><div class="line">	<span class="keyword">if</span> (f.file) &#123;</div><div class="line">		<span class="keyword">loff_t</span> pos = file_pos_read(f.file);</div><div class="line">		ret = vfs_write(f.file, buf, count, &amp;pos);</div><div class="line">		file_pos_write(f.file, pos);</div><div class="line">		fdput_pos(f);</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	<span class="keyword">return</span> ret;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　我们可以很清楚地看到，read,write系统调用实际上就是对vfs_read和vfs_write的一个封装，非常直接地进入了虚拟文件系统（VFS）这一层。</p>
+<h3 id="虚拟文件系统（VFS）"><a href="#虚拟文件系统（VFS）" class="headerlink" title="虚拟文件系统（VFS）"></a>虚拟文件系统（VFS）</h3><p>　　在深入vfs_read和vfs_write函数之前，必须先介绍一下vfs的基本知识。</p>
+<p>　　先思考一个问题，如果我们自己要实现一个文件系统，需要做什么？先不管实现细节，对外我们总得定义自己的文件系统接口吧，只有有了相应的函数接口，用户程序才能进行读写操作。所以，最基本最基本我们也得有自己的读和写接口。</p>
+<p>　　但是，如果每一家文件系统都定义自己的一套接口，对于上层应用来说就很难去管理。在这样的时代背景下，vfs应运而生。vfs为不同的文件系统提供了统一的对上层的接口，使得上层应用在调用的时候无需知道底层的具体文件系统，只有在真正执行读写操作的时候才调用相应文件系统的读写函数。这个思想与面向对象编程的多态思想是非常相似的。实际上，vfs就是定义了4种类型的基本对象，不同的文件系统要做的工作就是去实现具体的这4种对象。下面介绍一下这4种对象。这4种对象分别是superblock,inode,dentry和file。file对象就是我们用户进程打开了一个文件所产生的，每个file对象对应一个唯一的dentry对象。dentry代表目录项，是跟文件路径相关的，一个文件路径对应唯一的一个dentry。dentry与inode则是多对一的关系，inode存放单个文件的元信息，由于文件可能存在链接，所以多个路径的文件可能指向同一个inode。superblock对象则是整个文件系统的元信息，它还负责存储空间的分配与管理。它们的关系可以用下图表示：</p>
+<p><img src="/img/vfs-model.png" alt="vfs对象模型"></p>
+<h4 id="superblock对象"><a href="#superblock对象" class="headerlink" title="superblock对象"></a>superblock对象</h4><p>　　superblock对象定义了整个文件系统的元信息，它实际上是一个结构体。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">struct</span> super_block &#123;</div><div class="line">	<span class="keyword">struct</span> list_head	s_list;		<span class="comment">/* Keep this first */</span></div><div class="line">	<span class="keyword">dev_t</span>			s_dev;		<span class="comment">/* search index; _not_ kdev_t */</span></div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span>		s_blocksize_bits;</div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span>		s_blocksize;</div><div class="line">	<span class="keyword">loff_t</span>			s_maxbytes;	<span class="comment">/* Max file size */</span></div><div class="line">	<span class="keyword">struct</span> file_system_type	*s_type;</div><div class="line">	<span class="keyword">const</span> <span class="keyword">struct</span> super_operations	*s_op;</div><div class="line">	<span class="keyword">const</span> <span class="keyword">struct</span> dquot_operations	*dq_op;</div><div class="line">	<span class="keyword">const</span> <span class="keyword">struct</span> quotactl_ops	*s_qcop;</div><div class="line">	<span class="keyword">const</span> <span class="keyword">struct</span> export_operations *s_export_op;</div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span>		s_flags;</div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span>		s_magic;</div><div class="line">	<span class="keyword">struct</span> dentry		*s_root;</div><div class="line">	<span class="keyword">struct</span> rw_semaphore	s_umount;</div><div class="line">	<span class="keyword">int</span>			s_count;</div><div class="line">	<span class="keyword">atomic_t</span>		s_active;</div><div class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_SECURITY</span></div><div class="line">	<span class="keyword">void</span>                    *s_security;</div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line">	<span class="keyword">const</span> <span class="keyword">struct</span> xattr_handler **s_xattr;</div><div class="line"></div><div class="line">	<span class="keyword">struct</span> list_head	s_inodes;	<span class="comment">/* all inodes */</span></div><div class="line">	<span class="keyword">struct</span> hlist_bl_head	s_anon;		<span class="comment">/* anonymous dentries for (nfs) exporting */</span></div><div class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> __GENKSYMS__</span></div><div class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_SMP</span></div><div class="line">	<span class="keyword">struct</span> list_head <span class="number">__</span>percpu *s_files;</div><div class="line"><span class="meta">#<span class="meta-keyword">else</span></span></div><div class="line">	<span class="keyword">struct</span> list_head	s_files;</div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">else</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_SMP</span></div><div class="line">	<span class="keyword">struct</span> list_head <span class="number">__</span>percpu *s_files_deprecated;</div><div class="line"><span class="meta">#<span class="meta-keyword">else</span></span></div><div class="line">	<span class="keyword">struct</span> list_head	s_files_deprecated;</div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line">	<span class="keyword">struct</span> list_head	s_mounts;	<span class="comment">/* list of mounts; _not_ for fs use */</span></div><div class="line">	<span class="comment">/* s_dentry_lru, s_nr_dentry_unused protected by dcache.c lru locks */</span></div><div class="line">	<span class="keyword">struct</span> list_head	s_dentry_lru;	<span class="comment">/* unused dentry lru */</span></div><div class="line">	<span class="keyword">int</span>			s_nr_dentry_unused;	<span class="comment">/* # of dentry on lru */</span></div><div class="line"></div><div class="line">	<span class="comment">/* s_inode_lru_lock protects s_inode_lru and s_nr_inodes_unused */</span></div><div class="line">	<span class="keyword">spinlock_t</span>		s_inode_lru_lock <span class="number">____</span>cacheline_aligned_in_smp;</div><div class="line">	<span class="keyword">struct</span> list_head	s_inode_lru;		<span class="comment">/* unused inode lru */</span></div><div class="line">	<span class="keyword">int</span>			s_nr_inodes_unused;	<span class="comment">/* # of inodes on lru */</span></div><div class="line"></div><div class="line">	<span class="keyword">struct</span> block_device	*s_bdev;</div><div class="line">	<span class="keyword">struct</span> backing_dev_info *s_bdi;</div><div class="line">	<span class="keyword">struct</span> mtd_info		*s_mtd;</div><div class="line">	<span class="keyword">struct</span> hlist_node	s_instances;</div><div class="line">	<span class="keyword">struct</span> quota_info	s_dquot;	<span class="comment">/* Diskquota specific options */</span></div><div class="line"></div><div class="line">	<span class="keyword">struct</span> sb_writers	s_writers;</div><div class="line"></div><div class="line">	<span class="keyword">char</span> s_id[<span class="number">32</span>];				<span class="comment">/* Informational name */</span></div><div class="line">	u8 s_uuid[<span class="number">16</span>];				<span class="comment">/* UUID */</span></div><div class="line"></div><div class="line">	<span class="keyword">void</span> 			*s_fs_info;	<span class="comment">/* Filesystem private info */</span></div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span>		s_max_links;</div><div class="line">	<span class="keyword">fmode_t</span>			s_mode;</div><div class="line"></div><div class="line">	<span class="comment">/* Granularity of c/m/atime in ns.</span></div><div class="line">	   Cannot be worse than a second */</div><div class="line">	u32		   s_time_gran;</div><div class="line"></div><div class="line">	<span class="comment">/*</span></div><div class="line">	 * The next field is for VFS *only*. No filesystems have any business</div><div class="line">	 * even looking at it. You had been warned.</div><div class="line">	 */</div><div class="line">	<span class="keyword">struct</span> mutex s_vfs_rename_mutex;	<span class="comment">/* Kludge */</span></div><div class="line"></div><div class="line">	<span class="comment">/*</span></div><div class="line">	 * Filesystem subtype.  If non-empty the filesystem type field</div><div class="line">	 * in /proc/mounts will be "type.subtype"</div><div class="line">	 */</div><div class="line">	<span class="keyword">char</span> *s_subtype;</div><div class="line"></div><div class="line">	<span class="comment">/*</span></div><div class="line">	 * Saved mount options for lazy filesystems using</div><div class="line">	 * generic_show_options()</div><div class="line">	 */</div><div class="line">	<span class="keyword">char</span> <span class="number">__</span>rcu *s_options;</div><div class="line">	<span class="keyword">const</span> <span class="keyword">struct</span> dentry_operations *s_d_op; <span class="comment">/* default d_op for dentries */</span></div><div class="line"></div><div class="line">	<span class="comment">/*</span></div><div class="line">	 * Saved pool identifier for cleancache (-1 means none)</div><div class="line">	 */</div><div class="line">	<span class="keyword">int</span> cleancache_poolid;</div><div class="line"></div><div class="line">	<span class="keyword">struct</span> shrinker s_shrink;	<span class="comment">/* per-sb shrinker handle */</span></div><div class="line"></div><div class="line">	<span class="comment">/* Number of inodes with nlink == 0 but still referenced */</span></div><div class="line">	<span class="keyword">atomic_long_t</span> s_remove_count;</div><div class="line"></div><div class="line">	<span class="comment">/* Being remounted read-only */</span></div><div class="line">	<span class="keyword">int</span> s_readonly_remount;</div><div class="line"></div><div class="line">	<span class="comment">/* AIO completions deferred from interrupt context */</span></div><div class="line">	RH_KABI_EXTEND(<span class="keyword">struct</span> workqueue_struct *s_dio_done_wq)</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>　　这里字段非常多，我们没必要一一解释，有个大概的感觉就行。有几个字段比较重要的这里提一下：</p>
+<ol>
+<li><code>s_list</code>该字段是双向循环链表相邻元素的指针，所有的superblock对象都以链表的形式链在一起。</li>
+<li><code>s_fs_info</code>字段指向属于具体文件系统的超级块信息。很多具体的文件系统，例如ext2，在磁盘上有对应的superblock的数据块，为了访问效率，<code>s_fs_info</code>就是该数据块在内存中的缓存。这个结构里最重要的是用bitmap形式存放了所有磁盘块的分配情况，任何分配和释放磁盘块的操作都要修改这个字段。</li>
+<li><code>s_dirt</code>字段表示超级块是否是脏的，上面提到修改了<code>s_fs_info</code>字段后超级块就变成脏了，脏的超级块需要定期写回磁盘，所以当计算机掉电时候是有可能造成文件系统损坏的。</li>
+<li><code>s_dirty</code>字段引用了脏inode链表的首元素和尾元素。</li>
+<li><code>s_inodes</code>字段引用了该超级块的所有inode构成的链表的首元素和尾元素。</li>
+<li><code>s_op</code>字段封装了一些函数指针，这些函数指针就指向真实文件系统实现的函数，superblock对象定义的函数主要是读、写、分配inode的操作。多态主要是通过函数指针指向不同的函数实现的。</li>
+</ol>
+<h4 id="inode对象"><a href="#inode对象" class="headerlink" title="inode对象"></a>inode对象</h4><p>　　inode对象定义了单个文件的元信息，例如最后修改时间、最后访问时间等等，同时还定义了一连串函数指针，这些函数指针指向具体文件系统的对文件操作的函数，可以说文件系统最核心的功能全部由inode的函数指针提供接口，包括常见的open,read,write,sync,close等等文件操作，都在inode的<code>i_op</code>字段里定义了统一的接口函数。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">struct</span> inode &#123;</div><div class="line">	<span class="keyword">umode_t</span>			i_mode;</div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">short</span>		i_opflags;</div><div class="line">	<span class="keyword">kuid_t</span>			i_uid;</div><div class="line">	<span class="keyword">kgid_t</span>			i_gid;</div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span>		i_flags;</div><div class="line"></div><div class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_FS_POSIX_ACL</span></div><div class="line">	<span class="keyword">struct</span> posix_acl	*i_acl;</div><div class="line">	<span class="keyword">struct</span> posix_acl	*i_default_acl;</div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line"></div><div class="line">	<span class="keyword">const</span> <span class="keyword">struct</span> inode_operations	*i_op;</div><div class="line">	<span class="keyword">struct</span> super_block	*i_sb;</div><div class="line">	<span class="keyword">struct</span> address_space	*i_mapping;</div><div class="line"></div><div class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_SECURITY</span></div><div class="line">	<span class="keyword">void</span>			*i_security;</div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line"></div><div class="line">	<span class="comment">/* Stat data, not accessed from path walking */</span></div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span>		i_ino;</div><div class="line">	<span class="comment">/*</span></div><div class="line">	 * Filesystems may only read i_nlink directly.  They shall use the</div><div class="line">	 * following functions for modification:</div><div class="line">	 *</div><div class="line">	 *    (set|clear|inc|drop)_nlink</div><div class="line">	 *    inode_(inc|dec)_link_count</div><div class="line">	 */</div><div class="line">	<span class="keyword">union</span> &#123;</div><div class="line">		<span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">int</span> i_nlink;</div><div class="line">		<span class="keyword">unsigned</span> <span class="keyword">int</span> <span class="number">__</span>i_nlink;</div><div class="line">	&#125;;</div><div class="line">	<span class="keyword">dev_t</span>			i_rdev;</div><div class="line">	<span class="keyword">loff_t</span>			i_size;</div><div class="line">	<span class="keyword">struct</span> timespec		i_atime;</div><div class="line">	<span class="keyword">struct</span> timespec		i_mtime;</div><div class="line">	<span class="keyword">struct</span> timespec		i_ctime;</div><div class="line">	<span class="keyword">spinlock_t</span>		i_lock;	<span class="comment">/* i_blocks, i_bytes, maybe i_size */</span></div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">short</span>          i_bytes;</div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span>		i_blkbits;</div><div class="line">	<span class="keyword">blkcnt_t</span>		i_blocks;</div><div class="line"></div><div class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> __NEED_I_SIZE_ORDERED</span></div><div class="line">	<span class="keyword">seqcount_t</span>		i_size_seqcount;</div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line"></div><div class="line">	<span class="comment">/* Misc */</span></div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span>		i_state;</div><div class="line">	<span class="keyword">struct</span> mutex		i_mutex;</div><div class="line"></div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span>		dirtied_when;	<span class="comment">/* jiffies of first dirtying */</span></div><div class="line"></div><div class="line">	<span class="keyword">struct</span> hlist_node	i_hash;</div><div class="line">	<span class="keyword">struct</span> list_head	i_wb_list;	<span class="comment">/* backing dev IO list */</span></div><div class="line">	<span class="keyword">struct</span> list_head	i_lru;		<span class="comment">/* inode LRU list */</span></div><div class="line">	<span class="keyword">struct</span> list_head	i_sb_list;</div><div class="line">	<span class="keyword">union</span> &#123;</div><div class="line">		<span class="keyword">struct</span> hlist_head	i_dentry;</div><div class="line">		<span class="keyword">struct</span> rcu_head		i_rcu;</div><div class="line">	&#125;;</div><div class="line">	u64			i_version;</div><div class="line">	<span class="keyword">atomic_t</span>		i_count;</div><div class="line">	<span class="keyword">atomic_t</span>		i_dio_count;</div><div class="line">	<span class="keyword">atomic_t</span>		i_writecount;</div><div class="line">	<span class="keyword">const</span> <span class="keyword">struct</span> file_operations	*i_fop;	<span class="comment">/* former -&gt;i_op-&gt;default_file_ops */</span></div><div class="line">	<span class="keyword">struct</span> file_lock	*i_flock;</div><div class="line">	<span class="keyword">struct</span> address_space	i_data;</div><div class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_QUOTA</span></div><div class="line">	<span class="keyword">struct</span> dquot		*i_dquot[MAXQUOTAS];</div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line">	<span class="keyword">struct</span> list_head	i_devices;</div><div class="line">	<span class="keyword">union</span> &#123;</div><div class="line">		<span class="keyword">struct</span> pipe_inode_info	*i_pipe;</div><div class="line">		<span class="keyword">struct</span> block_device	*i_bdev;</div><div class="line">		<span class="keyword">struct</span> cdev		*i_cdev;</div><div class="line">	&#125;;</div><div class="line"></div><div class="line">	<span class="number">__u</span>32			i_generation;</div><div class="line"></div><div class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_FSNOTIFY</span></div><div class="line">	<span class="number">__u</span>32			i_fsnotify_mask; <span class="comment">/* all events this inode cares about */</span></div><div class="line">	<span class="keyword">struct</span> hlist_head	i_fsnotify_marks;</div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line"></div><div class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_IMA</span></div><div class="line">	<span class="keyword">atomic_t</span>		i_readcount; <span class="comment">/* struct files open RO */</span></div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line">	<span class="keyword">void</span>			*i_private; <span class="comment">/* fs or device private pointer */</span></div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>　　除了<code>i_op</code>外，介绍几个重要的字段：</p>
+<ol>
+<li><code>i_state</code>表示inode的状态，主要是表示inode是否是脏的。一般的文件系统在磁盘上都有相应的inode数据块，内核的inode结构便是这个磁盘数据块的内存缓存，所以与superblock一样，也是需要定期写回磁盘的，否则会导致数据丢失。</li>
+<li><code>i_list</code>把操作系统里的某些inode用双向循环链表连接起来，该字段指向相应链表的前一个元素和后一个元素。内核中有好几个关于inode的链表，所有inode必定出现在其中的某个链表内。第一个链表是有效未使用链表，链表里的inode都是非脏的，并且没有被引用，仅仅是作为高速缓存存在。第二个链表是正在使用链表，inode不为脏，但<code>i_count</code>字段为整数，表示被某些进程引用了。第三个链表是脏链表，由superblock的<code>s_dirty</code>字段引用。</li>
+<li><code>i_sb_list</code>存放了超级块对象的<code>s_inodes</code>字段引用的链表的前一个元素和后一个元素。</li>
+<li>所有的inode都存放在一个inode_hashtable的哈希表中，key是inode编号和超级块对象的地址计算出来的，作为高速缓存。因为哈希表可能会存在冲突，<code>i_hash</code>字段也是维护了链表指针，就指向同一个哈希地址的前一个inode和后一个inode。</li>
+</ol>
+<h4 id="dentry对象"><a href="#dentry对象" class="headerlink" title="dentry对象"></a>dentry对象</h4><p>　　dentry代表目录项，因为每一个文件必定存在于某个目录内，我们通过路径去查找一个文件，最终必定最终找到某个目录项。在linux里，目录与普通文件一样，往往都是存放在磁盘的数据块中，在查找目录的时候就读出该目录所在的数据块，然后去寻找其中的某个目录项。如果不存在硬链接，其实dentry是没有必要的，仅仅通过inode就能确定文件。但多个路径有可能指向同一个文件，所以vfs还抽象出了一个dentry的对象，一个或多个dentry对应一个inode。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">struct</span> dentry &#123;</div><div class="line">	<span class="comment">/* RCU lookup touched fields */</span></div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> d_flags;		<span class="comment">/* protected by d_lock */</span></div><div class="line">	<span class="keyword">seqcount_t</span> d_seq;		<span class="comment">/* per dentry seqlock */</span></div><div class="line">	<span class="keyword">struct</span> hlist_bl_node d_hash;	<span class="comment">/* lookup hash list */</span></div><div class="line">	<span class="keyword">struct</span> dentry *d_parent;	<span class="comment">/* parent directory */</span></div><div class="line">	<span class="keyword">struct</span> qstr d_name;</div><div class="line">	<span class="keyword">struct</span> inode *d_inode;		<span class="comment">/* Where the name belongs to - NULL is</span></div><div class="line">					 * negative */</div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> d_iname[DNAME_INLINE_LEN];	<span class="comment">/* small names */</span></div><div class="line"></div><div class="line">	<span class="comment">/* Ref lookup also touches following */</span></div><div class="line">	<span class="keyword">struct</span> lockref d_lockref;	<span class="comment">/* per-dentry lock and refcount */</span></div><div class="line">	<span class="keyword">const</span> <span class="keyword">struct</span> dentry_operations *d_op;</div><div class="line">	<span class="keyword">struct</span> super_block *d_sb;	<span class="comment">/* The root of the dentry tree */</span></div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> d_time;		<span class="comment">/* used by d_revalidate */</span></div><div class="line">	<span class="keyword">void</span> *d_fsdata;			<span class="comment">/* fs-specific data */</span></div><div class="line"></div><div class="line">	<span class="keyword">struct</span> list_head d_lru;		<span class="comment">/* LRU list */</span></div><div class="line">	<span class="comment">/*</span></div><div class="line">	 * d_child and d_rcu can share memory</div><div class="line">	 */</div><div class="line">	<span class="keyword">union</span> &#123;</div><div class="line">		<span class="keyword">struct</span> list_head d_child;	<span class="comment">/* child of parent list */</span></div><div class="line">	 	<span class="keyword">struct</span> rcu_head d_rcu;</div><div class="line">	&#125; d_u;</div><div class="line">	<span class="keyword">struct</span> list_head d_subdirs;	<span class="comment">/* our children */</span></div><div class="line">	<span class="keyword">struct</span> hlist_node d_alias;	<span class="comment">/* inode alias list */</span></div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>　　介绍几个重要的字段：</p>
+<ol>
+<li><code>d_inode</code>指向该dentry对应的inode，找到了dentry就可以通过它找到inode。</li>
+<li>同一个inode的所有dentry都在一个链表内，<code>d_alias</code>指向该链表的前一个和后一个元素。</li>
+<li><code>d_op</code>定义了一些关于目录项的函数指针，指向具体文件系统的函数。</li>
+</ol>
+<h5 id="目录项高速缓存"><a href="#目录项高速缓存" class="headerlink" title="目录项高速缓存"></a>目录项高速缓存</h5><p>　　按照我们平时使用linux的经验，我们做的最常用的操作是什么？是执行各种shell命令，由于执行命令要通过该命令对应的可执行文件的路径找到该可执行文件，所以根据路径查找文件无处不在。前面提到，文件系统的目录数据与普通文件的数据一样，都是存放在磁盘数据块内，如果每一级路径都要读取磁盘，性能肯定非常低。因此，dentry必须放在高速缓存中加速。</p>
+<p>　　vfs把所有的dentry都放到dentry_hashtable这个哈希表中，key就是由目录项对象和文件名哈希产生。</p>
+<p>　　同时，由于内存有限，不可能把所有查找过的dentry都放到缓存中，还必须有缓存释放的机制。目录项高速缓存采用LRU双向链表来进行缓存添加与释放。所有未使用的dentry（没有引用，仅作为缓存）都会加到一个LRU双向链表中，从链表首部插入，一旦高速缓存的空间变小，就从尾部删除元素。与之对应，所有正在使用的dentry都会插入到相应inode的<code>i_dentry</code>字段所引用的链表中，<code>d_alias</code>字段则指向链表相邻的元素。</p>
+<p>　　dentry_hashtable的大小是与机器的内存成正比的，缺省是每MB内存有256个元素。</p>
+<h4 id="file对象"><a href="#file对象" class="headerlink" title="file对象"></a>file对象</h4><p>　　作为应用程序的开发者或使用者，我们平时能接触到的vfs对象就只有file对象。我们平常说的打开文件，实际上就是让内核去创建一个file对象，并返回给我们一个文件描述符。出于隔离性的考虑，内核不可能把file对象的地址传给我们，我们只能通过文件描述符去间接地访问file对象。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">struct</span> file &#123;</div><div class="line">	<span class="comment">/*</span></div><div class="line">	 * fu_list becomes invalid after file_free is called and queued via</div><div class="line">	 * fu_rcuhead for RCU freeing</div><div class="line">	 */</div><div class="line">	<span class="keyword">union</span> &#123;</div><div class="line">		<span class="keyword">struct</span> list_head	fu_list;</div><div class="line">		<span class="keyword">struct</span> rcu_head 	fu_rcuhead;</div><div class="line">	&#125; f_u;</div><div class="line">	<span class="keyword">struct</span> path		f_path;</div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> f_dentry	f_path.dentry</span></div><div class="line">	<span class="keyword">struct</span> inode		*f_inode;	<span class="comment">/* cached value */</span></div><div class="line">	<span class="keyword">const</span> <span class="keyword">struct</span> file_operations	*f_op;</div><div class="line"></div><div class="line">	<span class="comment">/*</span></div><div class="line">	 * Protects f_ep_links, f_flags.</div><div class="line">	 * Must not be taken from IRQ context.</div><div class="line">	 */</div><div class="line">	<span class="keyword">spinlock_t</span>		f_lock;</div><div class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> __GENKSYMS__</span></div><div class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_SMP</span></div><div class="line">	<span class="keyword">int</span>			f_sb_list_cpu;</div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">else</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_SMP</span></div><div class="line">	<span class="keyword">int</span>			f_sb_list_cpu_deprecated;</div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line">	<span class="keyword">atomic_long_t</span>		f_count;</div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> 		f_flags;</div><div class="line">	<span class="keyword">fmode_t</span>			f_mode;</div><div class="line">	<span class="keyword">loff_t</span>			f_pos;</div><div class="line">	<span class="keyword">struct</span> fown_struct	f_owner;</div><div class="line">	<span class="keyword">const</span> <span class="keyword">struct</span> cred	*f_cred;</div><div class="line">	<span class="keyword">struct</span> file_ra_state	f_ra;</div><div class="line"></div><div class="line">	u64			f_version;</div><div class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_SECURITY</span></div><div class="line">	<span class="keyword">void</span>			*f_security;</div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line">	<span class="comment">/* needed for tty driver, and maybe others */</span></div><div class="line">	<span class="keyword">void</span>			*private_data;</div><div class="line"></div><div class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_EPOLL</span></div><div class="line">	<span class="comment">/* Used by fs/eventpoll.c to link all the hooks to this file */</span></div><div class="line">	<span class="keyword">struct</span> list_head	f_ep_links;</div><div class="line">	<span class="keyword">struct</span> list_head	f_tfile_llink;</div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span> <span class="comment">/* #ifdef CONFIG_EPOLL */</span></span></div><div class="line">	<span class="keyword">struct</span> address_space	*f_mapping;</div><div class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_DEBUG_WRITECOUNT</span></div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> f_mnt_write_state;</div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> __GENKSYMS__</span></div><div class="line">	<span class="keyword">struct</span> mutex		f_pos_lock;</div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<ol>
+<li><code>f_inode</code>指向对应的inode对象。</li>
+<li><code>f_dentry</code>指向对应的dentry对象。</li>
+<li><code>f_pos</code>表示当前文件的偏移，可见文件偏移是每个file对象都有自己的独立的文件偏移量。</li>
+<li><code>f_op</code>表示当前文件相关的所有函数指针，实际上在文件open的时候<code>f_op</code>会全部赋值为<code>i_op</code>相应的函数指针。</li>
+</ol>
+<p>　　由于file对象是由内核进程直接管理的，我们有必要了解一下进程如何管理打开的文件。</p>
+<p>　　首先，每个进程有一个fs_struc的字段：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">struct</span> fs_struct &#123;</div><div class="line">	<span class="keyword">int</span> users;</div><div class="line">	<span class="keyword">spinlock_t</span> lock;</div><div class="line">	<span class="keyword">seqcount_t</span> seq;</div><div class="line">	<span class="keyword">int</span> umask;</div><div class="line">	<span class="keyword">int</span> in_exec;</div><div class="line">	<span class="keyword">struct</span> path root, pwd;</div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="keyword">struct</span> path &#123;</div><div class="line">	<span class="keyword">struct</span> vfsmount *mnt;</div><div class="line">	<span class="keyword">struct</span> dentry *dentry;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>　　我们看到，每个进程都维护一个根目录和当前工作目录的信息，每一个目录由<code>vfsmount</code>和<code>dentry</code>组合唯一确定，<code>dentry</code>代表目录项前面已经说到，<code>vfsmount</code>则代表相应目录项所在文件系统的挂载信息，会在后面展开介绍一下。</p>
+<p>　　然后，每个进程都有当前打开的文件表，存放在进程的files_struct结构中。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">struct</span> files_struct &#123;</div><div class="line">  <span class="comment">/*</span></div><div class="line">   * read mostly part</div><div class="line">   */</div><div class="line">	<span class="keyword">atomic_t</span> count;</div><div class="line">	<span class="keyword">struct</span> fdtable <span class="number">__</span>rcu *fdt;</div><div class="line">	<span class="keyword">struct</span> fdtable fdtab;</div><div class="line">  <span class="comment">/*</span></div><div class="line">   * written part on a separate cache line in SMP</div><div class="line">   */</div><div class="line">	<span class="keyword">spinlock_t</span> file_lock <span class="number">____</span>cacheline_aligned_in_smp;</div><div class="line">	<span class="keyword">int</span> next_fd;</div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> close_on_exec_init[<span class="number">1</span>];</div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> open_fds_init[<span class="number">1</span>];</div><div class="line">	<span class="keyword">struct</span> file <span class="number">__</span>rcu * fd_array[NR_OPEN_DEFAULT];</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>　　我们只要关注一下fd_array这个数组就行，这个数组就存储了所有打开的file对象，我们应用程序拿到的文件描述符实际上就只是这个数组的索引。</p>
+<h4 id="vfs管理文件系统的注册与挂载"><a href="#vfs管理文件系统的注册与挂载" class="headerlink" title="vfs管理文件系统的注册与挂载"></a>vfs管理文件系统的注册与挂载</h4><p>　　前面介绍了vfs的4种对象，所有能在linux上使用的文件系统都必须实现这4种对象接口，实际上就是实现<code>s_op,i_op,d_op</code>这3组函数（<code>f_op</code>简单地复制<code>i_op</code>），这样vfs才能正常地使用文件系统进行工作。假设我们已经按照这个接口开发了一套文件系统，这时候又面临了一个问题，vfs怎么去识别我们的文件系统呢？我们的文件系统是如何注册和挂载到vfs上的呢？</p>
+<h5 id="文件系统注册"><a href="#文件系统注册" class="headerlink" title="文件系统注册"></a>文件系统注册</h5><p>　　文件系统要么是固化在内核代码中的，要么是通过内核模块动态加载的，在内核代码中的随着操作系统启动会自动注册，而通过内核模块动态加载的也可以用操作系统的启动参数配置成自动注册，或者我们可以人为地执行类似这样的命令<code>insmod fuse.ko</code>去动态注册，这里的fuse.ko就是fuse文件系统编译链接出来的二进制文件。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">struct</span> file_system_type &#123;</div><div class="line">	<span class="keyword">const</span> <span class="keyword">char</span> *name;</div><div class="line">	<span class="keyword">int</span> fs_flags;</div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> FS_REQUIRES_DEV		1 </span></div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> FS_BINARY_MOUNTDATA	2</span></div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> FS_HAS_SUBTYPE		4</span></div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> FS_USERNS_MOUNT		8	<span class="comment">/* Can be mounted by userns root */</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> FS_USERNS_DEV_MOUNT	16 <span class="comment">/* A userns mount does not imply MNT_NODEV */</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> FS_HAS_RM_XQUOTA	256	<span class="comment">/* KABI: fs has the rm_xquota quota op */</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> FS_HAS_INVALIDATE_RANGE	512	<span class="comment">/* FS has new -&gt;invalidatepage with length arg */</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> FS_HAS_DIO_IODONE2	1024	<span class="comment">/* KABI: fs supports new iodone */</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> FS_HAS_NEXTDQBLK	2048	<span class="comment">/* KABI: fs has the -&gt;get_nextdqblk op */</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> FS_HAS_DOPS_WRAPPER	4096	<span class="comment">/* kabi: fs is using dentry_operations_wrapper. sb-&gt;s_d_op points to</span></span></div><div class="line">dentry_operations_wrapper */</div><div class="line"><span class="meta">#<span class="meta-keyword">define</span> FS_RENAME_DOES_D_MOVE	32768	<span class="comment">/* FS will handle d_move() during rename() internally. */</span></span></div><div class="line">	<span class="keyword">struct</span> dentry *(*mount) (<span class="keyword">struct</span> file_system_type *, <span class="keyword">int</span>,</div><div class="line">		       <span class="keyword">const</span> <span class="keyword">char</span> *, <span class="keyword">void</span> *);</div><div class="line">	<span class="keyword">void</span> (*kill_sb) (<span class="keyword">struct</span> super_block *);</div><div class="line">	<span class="keyword">struct</span> <span class="keyword">module</span> *owner;</div><div class="line">	<span class="keyword">struct</span> file_system_type * next;</div><div class="line">	<span class="keyword">struct</span> hlist_head fs_supers;</div><div class="line"></div><div class="line">	<span class="keyword">struct</span> lock_class_key s_lock_key;</div><div class="line">	<span class="keyword">struct</span> lock_class_key s_umount_key;</div><div class="line">	<span class="keyword">struct</span> lock_class_key s_vfs_rename_key;</div><div class="line">	<span class="keyword">struct</span> lock_class_key s_writers_key[SB_FREEZE_LEVELS];</div><div class="line"></div><div class="line">	<span class="keyword">struct</span> lock_class_key i_lock_key;</div><div class="line">	<span class="keyword">struct</span> lock_class_key i_mutex_key;</div><div class="line">	<span class="keyword">struct</span> lock_class_key i_mutex_dir_key;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>　　在注册文件系统的时候，我们需要提交一个<code>file_system_type</code>,这个对象主要有一个<code>get_sb</code>（linux kernel 2.6）或者是<code>mount</code>（linux kernel 3.1）对象，这个是一个函数指针，主要是分配superblock的，每当该类型的文件系统挂载时，就会调用该函数分配superblock对象。<code>fs_supers</code>引用了所有属于该文件系统类型的superblock对象。内核把所有注册的文件系统类型维护成一个链表，<code>file_system_type</code>的<code>next</code>字段指向链表的下一个元素。</p>
+<h5 id="文件系统挂载"><a href="#文件系统挂载" class="headerlink" title="文件系统挂载"></a>文件系统挂载</h5><p>　　正常情况下，操作系统启动后，常用的文件系统类型都是自动注册的，不需要用户干预。但一个块设备要以某文件系统的形式被操作系统识别的话，需要挂载到某个目录下，例如执行如下的挂载命令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">mount -t xfs /dev/sdb /var/cold-storage/</div></pre></td></tr></table></figure>
+<p>　　当执行这条命令以后，内核会首先分配一个<code>vfsmount</code>的对象，该对象唯一标识一个挂载的文件系统。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">struct</span> vfsmount &#123;</div><div class="line">	<span class="keyword">struct</span> dentry *mnt_root;	<span class="comment">/* root of the mounted tree */</span></div><div class="line">	<span class="keyword">struct</span> super_block *mnt_sb;	<span class="comment">/* pointer to superblock */</span></div><div class="line">	<span class="keyword">int</span> mnt_flags;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>　　<code>vfsmount</code>主要存放了该文件系统的superblock对象以及该文件系统根目录（上例的/var/cold-storage/）的dentry对象，一开始superblock对象是空的。</p>
+<p>　　有可能这个文件系统会被挂载了多次，之前已经被挂载到其他目录上了，就意味着其superblock对象已经被分配，因此内核会先搜索<code>file_system_type</code>的<code>fs_supers</code>链表，如果找到，就直接用该superblock对象赋值给新的<code>vfsmount</code>对象的<code>mnt_sb</code>字段。<br>　　<br>　　如果这个文件系统是第一次被挂载，则调用注册的<code>file_system_type</code>的<code>get_sb</code>或者<code>mount</code>函数，分配新的superblock对象。</p>
+<p>　　当superblock对象确定了以后，该文件系统就被挂载成功，可以正常使用了。</p>
+<p>　　所有的vfsmount都会存放在mount_hashtable的哈希表中，key是vfsmount地址以及dentry地址计算出来的哈希值。</p>
+<h4 id="以open系统调用为例小结vfs的基本知识"><a href="#以open系统调用为例小结vfs的基本知识" class="headerlink" title="以open系统调用为例小结vfs的基本知识"></a>以open系统调用为例小结vfs的基本知识</h4><p>　　在继续探究<code>vfs_read</code>和<code>vfs_write</code>之前，先通过open系统调用去串连一下vfs层的4个对象，小结一下前面的内容。因为open调用仅仅涉及到vfs层，跟磁盘高速缓存以及具体文件系统的实现基本无关。</p>
+<p>　　回忆一下前面的hello world例子，在进行文件拷贝前，先要open文件：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">fd1 = open(<span class="string">"helloworld.in"</span>, O_RONLY);</div><div class="line">fd2 = open(<span class="string">"helloworld.out"</span>, O_WRONLY);</div></pre></td></tr></table></figure>
+<p>　　这里核心的任务就是要通过传入的路径参数，最终创建出vfs的file对象。file对象确定了以后，意味着对应的inode,dentry和superblock也确定了，4大vfs对象全都准备后，可以接受读写请求了。最后返回其在内核进程的文件打开数组里的索引号给上层用户进程。</p>
+<p>　　具体步骤如下：</p>
+<h5 id="路径查找"><a href="#路径查找" class="headerlink" title="路径查找"></a>路径查找</h5><p>　　首先进行路径查找，调用<code>path_lookup()</code>函数。该函数主要接受两个参数，一个是路径名，一个是nameidata类型的结构体,这个结构体有一个比较重要的字段是path，主要分析这个字段，在路径查找的过程中会不断修改这个字段，最后这个字段就代表路径查找的最终结果。该字段利用<code>vfsmount</code>和<code>dentry</code>唯一确定了某个路径。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">struct</span> path &#123;</div><div class="line">	<span class="keyword">struct</span> vfsmount *mnt;</div><div class="line">	<span class="keyword">struct</span> dentry *dentry;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<ol>
+<li>首先判断路径是绝对路径还是相对路径，决定用进程的root还是pwd字段去填充这个path结构体，作为起始参数。</li>
+<li>用/去划分路径，依次解析每一层路径，对于每一层路径，首先找出其目录项的dentry对象，大概率会在目录项高速缓存中命中，如果缓存中没有，则读取磁盘，然后放到缓存中，并更新path字段。</li>
+<li>检查该层目录的dentry是否是某文件系统的挂载点，如果是,则用当前path的<code>vfsmount</code>和<code>dentry</code>计算哈希值，找出mount_hashtable中的子文件系统的<code>vfsmount</code>和<code>dentry</code>，并更新path的<code>vfsmount</code>和<code>dentry</code>。</li>
+<li>直到把所有分路径都解析完成，获得了最后的path。</li>
+</ol>
+<h5 id="创建file对象"><a href="#创建file对象" class="headerlink" title="创建file对象"></a>创建file对象</h5><p>　　找到了目的路径的<code>vfsmount</code>和<code>dentry</code>，inode和superblock对象也相应确定了，剩下的工作就是分配一个新的文件对象，并把相应的字段用inode，dentry和vfsmount的地址去填充。</p>
+<p>　　把file对象插入到当前进程的fd_array中，返回文件描述符。</p>
+<h4 id="vfs-read-vfs-write"><a href="#vfs-read-vfs-write" class="headerlink" title="vfs_read, vfs_write"></a>vfs_read, vfs_write</h4><p>　　现在，我们已经有了足够的vfs知识，可以探索一下前面hello_world程序里的<code>vfs_read</code>和<code>vfs_write</code>函数了。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div></pre></td><td class="code"><pre><div class="line">SYSCALL_DEFINE3(read, <span class="keyword">unsigned</span> <span class="keyword">int</span>, fd, <span class="keyword">char</span> <span class="number">__u</span>ser *, buf, <span class="keyword">size_t</span>, count)</div><div class="line">&#123;</div><div class="line">	<span class="keyword">struct</span> fd f = fdget_pos(fd);</div><div class="line">	<span class="keyword">ssize_t</span> ret = -EBADF;</div><div class="line"></div><div class="line">	<span class="keyword">if</span> (f.file) &#123;</div><div class="line">		<span class="keyword">loff_t</span> pos = file_pos_read(f.file);</div><div class="line">		ret = vfs_read(f.file, buf, count, &amp;pos);</div><div class="line">		file_pos_write(f.file, pos);</div><div class="line">		fdput_pos(f);</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">return</span> ret;</div><div class="line">&#125;</div><div class="line"></div><div class="line">SYSCALL_DEFINE3(write, <span class="keyword">unsigned</span> <span class="keyword">int</span>, fd, <span class="keyword">const</span> <span class="keyword">char</span> <span class="number">__u</span>ser *, buf,</div><div class="line">		<span class="keyword">size_t</span>, count)</div><div class="line">&#123;</div><div class="line">	<span class="keyword">struct</span> fd f = fdget_pos(fd);</div><div class="line">	<span class="keyword">ssize_t</span> ret = -EBADF;</div><div class="line"></div><div class="line">	<span class="keyword">if</span> (f.file) &#123;</div><div class="line">		<span class="keyword">loff_t</span> pos = file_pos_read(f.file);</div><div class="line">		ret = vfs_write(f.file, buf, count, &amp;pos);</div><div class="line">		file_pos_write(f.file, pos);</div><div class="line">		fdput_pos(f);</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	<span class="keyword">return</span> ret;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">ssize_t</span> vfs_read(<span class="keyword">struct</span> file *file, <span class="keyword">char</span> <span class="number">__u</span>ser *buf, <span class="keyword">size_t</span> count, <span class="keyword">loff_t</span> *pos)</div><div class="line">&#123;</div><div class="line">	<span class="keyword">ssize_t</span> ret;</div><div class="line"></div><div class="line">	<span class="keyword">if</span> (!(file-&gt;f_mode &amp; FMODE_READ)) </div><div class="line">		<span class="keyword">return</span> -EBADF;</div><div class="line">	<span class="keyword">if</span> (!file-&gt;f_op || (!file-&gt;f_op-&gt;read &amp;&amp; !file-&gt;f_op-&gt;aio_read))  </div><div class="line">		<span class="keyword">return</span> -EINVAL;</div><div class="line">	<span class="keyword">if</span> (unlikely(!access_ok(VERIFY_WRITE, buf, count)))  </div><div class="line">		<span class="keyword">return</span> -EFAULT;</div><div class="line"></div><div class="line">	ret = rw_verify_area(READ, file, pos, count);</div><div class="line">	<span class="keyword">if</span> (ret &gt;= <span class="number">0</span>) &#123;</div><div class="line">		count = ret;</div><div class="line">		<span class="keyword">if</span> (file-&gt;f_op-&gt;read)    </div><div class="line">			ret = file-&gt;f_op-&gt;read(file, buf, count, pos);</div><div class="line">		<span class="keyword">else</span></div><div class="line">			ret = do_sync_read(file, buf, count, pos);</div><div class="line">		<span class="keyword">if</span> (ret &gt; <span class="number">0</span>) &#123;</div><div class="line">			fsnotify_access(file);</div><div class="line">			add_rchar(current, ret);</div><div class="line">		&#125;</div><div class="line">		inc_syscr(current);</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	<span class="keyword">return</span> ret;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">ssize_t</span> vfs_write(<span class="keyword">struct</span> file *file, <span class="keyword">const</span> <span class="keyword">char</span> <span class="number">__u</span>ser *buf, <span class="keyword">size_t</span> count, <span class="keyword">loff_t</span> *pos)</div><div class="line">&#123;</div><div class="line">	<span class="keyword">ssize_t</span> ret;</div><div class="line"></div><div class="line">	<span class="keyword">if</span> (!(file-&gt;f_mode &amp; FMODE_WRITE))</div><div class="line">		<span class="keyword">return</span> -EBADF;</div><div class="line">	<span class="keyword">if</span> (!file-&gt;f_op || (!file-&gt;f_op-&gt;write &amp;&amp; !file-&gt;f_op-&gt;aio_write))</div><div class="line">		<span class="keyword">return</span> -EINVAL;</div><div class="line">	<span class="keyword">if</span> (unlikely(!access_ok(VERIFY_READ, buf, count)))</div><div class="line">		<span class="keyword">return</span> -EFAULT;</div><div class="line"></div><div class="line">	ret = rw_verify_area(WRITE, file, pos, count);</div><div class="line">	<span class="keyword">if</span> (ret &gt;= <span class="number">0</span>) &#123;</div><div class="line">		count = ret;</div><div class="line">		file_start_write(file);</div><div class="line">		<span class="keyword">if</span> (file-&gt;f_op-&gt;write)</div><div class="line">			ret = file-&gt;f_op-&gt;write(file, buf, count, pos);    </div><div class="line">		<span class="keyword">else</span></div><div class="line">			ret = do_sync_write(file, buf, count, pos);</div><div class="line">		<span class="keyword">if</span> (ret &gt; <span class="number">0</span>) &#123;</div><div class="line">			fsnotify_modify(file);</div><div class="line">			add_wchar(current, ret);</div><div class="line">		&#125;</div><div class="line">		inc_syscw(current);</div><div class="line">		file_end_write(file);</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	<span class="keyword">return</span> ret;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　可以看到，read，write系统调用会根据文件描述符提取出file对象，这个file对象是在Open调用里已经创建好的。然后会在file对象中读取出当前的文件偏移量，读写都会从这个偏移量开始。然后把file对象，用户层buffer的地址，要读写的大小，以及文件偏移量作为参数传入<code>vfs_read</code>和<code>vfs_write</code>中。这两个函数主要是对file对象的相应文件系统的读写函数进行封装，因此，主要的逻辑就过渡到了具体文件系统上了。具体文件系统的实现逻辑各不相同，但都要以vfs的4大对象为对外的接口，然后再定义自己的数据结构与方法。</p>
+<p>　　对于通用的磁盘文件系统，linux提供了很多基本的函数，很多文件系统的核心功能都是以这些基本函数为基础，再封装一层而已。我们就以常用的xfs文件系统为例，去简单看看它的read和write函数干了什么。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> <span class="keyword">struct</span> file_operations xfs_file_operations = &#123;</div><div class="line">	.llseek		= xfs_file_llseek,</div><div class="line">	.read		= do_sync_read,</div><div class="line">	.write		= do_sync_write,</div><div class="line">	.aio_read	= xfs_file_aio_read,</div><div class="line">	.aio_write	= xfs_file_aio_write,</div><div class="line">	.splice_read	= xfs_file_splice_read,</div><div class="line">	.splice_write	= xfs_file_splice_write,</div><div class="line">	.unlocked_ioctl	= xfs_file_ioctl,</div><div class="line">#ifdef CONFIG_COMPAT</div><div class="line">	.compat_ioctl	= xfs_file_compat_ioctl,</div><div class="line">#endif</div><div class="line">	.mmap		= xfs_file_mmap,</div><div class="line">	.open		= xfs_file_open,</div><div class="line">	.release	= xfs_file_release,</div><div class="line">	.fsync		= xfs_file_fsync,</div><div class="line">	.fallocate	= xfs_file_fallocate,</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>　　这是xfs的f_op的函数指针表，可以看到，它的read,write函数竟然直接用了内核提供的函数，非常偷懒！</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">ssize_t</span> do_sync_read(<span class="keyword">struct</span> file *filp, <span class="keyword">char</span> <span class="number">__u</span>ser *buf, <span class="keyword">size_t</span> len, <span class="keyword">loff_t</span> *ppos)</div><div class="line">&#123;</div><div class="line">	<span class="keyword">struct</span> iovec iov = &#123; .iov_base = buf, .iov_len = len &#125;;  </div><div class="line">	<span class="keyword">struct</span> kiocb kiocb;</div><div class="line">	<span class="keyword">ssize_t</span> ret;</div><div class="line"></div><div class="line">	init_sync_kiocb(&amp;kiocb, filp);</div><div class="line">	kiocb.ki_pos = *ppos;</div><div class="line">	kiocb.ki_left = len;</div><div class="line">	kiocb.ki_nbytes = len;</div><div class="line"></div><div class="line">	ret = filp-&gt;f_op-&gt;aio_read(&amp;kiocb, &amp;iov, <span class="number">1</span>, kiocb.ki_pos);  </div><div class="line">	<span class="keyword">if</span> (-EIOCBQUEUED == ret)</div><div class="line">		ret = wait_on_sync_kiocb(&amp;kiocb);</div><div class="line">	*ppos = kiocb.ki_pos;</div><div class="line">	<span class="keyword">return</span> ret;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">ssize_t</span> do_sync_write(<span class="keyword">struct</span> file *filp, <span class="keyword">const</span> <span class="keyword">char</span> <span class="number">__u</span>ser *buf, <span class="keyword">size_t</span> len, <span class="keyword">loff_t</span> *ppos)</div><div class="line">&#123;</div><div class="line">	<span class="keyword">struct</span> iovec iov = &#123; .iov_base = (<span class="keyword">void</span> <span class="number">__u</span>ser *)buf, .iov_len = len &#125;;</div><div class="line">	<span class="keyword">struct</span> kiocb kiocb;</div><div class="line">	<span class="keyword">ssize_t</span> ret;</div><div class="line"></div><div class="line">	init_sync_kiocb(&amp;kiocb, filp);</div><div class="line">	kiocb.ki_pos = *ppos;</div><div class="line">	kiocb.ki_left = len;</div><div class="line">	kiocb.ki_nbytes = len;</div><div class="line"></div><div class="line">	ret = filp-&gt;f_op-&gt;aio_write(&amp;kiocb, &amp;iov, <span class="number">1</span>, kiocb.ki_pos);    </div><div class="line">	<span class="keyword">if</span> (-EIOCBQUEUED == ret)</div><div class="line">		ret = wait_on_sync_kiocb(&amp;kiocb);</div><div class="line">	*ppos = kiocb.ki_pos;</div><div class="line">	<span class="keyword">return</span> ret;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　这两个函数实际上调用了具体文件系统的aio_read和aio_write函数，而xfs文件系统的这两个函数是自定义的，<code>xfs_file_aio_read</code>和<code>xfs_file_aio_write</code>。</p>
+<p>　　这两个函数的代码就有点复杂了，不过我们不需要细究xfs的实现细节，我们的目的是要通过xfs文件系统去找出通用的磁盘文件系统的共性，<code>xfs_file_aio_read</code>和<code>xfs_file_aio_write</code>虽然有很多xfs自己的实现细节，但其核心功能都是建立在内核提供的通用函数上的，例如<code>xfs_file_aio_read</code>最终会调用<code>generic_file_aio_read</code>函数，而<code>xfs_file_aio_write</code>则最终会调用<code>generic_perform_write</code>函数。这些通用函数是基本上所有文件系统的核心逻辑。</p>
+<p>　　进入到这里，就开始涉及到高速缓存这一层了。我们先立足于vfs这一层，然后预热一下高速缓存层，先直接概括一下<code>generic_file_aio_read</code>函数做了什么事情，非常简单：</p>
+<ol>
+<li>根据文件偏移量计算出在要读的内容在高速缓存中的位置。</li>
+<li>搜索高速缓存，看看要读的内容是否在高速缓存中存在，若存在则直接返回，若不存在则触发读磁盘任务。若触发读磁盘任务，则判断当前是否顺序读，尽量预读取磁盘数据到高速缓存中，减少磁盘io的次数。</li>
+<li>数据读取后，拷贝到用户态的buffer中。</li>
+</ol>
+<p>　　<code>generic_perform_write</code>的逻辑则是：</p>
+<ol>
+<li>根据文件偏移量计算出在要写的内容在高速缓存中的位置。</li>
+<li>搜索看看要写的内容是否已在高速缓存中分配了相应的数据结构，若没有，则分配相应内存空间。</li>
+<li>从用户态的buffer拷贝数据到高速缓存中。</li>
+<li>检查高速缓存中的空间是否用得太多，如果占用过多内存则唤醒后台的写回磁盘的线程，把高速缓存的部分内容写回到磁盘上，可能会造成不定时间的写阻塞。</li>
+<li>向上层返回写的结果。</li>
+</ol>
+<p>　　可以看到，vfs的读写很大程度上依赖于高速缓存的，实际上直接读写硬盘的机会可能没有我们想象的多。对于读任务，如果是顺序读的场景，我们的进程同步读取的数据正常情况下已经在高速缓存中存在了，我们直接从高速缓存中取出数据便返回上层，然后内核会异步地进行预读取；如果是写任务，则绝大部分时候是直接写到高速缓存中便返回，然后再异步地进行writeback。除非高速缓存占用过多，才会同步地写回一部分数据。</p>
+<p><img src="/img/mmap.png" alt="高速缓存交互"></p>
+<h3 id="高速缓存"><a href="#高速缓存" class="headerlink" title="高速缓存"></a>高速缓存</h3><p>　　在linux中高速缓存主要是用页的形式来组织的，也称为页高速缓存（page cache）。页高速缓存相当于把磁盘映像抽象成一个个固定大小的连续的page，对于vfs层，只需要与page交互，而不需要管理底层硬盘是如何分配空间以及如何读写的。linux的page大小是4KB。</p>
+<p>　　由于文件可能非常大，所以无论是读或者写page，都要求能够快速地在高速缓存中寻找到相应的page。这就需要一个高效的数据结构来管理缓存中的page。linux内核中采用radix tree来管理page cache。</p>
+<h4 id="radix-tree"><a href="#radix-tree" class="headerlink" title="radix tree"></a>radix tree</h4><p>　　前面我们提到vfs的inode对象，在每一个inode对象中都间接持有了一个radix tree的数据结构，所以page cache的查找是以文件为单位进行的。</p>
+<p><img src="/img/radix-tree.png" alt="radix tree"></p>
+<p>　　可以看到radix tree是分层组织的，每一层有64个元素，层数越多能够保存的page数目就越多，而tree node的分配与释放是根据文件大小来调整的。由于索引是32位的，所以radix tree最多有6层，且当树的深度为6时，最高层最多只有4个元素。</p>
+<p>　　我们就以前面说的vfs层读写高速缓存为例子，去分析一下radix tree的增删改查。</p>
+<h5 id="计算page编号"><a href="#计算page编号" class="headerlink" title="计算page编号"></a>计算page编号</h5><p>　　无论读写，都要根据文件偏移量计算page号，很简单，公式如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">page索引=文件偏移 / <span class="number">4</span>KB</div></pre></td></tr></table></figure>
+<h5 id="查找page"><a href="#查找page" class="headerlink" title="查找page"></a>查找page</h5><p>　　首先查看当前radix tree的高度能支持的最大索引号是否超过当前要查询的page号，如果是，则继续查找，否则page不存在。</p>
+<p>　　根据基数的深度去解析索引，如果树只有1层，说明只有64个slot，那么只解析最低的6位；如果有两层，则只解析低12位，高6位作为第一层的索引，低6位作为第二层的索引。</p>
+<h5 id="插入新page"><a href="#插入新page" class="headerlink" title="插入新page"></a>插入新page</h5><p>　　假设我们的vfs层的读函数在高速缓冲中找不到相应的page，那么就要新分配page了，如果新page的的索引比当前树深度能支持的最大索引号大，那么就直接沿着路径分配中间节点就行。</p>
+<p>　　如果树的深度不够，那就在树的顶端分配适当数量的节点，增加深度，然后再沿着路径分配中间节点。</p>
+<h5 id="修改page"><a href="#修改page" class="headerlink" title="修改page"></a>修改page</h5><p>　　vfs层的写函数有可能会修改原有的page，只要查找到该page，然后修改数据就行。</p>
+<h5 id="删除page"><a href="#删除page" class="headerlink" title="删除page"></a>删除page</h5><p>　　如果系统内存不足，可能会触发page写回磁盘，然后释放掉所有非脏非正在写回的page，就需要在radix tree上删除页。</p>
+<p>　　删除页就是要先在radix tree中自顶向下地查找相应的page，然后沿着路径再自底而上地删除，删除了子节点时，判断一下如果父节点的子节点数目是0，那么父节点也可以删除。</p>
+<h5 id="标记脏页和正在写回的页"><a href="#标记脏页和正在写回的页" class="headerlink" title="标记脏页和正在写回的页"></a>标记脏页和正在写回的页</h5><p>　　如果写page触发了写回磁盘，那么就要找出当前radix tree有哪些页是脏的，哪些页是正在被写回的。如果全局搜索那么就太慢了，因此linux会在radix tree的每个中间节点上统计脏页和正在写回页的数目，如果是0的话就可以跳过该节点的所有子树。</p>
+<h4 id="预读"><a href="#预读" class="headerlink" title="预读"></a>预读</h4><p>　　从vfs层的读写函数可以看到，写是异步的，一般情况下写到内存就返回了；读是同步的，缓存不命中的惩罚非常严重。因此，如果我们的读是顺序读的话，高速缓存其实可以预先异步读取当前的page后面的page，这样相比于一页一页地读，就可以大幅度减小磁盘io的次数；而且等到用户发起下一次读请求时，当前的page已经在缓存中了，读进程就不会阻塞。</p>
+<p>　　预读的基本逻辑是：</p>
+<ol>
+<li>维护两个窗口，一个是当前窗，一个是预读窗。当前窗的page是正在请求的页或者是预读的页，预读窗仅包含预读的页。</li>
+<li>预读窗紧挨着当前窗。</li>
+<li>理想情况下正在请求的页会落在当前窗，同时预读窗不断传送新的页；当进程请求的页落到预读窗时，预读窗会变为当前窗，然后分配新的预读窗，去预读后面的页。</li>
+<li>预读的大小是动态变化的，如果进程持续顺序读取文件，那么预读会持续增加，直到达到文件系统的上限（默认是128KB）；如果出现随机访问，预读会逐渐减少直到完全禁止。</li>
+<li>当进程重复访问文件的很小一部分，预读就会停止。</li>
+</ol>
+<p><img src="/img/read-ahead.png" alt="read ahead"></p>
+<h4 id="buffer-cache"><a href="#buffer-cache" class="headerlink" title="buffer cache"></a>buffer cache</h4><p>　　其实在linux最初几个版本，是没有page cache的，缓存是以buffer的形式存在的，buffer对应的是一个个磁盘块，例如superblock就是一个磁盘块，inode的磁盘映像也是一个磁盘块，还有文件的所有数据块都是磁盘块，每一个磁盘块对应一个buffer。</p>
+<p>　　但随着时代的发展，访问单独磁盘块的场景越来越少，page cache慢慢占了主要地位，在Linux kernel 2.4以后，buffer cache已经不单独实现了，而是建立在page cache的基础上。</p>
+<p>　　在现代linux系统上，绝大部分的高速缓存都是以Page cache的形式存在，仅在以下情况下会用buffer cache:</p>
+<ol>
+<li>文件page内的磁盘块不相邻，或者page内有洞。</li>
+<li>单独访问一个块，例如superblock或者inode。</li>
+</ol>
+<p>　　因此，仅仅在page内的buffer数目不足以填充整个页或者磁盘块不连续的条件下，才会用buffer cache来引用缓存数据。</p>
+<p>　　我们来看一下buffer cache的数据结构：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">struct</span> buffer_head &#123;</div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> b_state;		<span class="comment">/* buffer state bitmap (see above) */</span></div><div class="line">	<span class="keyword">struct</span> buffer_head *b_this_page;<span class="comment">/* circular list of page's buffers */</span></div><div class="line">	<span class="keyword">struct</span> page *b_page;		<span class="comment">/* the page this bh is mapped to */</span></div><div class="line"></div><div class="line">	<span class="keyword">sector_t</span> b_blocknr;		<span class="comment">/* start block number */</span></div><div class="line">	<span class="keyword">size_t</span> b_size;			<span class="comment">/* size of mapping */</span></div><div class="line">	<span class="keyword">char</span> *b_data;			<span class="comment">/* pointer to data within the page */</span></div><div class="line"></div><div class="line">	<span class="keyword">struct</span> block_device *b_bdev;</div><div class="line">	<span class="keyword">bh_end_io_t</span> *b_end_io;		<span class="comment">/* I/O completion */</span></div><div class="line"> 	<span class="keyword">void</span> *b_private;		<span class="comment">/* reserved for b_end_io */</span></div><div class="line">	<span class="keyword">struct</span> list_head b_assoc_buffers; <span class="comment">/* associated with another mapping */</span></div><div class="line">	<span class="keyword">struct</span> address_space *b_assoc_map;	<span class="comment">/* mapping this buffer is</span></div><div class="line">						   associated with */</div><div class="line">	<span class="keyword">atomic_t</span> b_count;		<span class="comment">/* users using this buffer_head */</span></div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<ol>
+<li><code>b_page</code>指向buffer cache所在的page。</li>
+<li><code>b_this_page</code>指向同属于一个page的下一个buffer cache。</li>
+<li><code>b_blocknr</code>buffer cache在磁盘中的逻辑块号。</li>
+<li><code>b_size</code>buffer cache的大小。</li>
+<li><code>b_data</code>指向buffer cache数据的地址，该地址必定在<code>b_page</code>指向的页内。</li>
+<li><code>b_bdev</code>代表该buffer cache所映射的块设备，该字段和<code>b_blocknr</code>，<code>b_size</code>一起唯一决定了该数据所在的磁盘位置。</li>
+</ol>
+<p><img src="/img/buffer-page.png" alt="buffer page"></p>
+<h3 id="通用块层"><a href="#通用块层" class="headerlink" title="通用块层"></a>通用块层</h3><p>　　前面说到，高速缓存这一层分为page cache和buffer cache，buffer cache是建立在page cache之上的。page cache是面向文件的抽象，而buffer cache则是面向块设备的抽象。由于我们对文件的读写请求最终还是会转化成对磁盘（块设备）的读写请求，这种请求是要落到磁盘扇区的。</p>
+<p><img src="/img/sector-block.png" alt="sector to block"></p>
+<p>　　从<code>buffer_head</code>的结构中可以看到，每一个buffer cache都有一个磁盘的逻辑块号，这个磁盘块是文件系统的块号，每一个磁盘块可以包含一个或多个扇区，这取决于buffer cache的大小（文件系统格式化时的块大小）。所以，buffer cache的大小是连续分配磁盘大小的最小单位。但对于大多数情况，整个page都会映射到连续的磁盘区域，因此page的大小将成为一般情况下的连续分配磁盘的最小单位。</p>
+<p>　　当从高速缓存中读某个page发现该页不存在时，就会从高速缓存层进入通用块层，向块设备去提交读磁盘的请求。通用块层就是起到了从高速缓存到块设备的桥梁作用。</p>
+<h4 id="通用块层的核心–bio"><a href="#通用块层的核心–bio" class="headerlink" title="通用块层的核心–bio"></a>通用块层的核心–bio</h4><p>　　掌握通用块层只需要掌握一个数据结构–bio,它是通用块层逻辑的核心，它描述了从高速缓存层提交的一次IO请求。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">struct</span> bio &#123;</div><div class="line">	<span class="keyword">sector_t</span>		bi_sector;	<span class="comment">/* device address in 512 byte</span></div><div class="line">						   sectors */</div><div class="line">	<span class="keyword">struct</span> bio		*bi_next;	<span class="comment">/* request queue link */</span></div><div class="line">	<span class="keyword">struct</span> block_device	*bi_bdev;</div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span>		bi_flags;	<span class="comment">/* status, command, etc */</span></div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span>		bi_rw;		<span class="comment">/* bottom bits READ/WRITE,</span></div><div class="line">						 * top bits priority</div><div class="line">						 */</div><div class="line"></div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">short</span>		bi_vcnt;	<span class="comment">/* how many bio_vec's */</span></div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">short</span>		bi_idx;		<span class="comment">/* current index into bvl_vec */</span></div><div class="line"></div><div class="line">	<span class="comment">/* Number of segments in this BIO after</span></div><div class="line">	 * physical address coalescing is performed.</div><div class="line">	 */</div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span>		bi_phys_segments;</div><div class="line"></div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span>		bi_size;	<span class="comment">/* residual I/O count */</span></div><div class="line"></div><div class="line">	<span class="comment">/*</span></div><div class="line">	 * To keep track of the max segment size, we account for the</div><div class="line">	 * sizes of the first and last mergeable segments in this bio.</div><div class="line">	 */</div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span>		bi_seg_front_size;</div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span>		bi_seg_back_size;</div><div class="line"></div><div class="line">	<span class="keyword">bio_end_io_t</span>		*bi_end_io;</div><div class="line"></div><div class="line">	<span class="keyword">void</span>			*bi_private;</div><div class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_BLK_CGROUP</span></div><div class="line">	<span class="comment">/*</span></div><div class="line">	 * Optional ioc and css associated with this bio.  Put on bio</div><div class="line">	 * release.  Read comment on top of bio_associate_current().</div><div class="line">	 */</div><div class="line">	<span class="keyword">struct</span> io_context	*bi_ioc;</div><div class="line">	<span class="keyword">struct</span> cgroup_subsys_state *bi_css;</div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">if</span> defined(CONFIG_BLK_DEV_INTEGRITY)</span></div><div class="line">	<span class="keyword">struct</span> bio_integrity_payload *bi_integrity;  <span class="comment">/* data integrity */</span></div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line"></div><div class="line">	<span class="comment">/*</span></div><div class="line">	 * Everything starting with bi_max_vecs will be preserved by bio_reset()</div><div class="line">	 */</div><div class="line"></div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span>		bi_max_vecs;	<span class="comment">/* max bvl_vecs we can hold */</span></div><div class="line"></div><div class="line">	<span class="keyword">atomic_t</span>		bi_cnt;		<span class="comment">/* pin count */</span></div><div class="line"></div><div class="line">	<span class="keyword">struct</span> bio_vec		*bi_io_vec;	<span class="comment">/* the actual vec list */</span></div><div class="line"></div><div class="line">	<span class="keyword">struct</span> bio_set		*bi_pool;</div><div class="line"></div><div class="line">	<span class="comment">/* FOR RH USE ONLY</span></div><div class="line">	 *</div><div class="line">	 * The following padding has been replaced to allow extending</div><div class="line">	 * the structure, using struct bio_aux, while preserving ABI.</div><div class="line">	 */</div><div class="line">	RH_KABI_REPLACE(<span class="keyword">void</span> *rh_reserved1, <span class="keyword">struct</span> bio_aux *bio_aux)</div><div class="line"></div><div class="line">	<span class="comment">/*</span></div><div class="line">	 * We can inline a number of vecs at the end of the bio, to avoid</div><div class="line">	 * double allocations for a small number of bio_vecs. This member</div><div class="line">	 * MUST obviously be kept at the very end of the bio.</div><div class="line">	 */</div><div class="line">	<span class="keyword">struct</span> bio_vec		bi_inline_vecs[<span class="number">0</span>];</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<ol>
+<li><code>bi_sector</code>代表这次IO请求的的磁盘扇区号。对于buffer cache，可以通过b_blocknr * b_size / 512计算得到。如果是page cache，则稍微复杂一点，不过page的第一个磁盘块的逻辑块号也能通过文件的元信息间接计算得到。</li>
+<li><code>bio_io_vec</code>记录了高速缓存层要提交给磁盘的数据。一个<code>bio_io_vec</code>可看作一个连续的内存段。</li>
+<li><code>bi_vcnt</code>代表内存段的数目。</li>
+<li><code>bi_idx</code>代表当前已经传输到哪个内存段了，这个字段会在传输过程中被修改。</li>
+<li><code>bi_bdev</code>表示该请求指向哪个块设备。</li>
+<li><code>bi_rw</code>表示是读还是写请求。</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">struct</span> bio_vec &#123; </div><div class="line"><span class="comment">/* pointer to the physical page on which this buffer resides */</span> </div><div class="line"><span class="keyword">struct</span> page *bv_page;</div><div class="line"><span class="comment">/* the length in bytes of this buffer */</span> </div><div class="line"><span class="keyword">unsigned</span> <span class="keyword">int</span> bv_len;</div><div class="line"><span class="comment">/* the byte offset within the page where the buffer resides */</span> </div><div class="line"><span class="keyword">unsigned</span> <span class="keyword">int</span> bv_offset;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p><img src="/img/bio-vec.png" alt="bio vec"></p>
+<p>　　不管是buffer cache还是Page cache，它们要提交读写磁盘的请求时，都要把数据封装成<code>bio_vec</code>的形式，然后放到<code>bio</code>结构内。</p>
+<h4 id="读page请求"><a href="#读page请求" class="headerlink" title="读page请求"></a>读page请求</h4><p>　　回忆之前讲到的vfs层的读请求，是以page为单位读取高速缓存的。如果某个page不在高速缓存中，那么就会调用文件系统定义的read_page函数。</p>
+<p>　　以下xfs定义的针对page一级的函数列表：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> <span class="keyword">struct</span> address_space_operations xfs_address_space_operations = &#123;</div><div class="line">	.readpage		= xfs_vm_readpage,</div><div class="line">	.readpages		= xfs_vm_readpages,</div><div class="line">	.writepage		= xfs_vm_writepage,</div><div class="line">	.writepages		= xfs_vm_writepages,</div><div class="line">	.set_page_dirty		= xfs_vm_set_page_dirty,</div><div class="line">	.releasepage		= xfs_vm_releasepage,</div><div class="line">	.invalidatepage_range	= xfs_vm_invalidatepage,</div><div class="line">	.write_begin		= xfs_vm_write_begin,</div><div class="line">	.write_end		= xfs_vm_write_end,</div><div class="line">	.bmap			= xfs_vm_bmap,</div><div class="line">	.direct_IO		= xfs_vm_direct_IO,</div><div class="line">	.migratepage		= buffer_migrate_page,</div><div class="line">	.is_partially_uptodate  = block_is_partially_uptodate,</div><div class="line">	.error_remove_page	= generic_error_remove_page,</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>　　xfs的read_page函数是<code>xfs_vm_readpage</code>。我们不打算去探究该函数的代码细节，而是直接概括一下对于大部分文件系统，read_page函数的核心业务是什么，<code>xfs_vm_readpage</code>也只是在这个核心业务的基础上再添加自己的逻辑而已。</p>
+<ol>
+<li>检查page的PG_private字段，如果是1，则该页被用于buffer cache，就会对该页的每一个buffer cache都生成一个bio结构，提交给下一层。</li>
+<li>如果该page是一般的page，则根据文件元信息计算该page的第一个文件块的块号以及块数目。</li>
+<li>分配新的bio结构，用page cache或者buffer cache的元信息初始化<code>bi_sector</code>，<code>bi_size</code>，<code>bi_bdev</code>，<code>bi_io_vec</code>，<code>bi_rw</code>等字段。</li>
+<li>可能要对<code>bi_bdev</code>进行remap，然后再将bio提交给下一层。</li>
+</ol>
+<p>　　所谓的块设备remap，是要进行块设备的逻辑分区到磁盘的映射。一个文件系统是安装在逻辑分区上，所以我们的读写请求所对应的逻辑扇区号都是相对于逻辑分区而言的。但是，块设备在进行读写的时候是相对于整个物理磁盘来寻址的，因此在构建bio的时候，要进行逻辑分区到物理磁盘的remap。</p>
+<p>　　<code>bi_bdev</code>指向的是block_device的结构，无论是逻辑分区还是物理磁盘都是用这个结构来表示。它主要有两个字段跟remap相关的，分别是<code>bi_contains</code>以及<code>bd_part</code>。<code>bi_contains</code>指向该分区所在的物理磁盘的<code>bi_bdev</code>，如果该分区是逻辑分区，那么可以通过该字段找到物理磁盘的<code>bi_bdev</code>结构。<code>bd_part</code>则保存了物理磁盘的分区描述符<code>hd_struct</code>，可以通过该结构完成逻辑分区扇区号到整个物理磁盘扇区号的映射。</p>
+<p>　　可以看到，read_page函数的核心逻辑非常简单。不过，高速缓存一般都是采用预读的策略来读page的，因此一次会读多个page，此时一般会调用文件系统的read_pages函数，该函数会生成多个内存段的bio，即带有多个<code>bio_io_vec</code>，把连续的磁盘块一次读出来，减少io次数。</p>
+<p><img src="/img/block-device.png" alt="block device"></p>
+<h3 id="IO调度程序层"><a href="#IO调度程序层" class="headerlink" title="IO调度程序层"></a>IO调度程序层</h3><p>　　通用块层构建了bio之后，会提交给下一层，但这个下一层还并没有到达硬件，还需要经过一层io调度。通用块层实际上把bio请求提交给了IO调度层。IO调度层的存在主要是为了减小磁盘IO的次数，增大磁盘整体的吞吐量。因为多个bio之间可能是访问的连续的磁盘空间，如果把这些bio不经过排序重组就提交给硬件驱动程序，可能会造成很严重的随机读写现象，造成吞吐量下降。因此，IO调度层的任务就是要把bio进行排序和合并。linux内核里有几种不同的Io调度机制，可供用户选择，它们都有不同的优缺点，适合不同的应用场景。</p>
+<h4 id="请求队列与请求"><a href="#请求队列与请求" class="headerlink" title="请求队列与请求"></a>请求队列与请求</h4><p>　　linux内核为每一个设备都维护了一个IO队列，这个队列用来填充上层提交的IO请求。在通用块层我们介绍了bio结构，每一个bio是高速缓存层提交的一个IO请求。而在IO调度层，则用request结构来表达IO请求。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">struct</span> request &#123;</div><div class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> __GENKSYMS__</span></div><div class="line">	<span class="keyword">union</span> &#123;</div><div class="line">		<span class="keyword">struct</span> list_head queuelist;</div><div class="line">		<span class="keyword">struct</span> llist_node ll_list;</div><div class="line">	&#125;;</div><div class="line"><span class="meta">#<span class="meta-keyword">else</span></span></div><div class="line">	<span class="keyword">struct</span> list_head queuelist;</div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line">	<span class="keyword">union</span> &#123;</div><div class="line">		<span class="keyword">struct</span> call_single_data csd;</div><div class="line">		RH_KABI_REPLACE(<span class="keyword">struct</span> work_struct mq_flush_work,</div><div class="line">			        <span class="keyword">unsigned</span> <span class="keyword">long</span> fifo_time)</div><div class="line">	&#125;;</div><div class="line"></div><div class="line">	<span class="keyword">struct</span> request_queue *q;</div><div class="line">	<span class="keyword">struct</span> blk_mq_ctx *mq_ctx;</div><div class="line"></div><div class="line">	u64 cmd_flags;</div><div class="line">	<span class="keyword">enum</span> rq_cmd_type_bits cmd_type;</div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> atomic_flags;</div><div class="line"></div><div class="line">	<span class="keyword">int</span> cpu;</div><div class="line"></div><div class="line">	<span class="comment">/* the following two fields are internal, NEVER access directly */</span></div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> <span class="number">__</span>data_len;	<span class="comment">/* total data len */</span></div><div class="line">	<span class="keyword">sector_t</span> <span class="number">__</span>sector;		<span class="comment">/* sector cursor */</span></div><div class="line"></div><div class="line">	<span class="keyword">struct</span> bio *bio;</div><div class="line">	<span class="keyword">struct</span> bio *biotail;</div><div class="line"></div><div class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> __GENKSYMS__</span></div><div class="line">	<span class="keyword">struct</span> hlist_node hash;	<span class="comment">/* merge hash */</span></div><div class="line"><span class="meta">#<span class="meta-keyword">else</span></span></div><div class="line">	<span class="comment">/*</span></div><div class="line">	 * The hash is used inside the scheduler, and killed once the</div><div class="line">	 * request reaches the dispatch list. The ipi_list is only used</div><div class="line">	 * to queue the request for softirq completion, which is long</div><div class="line">	 * after the request has been unhashed (and even removed from</div><div class="line">	 * the dispatch list).</div><div class="line">	 */</div><div class="line">	<span class="keyword">union</span> &#123;</div><div class="line">		<span class="keyword">struct</span> hlist_node hash;	<span class="comment">/* merge hash */</span></div><div class="line">		<span class="keyword">struct</span> list_head ipi_list;</div><div class="line">	&#125;;</div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line"></div><div class="line">	<span class="comment">/*</span></div><div class="line">	 * The rb_node is only used inside the io scheduler, requests</div><div class="line">	 * are pruned when moved to the dispatch queue. So let the</div><div class="line">	 * completion_data share space with the rb_node.</div><div class="line">	 */</div><div class="line">	<span class="keyword">union</span> &#123;</div><div class="line">		<span class="keyword">struct</span> rb_node rb_node;	<span class="comment">/* sort/lookup */</span></div><div class="line">		<span class="keyword">void</span> *completion_data;</div><div class="line">	&#125;;</div><div class="line"></div><div class="line">	<span class="comment">/*</span></div><div class="line">	 * Three pointers are available for the IO schedulers, if they need</div><div class="line">	 * more they have to dynamically allocate it.  Flush requests are</div><div class="line">	 * never put on the IO scheduler. So let the flush fields share</div><div class="line">	 * space with the elevator data.</div><div class="line">	 */</div><div class="line">	<span class="keyword">union</span> &#123;</div><div class="line">		<span class="keyword">struct</span> &#123;</div><div class="line">			<span class="keyword">struct</span> io_cq		*icq;</div><div class="line">			<span class="keyword">void</span>			*priv[<span class="number">2</span>];</div><div class="line">		&#125; elv;</div><div class="line"></div><div class="line">		<span class="keyword">struct</span> &#123;</div><div class="line">			<span class="keyword">unsigned</span> <span class="keyword">int</span>		seq;</div><div class="line">			<span class="keyword">struct</span> list_head	<span class="built_in">list</span>;</div><div class="line">			rq_end_io_fn		*saved_end_io;</div><div class="line">		&#125; flush;</div><div class="line">	&#125;;</div><div class="line"></div><div class="line">	<span class="keyword">struct</span> gendisk *rq_disk;</div><div class="line">	<span class="keyword">struct</span> hd_struct *part;</div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> start_time;</div><div class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_BLK_CGROUP</span></div><div class="line">	<span class="keyword">struct</span> request_list *rl;		<span class="comment">/* rl this rq is alloced from */</span></div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> start_time_ns;</div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> io_start_time_ns;    <span class="comment">/* when passed to hardware */</span></div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line">	<span class="comment">/* Number of scatter-gather DMA addr+len pairs after</span></div><div class="line">	 * physical address coalescing is performed.</div><div class="line">	 */</div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">short</span> nr_phys_segments;</div><div class="line"><span class="meta">#<span class="meta-keyword">if</span> defined(CONFIG_BLK_DEV_INTEGRITY)</span></div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">short</span> nr_integrity_segments;</div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line"></div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">short</span> ioprio;</div><div class="line"></div><div class="line">	<span class="keyword">void</span> *special;		<span class="comment">/* opaque pointer available for LLD use */</span></div><div class="line">	<span class="keyword">char</span> *buffer;		<span class="comment">/* kaddr of the current segment if available */</span></div><div class="line"></div><div class="line">	<span class="keyword">int</span> tag;</div><div class="line">	<span class="keyword">int</span> errors;</div><div class="line"></div><div class="line">	<span class="comment">/*</span></div><div class="line">	 * when request is used as a packet command carrier</div><div class="line">	 */</div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> <span class="number">__</span>cmd[BLK_MAX_CDB];</div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *cmd;</div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">short</span> cmd_len;</div><div class="line"></div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> extra_len;	<span class="comment">/* length of alignment and padding */</span></div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> sense_len;</div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> resid_len;	<span class="comment">/* residual count */</span></div><div class="line">	<span class="keyword">void</span> *sense;</div><div class="line"></div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> deadline;</div><div class="line">	<span class="keyword">struct</span> list_head timeout_list;</div><div class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> timeout;</div><div class="line">	<span class="keyword">int</span> retries;</div><div class="line"></div><div class="line">	<span class="comment">/*</span></div><div class="line">	 * completion callback.</div><div class="line">	 */</div><div class="line">	rq_end_io_fn *end_io;</div><div class="line">	<span class="keyword">void</span> *end_io_data;</div><div class="line"></div><div class="line">	<span class="comment">/* for bidi */</span></div><div class="line">	<span class="keyword">struct</span> request *next_rq;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<ol>
+<li><code>sector</code>代表要传送的扇区号。</li>
+<li><code>nr_sectors</code>代表整个请求要传送的扇区数。</li>
+<li><code>current_nr_sectors</code>代表当前bio还需传输的扇区数。</li>
+<li><code>bio</code>表示请求的第一个bio结构</li>
+<li><code>biotail</code>表示请求的最后一个bio结构。</li>
+</ol>
+<p>　　上层提交的bio有可能会新分配一个request结构去存放，或者合并到现有的request结构中。</p>
+<p>　　在请求被处理时，下层的设备驱动程序有可能会修改request结构，使得bio总是指向当前未传输的第一个bio，并且会修改<code>nr_sectors</code>和<code>current_nr_sectors</code>字段。</p>
+<h4 id="The-Linus-Elevator"><a href="#The-Linus-Elevator" class="headerlink" title="The Linus Elevator"></a>The Linus Elevator</h4><p>　　这个调度器是linux kernel 2.4的默认调度器，不过在2.6之后已经被淘汰了，不过其基本思想是其他调度器的基础，所以稍微介绍一下。</p>
+<ol>
+<li>新请求到达时，先看看能不能与队列内已有的请求合并，凡是在磁盘内连续的都可以合并。</li>
+<li>如果不能合并，则按照磁盘块的顺序插入到正确的位置，始终保持队列是有序的。</li>
+<li>为了防止请求饿死，当发现有请求在队列的时间过长，将不执行任何合并与排序的优化，而是直接插入到队列末尾。</li>
+</ol>
+<p>　　优点：使得设备驱动器总是进行顺序读写，最大化了吞吐。<br>　　缺点：某些请求的延迟会较大，且有可能会饿死。虽然有一定的措施防止请求饿死，但策略还不完善，没有一个时间上的保证。</p>
+<h4 id="Deadline"><a href="#Deadline" class="headerlink" title="Deadline"></a>Deadline</h4><p>　　这个是目前我们项目里采用的调度器。这个调度器在继承了Linus Elevator调度器的优点的同时，还回避了它的缺点。</p>
+<p><img src="/img/deadline.png" alt="deadline io scheduler"></p>
+<p>　　这个调度器维护了4个中间队列，其中sorted queue与Linus Elevator调度器的队列一样，根据磁盘块位置进行合并和排序, 不过对读写请求进行了区分，读请求和写请求分开排序，因此有两个排序队列。同时还另外增加了两个冗余队列，在请求插入sorted queue时，还会分别填充插入读请求或者写请求的超时队列。这两个冗余队列按照普通FIFO的逻辑，按时间排序。每一个请求都有一个超时时间，默认读请求的超时时间是500ms，写请求是5s。</p>
+<p>　　在一般情况下，磁盘的执行队列会从sorted queues里取出请求，优先从读请求排序队列里取，除非写请求排序队列被放弃多次。如果有读请求或者写请求超时，此时从相应的超时队列中取请求。之所以读写请求要分开队列，是因为读请求一般是同步的，对延迟更敏感，因此超时时间设得很短，并且优先级更高；而写请求一般是异步的，所以超时时间会更长，优先级较低。</p>
+<h4 id="anticipatory"><a href="#anticipatory" class="headerlink" title="anticipatory"></a>anticipatory</h4><p>　　deadline调度器有一个问题，就是它会在读写请求之间交互执行，并且优先读请求。这样当有读写混合负载，且写负载较重时，会发生磁头来回抖动，大幅度降低吞吐。anticipatory调度器就是解决这个问题。</p>
+<p>　　这个调度器建立在deadline调度器的基础上，仍然有4个队列，核心逻辑都一样。不过在完成了一个读请求时，如果此时队列里还没有请求，则不会马上切换到写队列，而是停止一段时间（默认6ms）。由于大概率会有相邻的读请求到达，因此会减少磁头抖动的现象，对整体吞吐有好处。不过如果这段停止的时间没有读请求到达，这样就纯粹是浪费时间，因此anticipatory会根据相应进程和文件系统以往的一些统计信息去预测会不会有读请求到达，如果预测会有才会停止处理原本要处理的写请求。</p>
+<p>　　这个调度器是最复杂的，而且它的功能可以通过配置其他调度器达到相似的效果，因此在linux 2.6.33版本之后被删除了。</p>
+<h4 id="CFQ"><a href="#CFQ" class="headerlink" title="CFQ"></a>CFQ</h4><p>　　叫做完全公平调度器。这个调度器的主要目标在于让磁盘带宽在所有进程中平均分配。该调度器使用多个排序队列（缺省64），当请求到达时，会把请求根据进程ID哈希到不同的队列，最终的调度队列会以轮询的方式扫描每一个排序队列取出请求。</p>
+<h4 id="Noop"><a href="#Noop" class="headerlink" title="Noop"></a>Noop</h4><p>　　最简单的调度器，基本不做什么，不排序，但还是会合并。新请求一般都是插入队尾，跟普通的FIFO差不多。一般用于随机读写较多，或者用户层本身已经做了请求排序和合并等优化的场景。</p>
+<h3 id="设备驱动层"><a href="#设备驱动层" class="headerlink" title="设备驱动层"></a>设备驱动层</h3><p>　　每一类块设备都有它的驱动程序，该驱动程序负责管理块设备的硬件读写，例如ide，scsi等设备都有自己的驱动程序，IO调度层的每一个请求实际上都会交给相应的设备驱动程序，让它们去执行硬件指令。大部分的磁盘驱动程序都采用DMA的方式去进行数据传输，DMA控制器自行在内存和IO设备间进行数据传送，当数据传送完成再通过中断通知CPU。</p>
+<h4 id="scatter-gather传送方式"><a href="#scatter-gather传送方式" class="headerlink" title="scatter-gather传送方式"></a>scatter-gather传送方式</h4><p>　　DMA传送必须满足传送的数据都是磁盘上相邻扇区的。老式的磁盘控制器还有一个限制，就是磁盘必须与内存中的连续的内存区域传送数据。新的磁盘控制器则支持scatter-gather传送方式，即磁盘区域必须要连续，但可以同时传输多段不连续的内存段。</p>
+<p>　　设备驱动程序需要向磁盘控制器发送：</p>
+<ol>
+<li>要传输的起始磁盘扇区号以及总扇区数。</li>
+<li>内存区域链表，链表中的每项包含一个内存地址还有长度。</li>
+</ol>
+<p>　　这种scatter-gather的传送方式与bio以及request结构对于内存片段的管理是一致的，实际上通用块层以及IO调度层正是为了适配设备驱动程序的这种scatter-gather传送方式而使用bio以及request结构进行管理。request的请求的合并机制可以让一次DMA传送传输尽可能多的数据。</p>
+<h4 id="策略例程"><a href="#策略例程" class="headerlink" title="策略例程"></a>策略例程</h4><p>　　每一个请求队列都有自己的request_fn方法，该方法可以调用块设备驱动程序的函数进行数据传输，这些函数就叫做策略例程。</p>
+<p>　　设备驱动程序顺序地处理请求队列中的每一个请求，并设置在数据传送完成时产生中断。当中断产生时，中断程序重新调用策略例程，如果当前请求还没有全部完成，则重新发起请求，否则在请求队列中删除该请求，并处理下一个请求。</p>
+<p>　　如果块设备控制器支持scatter-gather的传送方式，那么设备驱动程序会一次提交整个request，否则会遍历request中的每一个bio，以及bio的每一个bio_io_vec，一段一段地传送。</p>
+<p>　　中断产生时，如果请求没有完全完成，设备驱动程序会修改以下字段：</p>
+<ol>
+<li>修改bio字段使其指向第一个未完成的bio。</li>
+<li>修改未完成的bio结构，使其bi_idx字段指向第一个未完成的bio_io_vec。</li>
+<li>修改bio_io_vec的bv_offset以及bv_len，使其表示该内存段中仍需要传送的数据。</li>
+</ol>
+<h3 id="块设备文件"><a href="#块设备文件" class="headerlink" title="块设备文件"></a>块设备文件</h3><p>　　以上的讲述基本上是针对普通文件的读写，但还有一种特殊的文件需要关注，就是设备文件（/dev/sda,/dev/sdb）。</p>
+<p>　　这些设备文件仍然由VFS进行管理，相当于一个特殊的文件系统。当进程访问设备文件时，将直接驱动设备驱动程序。缺省的块设备文件的函数表如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> <span class="keyword">struct</span> file_operations def_blk_fops = &#123;</div><div class="line">	.open		= blkdev_open,</div><div class="line">	.release	= blkdev_close,</div><div class="line">	.llseek		= block_llseek,</div><div class="line">	.read		= do_sync_read,</div><div class="line">	.write		= do_sync_write,</div><div class="line">	.aio_read	= blkdev_aio_read,</div><div class="line">	.aio_write	= blkdev_aio_write,</div><div class="line">	.mmap		= generic_file_mmap,</div><div class="line">	.fsync		= blkdev_fsync,</div><div class="line">	.unlocked_ioctl	= block_ioctl,</div><div class="line">#ifdef CONFIG_COMPAT</div><div class="line">	.compat_ioctl	= compat_blkdev_ioctl,</div><div class="line">#endif</div><div class="line">	.splice_read	= generic_file_splice_read,</div><div class="line">	.splice_write	= generic_file_splice_write,</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>　　可以看到，VFS隐藏了底层文件系统的实现细节，如果是块设备的话，则会激活设备驱动程序的函数。</p>
+<p>　　每当文件系统被映射到磁盘或分区上，或者显式执行open()调用时，都会打开设备文件。设备文件也有自己的page cache，buffer cache。
+　　</p>
+<p>　　</p>
+<p>　　</p>
+<p>　　</p>
+<p>　　</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/操作系统/" rel="tag"># 操作系统</a>
+          
+            <a href="/tags/存储/" rel="tag"># 存储</a>
+          
+            <a href="/tags/文件系统/" rel="tag"># 文件系统</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/11/04/浅析fuse-kernel-mmap-write过程及性能问题/" rel="next" title="浅析fuse kernel mmap write过程及性能问题">
+                <i class="fa fa-chevron-left"></i> 浅析fuse kernel mmap write过程及性能问题
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="Gavin Wong" />
+            
+              <p class="site-author-name" itemprop="name">Gavin Wong</p>
+              <p class="site-description motion-element" itemprop="description">蟾宫桂花千里香，暖风拂面惹人狂。我欲因之凌霄起，嫦娥丹桂尽入囊。</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#文件与存储"><span class="nav-number">2.</span> <span class="nav-text">文件与存储</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#linux-io体系结构"><span class="nav-number">3.</span> <span class="nav-text">linux io体系结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#从Hello-world说起"><span class="nav-number">4.</span> <span class="nav-text">从Hello world说起</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#虚拟文件系统（VFS）"><span class="nav-number">5.</span> <span class="nav-text">虚拟文件系统（VFS）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#superblock对象"><span class="nav-number">5.1.</span> <span class="nav-text">superblock对象</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#inode对象"><span class="nav-number">5.2.</span> <span class="nav-text">inode对象</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#dentry对象"><span class="nav-number">5.3.</span> <span class="nav-text">dentry对象</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#目录项高速缓存"><span class="nav-number">5.3.1.</span> <span class="nav-text">目录项高速缓存</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#file对象"><span class="nav-number">5.4.</span> <span class="nav-text">file对象</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#vfs管理文件系统的注册与挂载"><span class="nav-number">5.5.</span> <span class="nav-text">vfs管理文件系统的注册与挂载</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#文件系统注册"><span class="nav-number">5.5.1.</span> <span class="nav-text">文件系统注册</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#文件系统挂载"><span class="nav-number">5.5.2.</span> <span class="nav-text">文件系统挂载</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#以open系统调用为例小结vfs的基本知识"><span class="nav-number">5.6.</span> <span class="nav-text">以open系统调用为例小结vfs的基本知识</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#路径查找"><span class="nav-number">5.6.1.</span> <span class="nav-text">路径查找</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#创建file对象"><span class="nav-number">5.6.2.</span> <span class="nav-text">创建file对象</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#vfs-read-vfs-write"><span class="nav-number">5.7.</span> <span class="nav-text">vfs_read, vfs_write</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#高速缓存"><span class="nav-number">6.</span> <span class="nav-text">高速缓存</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#radix-tree"><span class="nav-number">6.1.</span> <span class="nav-text">radix tree</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#计算page编号"><span class="nav-number">6.1.1.</span> <span class="nav-text">计算page编号</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#查找page"><span class="nav-number">6.1.2.</span> <span class="nav-text">查找page</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#插入新page"><span class="nav-number">6.1.3.</span> <span class="nav-text">插入新page</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#修改page"><span class="nav-number">6.1.4.</span> <span class="nav-text">修改page</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#删除page"><span class="nav-number">6.1.5.</span> <span class="nav-text">删除page</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#标记脏页和正在写回的页"><span class="nav-number">6.1.6.</span> <span class="nav-text">标记脏页和正在写回的页</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#预读"><span class="nav-number">6.2.</span> <span class="nav-text">预读</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#buffer-cache"><span class="nav-number">6.3.</span> <span class="nav-text">buffer cache</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#通用块层"><span class="nav-number">7.</span> <span class="nav-text">通用块层</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#通用块层的核心–bio"><span class="nav-number">7.1.</span> <span class="nav-text">通用块层的核心–bio</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#读page请求"><span class="nav-number">7.2.</span> <span class="nav-text">读page请求</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IO调度程序层"><span class="nav-number">8.</span> <span class="nav-text">IO调度程序层</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#请求队列与请求"><span class="nav-number">8.1.</span> <span class="nav-text">请求队列与请求</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#The-Linus-Elevator"><span class="nav-number">8.2.</span> <span class="nav-text">The Linus Elevator</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Deadline"><span class="nav-number">8.3.</span> <span class="nav-text">Deadline</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#anticipatory"><span class="nav-number">8.4.</span> <span class="nav-text">anticipatory</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#CFQ"><span class="nav-number">8.5.</span> <span class="nav-text">CFQ</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Noop"><span class="nav-number">8.6.</span> <span class="nav-text">Noop</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设备驱动层"><span class="nav-number">9.</span> <span class="nav-text">设备驱动层</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#scatter-gather传送方式"><span class="nav-number">9.1.</span> <span class="nav-text">scatter-gather传送方式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#策略例程"><span class="nav-number">9.2.</span> <span class="nav-text">策略例程</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#块设备文件"><span class="nav-number">10.</span> <span class="nav-text">块设备文件</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gavin Wong</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="//cdn.jsdelivr.net/jquery/2.1.3/jquery.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="//cdn.jsdelivr.net/fastclick/1.0.6/fastclick.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="//cdn.jsdelivr.net/jquery.lazyload/1.9.3/jquery.lazyload.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="//cdn.jsdelivr.net/velocity/1.2.3/velocity.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="//cdn.jsdelivr.net/velocity/1.2.3/velocity.ui.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="//cdn.jsdelivr.net/fancybox/2.1.5/jquery.fancybox.pack.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("EBQKkMtlkhkxwaXmaewHY2c4-gzGzoHsz", "KSypTWMBbTMgIBYw9EuDa73j");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
