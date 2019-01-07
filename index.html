@@ -407,7 +407,7 @@
           <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　IO是操作系统内核最重要的组成部分之一，它的概念很广，本文主要针对的是普通文件与设备文件的IO原理，采用自顶向下的方式，去探究从用户态的fread,fwrite函数到底层的数据是如何被读出和写入磁盘的的全过程。希望通过本文，能梳理出一条清晰的linux io过程的脉络。<br></p>
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2018/12/18/linux-io过程自顶向下分析/#more" rel="contents">
+            <a class="btn" href="/2018/12/18/linux-io过程自顶向下分析/#espandi" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -542,7 +542,7 @@
           <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　最近在项目里面用到了fuse文件系统，在使用过程中遇到了一个内核在做mmap write的一个bug，目前并没有从根本上解决这个bug，而是通过修改fuse kernel module的一些参数，绕开了这个bug。这里记录一下这个问题，并顺便梳理一下fuse在做mmap write的过程，包括如何与项目里的后台服务程序交互的。<br></p>
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2018/11/04/浅析fuse-kernel-mmap-write过程及性能问题/#more" rel="contents">
+            <a class="btn" href="/2018/11/04/浅析fuse-kernel-mmap-write过程及性能问题/#espandi" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -677,7 +677,7 @@
           <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　xv6是x86处理器上用ANSI标准C重新实现的Unix第六版(Unix V6，通常直接被称为V6)，本文主要对其中断处理过程进行分析。中断也是需要硬件和内核合作完成的，我也将从这两部分进行分析。<br></p>
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2018/09/23/xv6中断处理/#more" rel="contents">
+            <a class="btn" href="/2018/09/23/xv6中断处理/#espandi" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -812,7 +812,7 @@
           <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　xv6是x86处理器上用ANSI标准C重新实现的Unix第六版(Unix V6，通常直接被称为V6)，本文主要对其虚拟内存管理以及进程调度的部分进行分析，从源码入手去总结一下其中要点。这部分内容其实一年前就看过了，一直没时间动笔写下来，在看过了CSAPP的相关内容后，又有了新的认识，也勾起了一年前已有点模糊的记忆，还是得记录下来。本文将按内核执行的时间顺序，梳理一遍在启动内核的过程中涉及进程调度和内存管理的部分，并由此扩展开来，进行简要分析。<br></p>
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2018/09/01/xv6内存管理与进程初始化过程浅析/#more" rel="contents">
+            <a class="btn" href="/2018/09/01/xv6内存管理与进程初始化过程浅析/#espandi" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -947,7 +947,7 @@
           <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　主要介绍linux操作系统的虚拟内存以及动态内存分配的概念，从硬件，内核，用户程序3个层面自底而上地概述一下linux内存管理的要点。<br></p>
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2018/08/18/linux系统内存管理/#more" rel="contents">
+            <a class="btn" href="/2018/08/18/linux系统内存管理/#espandi" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1082,7 +1082,7 @@
           <h3 id="redis的高可用性"><a href="#redis的高可用性" class="headerlink" title="redis的高可用性"></a>redis的高可用性</h3><p>　　前一篇文章提到，redis用复制来解决可靠性，一份数据做多份冗余。但是，当master节点因为某种原因下线，还必须有一种机制能让slave节点自动地转化成master节点，对外提供写服务，保证系统的高可用性。redis的sentinel就是这样的一种机制。<br></p>
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2018/08/03/redis-sentinel与raft协议/#more" rel="contents">
+            <a class="btn" href="/2018/08/03/redis-sentinel与raft协议/#espandi" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1217,7 +1217,7 @@
           <h3 id="复制"><a href="#复制" class="headerlink" title="复制"></a>复制</h3><p>　　在分布式系统遇到网络分区故障时，往往需要依赖分区容错性来对外提供可用性和一致性服务，这就要求同一份数据在分布式环境中存在数据冗余，并在某部分数据损坏或不可访问后，仍然能够不影响用户的使用。复制便是提供这种分区容错性的常用手段，它要求同一份数据在多台机器各保存一份完整的版本。之前几篇文章介绍了redis单机版本的一些工作原理，本文便开始扩展到分布式环境，简单分析一下redis的多机版本是如何实现复制这一功能的。整个复制过程可分为master和slave两个部分介绍。<br></p>
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2018/07/23/redis复制过程浅析/#more" rel="contents">
+            <a class="btn" href="/2018/07/23/redis复制过程浅析/#espandi" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1352,7 +1352,7 @@
           <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　简单总结一下linux可执行文件的结构，以及有关链接的几个比较重要的概念，如符号表，重定位，静态链接，动态链接等。本文例子及部分描述摘自《深入理解计算机系统》及MIT教学操作系统xv6（Unix第6版用ANSI C重写）的源码。<br></p>
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2018/07/07/linux可执行文件结构及链接过程分析/#more" rel="contents">
+            <a class="btn" href="/2018/07/07/linux可执行文件结构及链接过程分析/#espandi" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1487,7 +1487,7 @@
           <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　redis服务器的设计非常精巧，涵盖了内存kv数据库要考虑的方方面面。本文旨在总结和分析单机服务器部分的工作原理以及设计思想，希望能尽可能地涵盖整个单机服务器的工作流程。<br></p>
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2018/04/16/redis-浅析单机服务器工作原理/#more" rel="contents">
+            <a class="btn" href="/2018/04/16/redis-浅析单机服务器工作原理/#espandi" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1626,7 +1626,7 @@
 </ol>
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2018/03/25/redis-浅析IO多路复用与事件处理/#more" rel="contents">
+            <a class="btn" href="/2018/03/25/redis-浅析IO多路复用与事件处理/#espandi" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1768,7 +1768,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
