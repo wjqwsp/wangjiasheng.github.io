@@ -116,7 +116,7 @@
 
 
 
-  <meta name="keywords" content="数据库,分布式,redis," />
+  <meta name="keywords" content="Hexo, NexT" />
 
 
 
@@ -127,16 +127,15 @@
 
 
 
-<meta name="description" content="复制　　在分布式系统遇到网络分区故障时，往往需要依赖分区容错性来对外提供可用性和一致性服务，这就要求同一份数据在分布式环境中存在数据冗余，并在某部分数据损坏或不可访问后，仍然能够不影响用户的使用。复制便是提供这种分区容错性的常用手段，它要求同一份数据在多台机器各保存一份完整的版本。之前几篇文章介绍了redis单机版本的一些工作原理，本文便开始扩展到分布式环境，简单分析一下redis的多机版本是如何">
-<meta property="og:type" content="article">
-<meta property="og:title" content="redis复制过程浅析">
-<meta property="og:url" content="http://wjqwsp.github.io/2018/07/23/redis复制过程浅析/index.html">
+<meta name="description" content="蟾宫桂花千里香，暖风拂面惹人狂。我欲因之凌霄起，嫦娥丹桂尽入囊。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="南国倾城">
+<meta property="og:url" content="http://wjqwsp.github.io/archives/2019/index.html">
 <meta property="og:site_name" content="南国倾城">
-<meta property="og:description" content="复制　　在分布式系统遇到网络分区故障时，往往需要依赖分区容错性来对外提供可用性和一致性服务，这就要求同一份数据在分布式环境中存在数据冗余，并在某部分数据损坏或不可访问后，仍然能够不影响用户的使用。复制便是提供这种分区容错性的常用手段，它要求同一份数据在多台机器各保存一份完整的版本。之前几篇文章介绍了redis单机版本的一些工作原理，本文便开始扩展到分布式环境，简单分析一下redis的多机版本是如何">
-<meta property="og:updated_time" content="2018-07-23T17:20:01.405Z">
+<meta property="og:description" content="蟾宫桂花千里香，暖风拂面惹人狂。我欲因之凌霄起，嫦娥丹桂尽入囊。">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="redis复制过程浅析">
-<meta name="twitter:description" content="复制　　在分布式系统遇到网络分区故障时，往往需要依赖分区容错性来对外提供可用性和一致性服务，这就要求同一份数据在分布式环境中存在数据冗余，并在某部分数据损坏或不可访问后，仍然能够不影响用户的使用。复制便是提供这种分区容错性的常用手段，它要求同一份数据在多台机器各保存一份完整的版本。之前几篇文章介绍了redis单机版本的一些工作原理，本文便开始扩展到分布式环境，简单分析一下redis的多机版本是如何">
+<meta name="twitter:title" content="南国倾城">
+<meta name="twitter:description" content="蟾宫桂花千里香，暖风拂面惹人狂。我欲因之凌霄起，嫦娥丹桂尽入囊。">
 
 
 
@@ -166,13 +165,13 @@
 
 
 
-  <link rel="canonical" href="http://wjqwsp.github.io/2018/07/23/redis复制过程浅析/"/>
+  <link rel="canonical" href="http://wjqwsp.github.io/archives/2019/"/>
 
 
 
 
 
-  <title>redis复制过程浅析 | 南国倾城</title>
+  <title>归档 | 南国倾城</title>
   
 
 
@@ -191,7 +190,7 @@
     
   
 
-  <div class="container sidebar-position-left page-post-detail">
+  <div class="container sidebar-position-left page-archive">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -309,192 +308,73 @@
           <div id="content" class="content">
             
 
-  <div id="posts" class="posts-expand">
-    
+  
+  
+  
+  <div class="post-block archive">
+    <div id="posts" class="posts-collapse">
+      <span class="archive-move-on"></span>
 
-  
+      <span class="archive-page-counter">
+        
+        
+         
+        
+        OK! 目前共计 40 篇日志。 继续努力。
+      </span>
 
-  
-  
-  
+      
+
+        
+        
+        
+
+        
+          
+          <div class="collection-title">
+            <h1 class="archive-year" id="archive-year-2019">2019</h1>
+          </div>
+        
+        
+
+        
 
   <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://wjqwsp.github.io/2018/07/23/redis复制过程浅析/">
+    <header class="post-header">
 
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Gavin Wong">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/uploads/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="南国倾城">
-    </span>
-
-    
-      <header class="post-header">
-
+      <h2 class="post-title">
         
-        
-          <h1 class="post-title" itemprop="name headline">redis复制过程浅析</h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
+            <a class="post-title-link" href="/2019/04/13/raft协议实现分析/" itemprop="url">
               
-                <span class="post-meta-item-text">发表于</span>
+                <span itemprop="name">raft协议实现分析</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-23T21:01:00+08:00">
-                2018-07-23
-              </time>
-            
+            </a>
+        
+      </h2>
 
-            
+      <div class="post-meta">
+        <time class="post-time" itemprop="dateCreated"
+              datetime="2019-04-13T14:19:12+08:00"
+              content="2019-04-13" >
+          04-13
+        </time>
+      </div>
 
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-             <span id="/2018/07/23/redis复制过程浅析/" class="leancloud_visitors" data-flag-title="redis复制过程浅析">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">阅读次数&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-             </span>
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        <h3 id="复制"><a href="#复制" class="headerlink" title="复制"></a>复制</h3><p>　　在分布式系统遇到网络分区故障时，往往需要依赖分区容错性来对外提供可用性和一致性服务，这就要求同一份数据在分布式环境中存在数据冗余，并在某部分数据损坏或不可访问后，仍然能够不影响用户的使用。复制便是提供这种分区容错性的常用手段，它要求同一份数据在多台机器各保存一份完整的版本。之前几篇文章介绍了redis单机版本的一些工作原理，本文便开始扩展到分布式环境，简单分析一下redis的多机版本是如何实现复制这一功能的。整个复制过程可分为master和slave两个部分介绍。<br><a id="more"></a></p>
-<h3 id="slave"><a href="#slave" class="headerlink" title="slave"></a>slave</h3><p>　　每一个redis进程都有两种身份，一种是master，另一种是slave。master负责接收数据写入，同时有一个或多个slave作为数据备份，一般的业务场景是一个master维护多个slave，slave同时也可以是其他slave的master。master和slave之间是客户端-服务器的形式通信，与单机版本服务器处理客户端的模型一样，也是IO多路复用，读写绑定不同的事件处理器。其中master是slave的客户端，把其他客户端的命令原封不动转发给slave。slave也是master的客户端，定期向master汇报当前的复制偏移量。</p>
-<p>　　由于复制过程是slave发起的，便先从slave这一端介绍。无论master还是slave，在处理复制这一过程里实际上便是实现了一套通信协议，这个协议涉及master和slave在多个状态之间转换，因此master和slave都相当于状态机。我们只要关注这几个状态的转移，便可以理清整个复制过程。</p>
-<h4 id="REDIS-REPL-NONE"><a href="#REDIS-REPL-NONE" class="headerlink" title="REDIS_REPL_NONE"></a>REDIS_REPL_NONE</h4><p>　　第一个状态是REDIS_REPL_NONE，代表不进行复制，该进程是单机进程。</p>
-<h4 id="REDIS-REPL-CONNECT"><a href="#REDIS-REPL-CONNECT" class="headerlink" title="REDIS_REPL_CONNECT"></a>REDIS_REPL_CONNECT</h4><p>　　第二个状态是REDIS_REPL_CONNECT,这个状态的含义是尝试连接master。REDIS_REPL_NONE与REDIS_REPL_CONNECT之间转移是通过命令slaveof实现的。<code>slaveof no one</code>取消复制，从REDIS_REPL_CONNECT转移到REDIS_REPL_NONE；<code>slaveof ip port</code>开始复制，设置master服务器的ip和port，同时完成从REDIS_REPL_NONE到REDIS_REPL_CONNECT的状态转移。</p>
-<h4 id="REDIS-REPL-CONNECTING"><a href="#REDIS-REPL-CONNECTING" class="headerlink" title="REDIS_REPL_CONNECTING"></a>REDIS_REPL_CONNECTING</h4><p>　　第三个状态是REDIS_REPL_CONNECTING，代表正在连接。redis的定时函数serverCron里，每秒钟会调用一次replicationCron函数，这个函数会检查当进程状态是REDIS_REPL_CONNECTING时，尝试建立与master的socket连接。前面说过，复制过程的master和slave也是沿用了redis单机版的客户端-服务器通信模型，并且在slaveof命令时已然获取了master的ip和port，那么就可以建立socket连接了。由于redis采用单线程Io多路复用模型，注重高性能，不能容忍任何形式的长时间阻塞，因此尝试建立socket的过程也是无阻塞的，如果失败立即返回。socket建立成功后，则正式进入REDIS_REPL_CONNECTING状态，并且给socket绑定读写事件处理器syncWithMaster，这个事件处理器会完成开启数据同步的任务。</p>
-<h4 id="REDIS-REPL-RECEIVE-PONG"><a href="#REDIS-REPL-RECEIVE-PONG" class="headerlink" title="REDIS_REPL_RECEIVE_PONG"></a>REDIS_REPL_RECEIVE_PONG</h4><p>　　第四个状态是REDIS_REPL_RECEIVE_PONG，代表等待PONG到达。由于之后的数据传输非常耗时，同时需要占用大量带宽，这个状态主要是测试master和slave之间的网络是否健康，能否承担起之后的数据传输重任。redis的IO多路复用模型检查master的socket是否可写，可写则调用syncWithMaster函数，当检测到当前状态是REDIS_REPL_CONNECTING时，会往master发送PING，等待PONG到达，此时状态转换为REDIS_REPL_RECEIVE_PONG，并解除写事件处理器的绑定，以防再次因为可写而反复调用syncWithMaster。如果超过一定时间，redis进程状态仍为REDIS_REPL_CONNECTING或REDIS_REPL_RECEIVE_PONG，那么说明网络条件不好，状态退回到REDIS_REPL_CONNECT，关闭socket连接，解除事件处理器绑定，等到在定时函数中再次尝试连接master。</p>
-<h4 id="REDIS-REPL-TRANSFER"><a href="#REDIS-REPL-TRANSFER" class="headerlink" title="REDIS_REPL_TRANSFER"></a>REDIS_REPL_TRANSFER</h4><p>　　第五个状态是REDIS_REPL_TRANSFER，代表开始接受master的数据传输。在规定时间内收到PONG，那么首先会开启部分重同步或者完整重同步。这里先介绍一下部分重同步和完整重同步，以及涉及到的几个技术点。</p>
-<h5 id="部分重同步"><a href="#部分重同步" class="headerlink" title="部分重同步"></a>部分重同步</h5><p>　　对于不是第一次进行复制的redis进程，可能之前已经有master的大部分数据了，只是由于网络故障等原因断开了连接，此时不需要把master的全部数据都传输一遍，只需要传输缺少的部分就可以。redis进程的主要业务就是执行命令，因此维护了一个叫复制缓冲区的东西，每当有命令到达，就把该命令语句追加到复制缓冲区中，同时维护一个只增的复制偏移量，一直往上加命令语句的字节数。复制缓冲区在内部是用在内存的环形列表实现的，其大小一般设为2<em>平均每秒产生的写命令长度总和</em>断线到重连接的平均时间。这个区域越大，则重连接时传输的数据越少，同步越快，同时消耗的内存也会增加。</p>
-<h5 id="完整重同步"><a href="#完整重同步" class="headerlink" title="完整重同步"></a>完整重同步</h5><p>　　如果slave的复制偏移量已经不在复制缓冲区的范围内，就需要进行完整重同步了。完整重同步会传输一个RDB文件到slave上，然后由slave加载。之所以选择RDB文件，是因为它是二进制文件，体积小，便于传输，同时包含了完整的数据。</p>
-<p>　　slave在REDIS_REPL_RECEIVE_PONG状态下在规定时间内收到PONG，会解除读事件处理器的绑定，因为暂时不再需要了，同时向master发送PSYNC命令<code>PSYNC master_id offset</code>。由于之前可能有master连接过，所以这里可以带上master对应的redis进程的id， offset代表当前slave的复制偏移量。master会判断id是否是自身的id，并且offset是否在复制缓冲区内，如果是则进行部分重同步，向slave发送”+CONTINUE”回复；如果有一个条件不满足，则向slave发送”+FULLRESYNC”回复，进行完整重同步。如果是第一次进行复制，那么slave向master发送<code>PSYNC ？ -1</code>，在master返回”+FULLRESYNC”后进行完整重同步。这个过程redis涉及到对socket的读和写，在一般情况下，读写绑定了不同的事件处理器，是异步进行的，但在这里是同步地发出psync命令，然后同步地收取回复。具体的实现就是立即等待单个socket的数据，并设置超时时间。</p>
-<p>　　如果是完整重同步的情况，收到psync回复后，绑定新的读事件处理器readSyncBulkPayload，这个函数会读取master传来的RDB文件，然后写入到一个临时文件中，状态转换为REDIS_REPL_TRANSFER。如果是部分重同步，就比较简单了，状态直接转换为REDIS_REPL_CONNECTED，绑定读写事件处理器readQueryFromClient和sendReplyToClient。这两个事件处理器就和普通的客户端-服务器形式没有任何区别了，仅仅是用来处理各种redis命令。</p>
-<h4 id="REDIS-REPL-CONNECTED"><a href="#REDIS-REPL-CONNECTED" class="headerlink" title="REDIS_REPL_CONNECTED"></a>REDIS_REPL_CONNECTED</h4><p>　　第六个状态是REDIS_REPL_CONNECTED，代表已连接。这个状态可以在完整重同步完成后由REDIS_REPL_TRANSFER转换得到。当处在REDIS_REPL_TRANSFER状态时，首先会等待master完成写RDB文件，在写完后，会先往slave发送RDB文件的大小，然后开始发送RDB文件。每次读事件发生，slave会以4k为单位读取数据，剩余的数据留到下次再读，避免阻塞其他客户端。同时每写一定的数据到磁盘，都会手动sync一次，避免一次写磁盘用满IO，导致响应缓慢。当判断已读数据达到RDB文件的大小时，解除读事件处理器，清空原来数据库，然后加载RDB文件。这个过程会一直阻塞，直到数据加载成功。然后状态转换为REDIS_REPL_CONNECTED。</p>
-<p>　　在每次读事件发生时，会更新slave与master的交互时间，如果长时间没有数据到达，那么会在replicationCron函数里停掉这个传输过程，并把状态回退到REDIS_REPL_CONNECT。由于master写RDB文件可能耗时较长，因此master会在replicationCron里发送\0给这个状态的slave，slave收到以后仅仅更新交互时间。同时由于slave在清空数据库或者载入RDB文件时，可能会耗时较久，为了避免master认为slave断开，slave也会定时发送\0到master。</p>
-<p>　　master会在replicationCron里向所有online的slave发送ping命令，以让slave更新与服务器的交互时间。当处在REDIS_REPL_CONNECTED状态的slave超过一定时间没有收到master的命令，那么便认为连接中断了，会关闭socket，状态回退到REDIS_REPL_CONNECT。</p>
-<h3 id="master"><a href="#master" class="headerlink" title="master"></a>master</h3><p>　　master这端维护多个slave，每个slave对应的client也是一个状态机，其状态与slave的状态也是有一定的对应关系的。</p>
-<h4 id="REDIS-REPL-NONE-1"><a href="#REDIS-REPL-NONE-1" class="headerlink" title="REDIS_REPL_NONE"></a>REDIS_REPL_NONE</h4><p>　　这个状态与slave的REDIS_REPL_NONE是完全对应的，代表该客户端不是slave。</p>
-<h4 id="REDIS-REPL-ONLINE"><a href="#REDIS-REPL-ONLINE" class="headerlink" title="REDIS_REPL_ONLINE"></a>REDIS_REPL_ONLINE</h4><p>　　这个状态代表slave就绪，与master的复制关系已经建立。master开始复制的生命周期，是从slave发送psync指令开始的，如果可以进行部分重同步，那么直接跳到这个状态，并且把复制缓冲区中slave缺失的部分发给它。</p>
-<h4 id="REDIS-REPL-WAIT-BGSAVE-START"><a href="#REDIS-REPL-WAIT-BGSAVE-START" class="headerlink" title="REDIS_REPL_WAIT_BGSAVE_START"></a>REDIS_REPL_WAIT_BGSAVE_START</h4><p>　　如果在开启完整重同步后，发现之前已经有后台的写rdb进程在工作，并且这个进程不是为其他slave的复制准备的，那么进入REDIS_REPL_WAIT_BGSAVE_START状态，等待下一次写RDB文件开启。redis会在rdb进程结束的回调函数里把所有处于该状态的slave的状态转换为REDIS_REPL_WAIT_BGSAVE_END。该状态对应slave的REDIS_REPL_TRANSFER状态。</p>
-<h4 id="REDIS-REPL-WAIT-BGSAVE-END"><a href="#REDIS-REPL-WAIT-BGSAVE-END" class="headerlink" title="REDIS_REPL_WAIT_BGSAVE_END"></a>REDIS_REPL_WAIT_BGSAVE_END</h4><p>　　如果在开启完整重同步后，之前并没有rdb进程在工作，那么开始新的写rdb进程，进入REDIS_REPL_WAIT_BGSAVE_END状态，等待rdb进程结束。或者rdb进程为其他slave的复制作准备，那么复制其他slave的输出缓冲区，以共用之后的rdb数据。该状态也对应slave的REDIS_REPL_TRANSFER状态。</p>
-<h4 id="REDIS-REPL-SEND-BULK"><a href="#REDIS-REPL-SEND-BULK" class="headerlink" title="REDIS_REPL_SEND_BULK"></a>REDIS_REPL_SEND_BULK</h4><p>　　当RDB文件写入完毕，会调用回调函数，该函数会遍历所有slave，把状态为REDIS_REPL_WAIT_BGSAVE_END<br>的slave转换为REDIS_REPL_SEND_BULK，然后重新绑定新的写事件处理器sendBulkToSlave，打开RDB文件，准备传输。该状态同样对应slave的REDIS_REPL_TRANSFER状态。</p>
-<p>　　IO多路复用模型每次发现slave可写，就调用sendBulkToSlave函数，读取一定的RDB数据，然后写到网络上。每次不能写太多数据，避免阻塞其他客户端。当RDB文件传送完毕后，状态转移到REDIS_REPL_ONLINE。</p>
-<h3 id="异步复制"><a href="#异步复制" class="headerlink" title="异步复制"></a>异步复制</h3><p>　　当复制建立完成，数据完成同步后，之后master的每次写操作都会在slave端回放一遍。redis为了高性能，复制是异步完成的，命令返回的时候slave不一定能把命令执行完。但slave会在replicationCron函数里向master发送命令<code>REPLCONF ACK offset</code>，汇报自己的复制偏移量。master收到以后更新client的复制偏移量，以及交互时间。当超过一定数量的slave的交互时间相隔过长，就会禁止写入新数据。</p>
-<h3 id="同步复制"><a href="#同步复制" class="headerlink" title="同步复制"></a>同步复制</h3><p>　　redis的复制默认是异步的，如果需要同步复制，那么可以用WAIT命令来实现。每当有命令执行时，redis都会记录当前的复制偏移量到客户端状态里。当调用WAIT命令时，用户指定至少多少个replication成功以及超时时间。redis会把客户端加到等待slave响应的队列里，并把客户端状态设置为REDIS_BLOCKED_WAIT。处于该状态的客户端无法处理socket的输入数据，后续命令会在输入缓冲区堆积，直到WAIT之前的命令复制完成或者超时。</p>
-<p>　　在每次进入IO多路复用的等待事件前，会调用beforeSleep函数，该函数会给所有slave发送<code>REPLCONF GETACK</code>命令，收到该命令的slave会马上发送自己的复制偏移量给master。beforeSleep函数还会检查等待slave响应队列里是否有客户端的有足够多的slave的复制偏移量不少于要求的值，足够的话就解除block，把客户端状态设为REDIS_UNBLOCKED，并让这些客户端开始处理输入缓冲区的命令。</p>
-<p>　　在serverCron里还会对所有block的客户端进行检查，如果达到超时时间，就解除这些客户端的block，并通知这些客户端超时。</p>
-<p>　　</p>
-
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-        <div class="post-tags">
-          
-            <a href="/tags/数据库/" rel="tag"># 数据库</a>
-          
-            <a href="/tags/分布式/" rel="tag"># 分布式</a>
-          
-            <a href="/tags/redis/" rel="tag"># redis</a>
-          
-        </div>
-      
-
-      
-      
-      
-
-      
-        <div class="post-nav">
-          <div class="post-nav-next post-nav-item">
-            
-              <a href="/2018/07/07/linux可执行文件结构及链接过程分析/" rel="next" title="linux可执行文件结构及链接过程分析">
-                <i class="fa fa-chevron-left"></i> linux可执行文件结构及链接过程分析
-              </a>
-            
-          </div>
-
-          <span class="post-nav-divider"></span>
-
-          <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2018/08/03/redis-sentinel与raft协议/" rel="prev" title="redis sentinel与raft协议">
-                redis sentinel与raft协议 <i class="fa fa-chevron-right"></i>
-              </a>
-            
-          </div>
-        </div>
-      
-
-      
-      
-    </footer>
-  </div>
-  
-  
-  
+    </header>
   </article>
 
 
 
-    <div class="post-spread">
       
+
     </div>
   </div>
+  
+  
+  
+
+  
+
 
 
           </div>
@@ -502,10 +382,6 @@
 
 
           
-
-  
-
-
 
         </div>
         
@@ -526,17 +402,8 @@
       
 
       
-        <ul class="sidebar-nav motion-element">
-          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            文章目录
-          </li>
-          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            站点概览
-          </li>
-        </ul>
-      
 
-      <section class="site-overview-wrap sidebar-panel">
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -591,22 +458,6 @@
         </div>
       </section>
 
-      
-      <!--noindex-->
-        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
-          <div class="post-toc">
-
-            
-              
-            
-
-            
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#复制"><span class="nav-number">1.</span> <span class="nav-text">复制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#slave"><span class="nav-number">2.</span> <span class="nav-text">slave</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#REDIS-REPL-NONE"><span class="nav-number">2.1.</span> <span class="nav-text">REDIS_REPL_NONE</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#REDIS-REPL-CONNECT"><span class="nav-number">2.2.</span> <span class="nav-text">REDIS_REPL_CONNECT</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#REDIS-REPL-CONNECTING"><span class="nav-number">2.3.</span> <span class="nav-text">REDIS_REPL_CONNECTING</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#REDIS-REPL-RECEIVE-PONG"><span class="nav-number">2.4.</span> <span class="nav-text">REDIS_REPL_RECEIVE_PONG</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#REDIS-REPL-TRANSFER"><span class="nav-number">2.5.</span> <span class="nav-text">REDIS_REPL_TRANSFER</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#部分重同步"><span class="nav-number">2.5.1.</span> <span class="nav-text">部分重同步</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#完整重同步"><span class="nav-number">2.5.2.</span> <span class="nav-text">完整重同步</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#REDIS-REPL-CONNECTED"><span class="nav-number">2.6.</span> <span class="nav-text">REDIS_REPL_CONNECTED</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#master"><span class="nav-number">3.</span> <span class="nav-text">master</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#REDIS-REPL-NONE-1"><span class="nav-number">3.1.</span> <span class="nav-text">REDIS_REPL_NONE</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#REDIS-REPL-ONLINE"><span class="nav-number">3.2.</span> <span class="nav-text">REDIS_REPL_ONLINE</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#REDIS-REPL-WAIT-BGSAVE-START"><span class="nav-number">3.3.</span> <span class="nav-text">REDIS_REPL_WAIT_BGSAVE_START</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#REDIS-REPL-WAIT-BGSAVE-END"><span class="nav-number">3.4.</span> <span class="nav-text">REDIS_REPL_WAIT_BGSAVE_END</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#REDIS-REPL-SEND-BULK"><span class="nav-number">3.5.</span> <span class="nav-text">REDIS_REPL_SEND_BULK</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#异步复制"><span class="nav-number">4.</span> <span class="nav-text">异步复制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#同步复制"><span class="nav-number">5.</span> <span class="nav-text">同步复制</span></a></li></ol></div>
-            
-
-          </div>
-        </section>
-      <!--/noindex-->
       
 
       
@@ -747,10 +598,6 @@
 
 
   
-  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
-<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
-
-
 
   
 

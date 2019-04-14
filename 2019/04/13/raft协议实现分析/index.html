@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+  <link href="//cdn.jsdelivr.net/fancybox/2.1.5/jquery.fancybox.min.css" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Lobster Two:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+  
+
+<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.2/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="分布式,存储," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前言　　之前也细读过raft协议论文，项目里也独立实现过，不过做了mit 6.824的lab2之后，才发现有很多细节没有注意到，论文里figure 2的每一句话真的都需要完全毫无偏差的实现，不然肯定有某些corner case没考虑到。本文就分析一下mit 6.824课程lab2里raft协议实现的思路和细节，以及总结一些注意事项，代码可见个人github仓库https://github.com/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="raft协议实现分析">
+<meta property="og:url" content="http://wjqwsp.github.io/2019/04/13/raft协议实现分析/index.html">
+<meta property="og:site_name" content="南国倾城">
+<meta property="og:description" content="前言　　之前也细读过raft协议论文，项目里也独立实现过，不过做了mit 6.824的lab2之后，才发现有很多细节没有注意到，论文里figure 2的每一句话真的都需要完全毫无偏差的实现，不然肯定有某些corner case没考虑到。本文就分析一下mit 6.824课程lab2里raft协议实现的思路和细节，以及总结一些注意事项，代码可见个人github仓库https://github.com/">
+<meta property="og:updated_time" content="2019-04-14T09:41:01.082Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="raft协议实现分析">
+<meta name="twitter:description" content="前言　　之前也细读过raft协议论文，项目里也独立实现过，不过做了mit 6.824的lab2之后，才发现有很多细节没有注意到，论文里figure 2的每一句话真的都需要完全毫无偏差的实现，不然肯定有某些corner case没考虑到。本文就分析一下mit 6.824课程lab2里raft协议实现的思路和细节，以及总结一些注意事项，代码可见个人github仓库https://github.com/">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: 'undefined',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://wjqwsp.github.io/2019/04/13/raft协议实现分析/"/>
+
+
+
+
+
+  <title>raft协议实现分析 | 南国倾城</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">南国倾城</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">左手代码，右手年华</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://wjqwsp.github.io/2019/04/13/raft协议实现分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Gavin Wong">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="南国倾城">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">raft协议实现分析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-04-13T14:19:12+08:00">
+                2019-04-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2019/04/13/raft协议实现分析/" class="leancloud_visitors" data-flag-title="raft协议实现分析">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　之前也细读过raft协议论文，项目里也独立实现过，不过做了mit 6.824的lab2之后，才发现有很多细节没有注意到，论文里figure 2的每一句话真的都需要完全毫无偏差的实现，不然肯定有某些corner case没考虑到。本文就分析一下mit 6.824课程lab2里raft协议实现的思路和细节，以及总结一些注意事项，代码可见个人github仓库<a href="https://github.com/wjqwsp/MIT-6.824-2018，最新的名为“raft”的commit里，用golang实现。后续还会在这个仓库里不断补全课程的其他实验代码。本文不会详细阐述raft的原理和细节，只关注实现和注意事项。" target="_blank" rel="external">https://github.com/wjqwsp/MIT-6.824-2018，最新的名为“raft”的commit里，用golang实现。后续还会在这个仓库里不断补全课程的其他实验代码。本文不会详细阐述raft的原理和细节，只关注实现和注意事项。</a><br>&lt;!– more –!&gt;</p>
+<h3 id="整体结构"><a href="#整体结构" class="headerlink" title="整体结构"></a>整体结构</h3><p>　　本文主要针对raft论文的核心部分：leader选举以及数据复制、一致性检测与恢复两个内容的实现进行分析。</p>
+<p>　　每个raft实例包含3个常驻线程，分别执行发送心跳、发起选举、apply状态机3个任务。同时每个raft实例之间用rpc方式通信，每个实例都有两个rpc回调，分别是AppendEntries和RequestVote，处理数据复制、心跳以及选举的请求。主要有以下几个结构体：raft实例，AppendEntries请求，AppendEntries回复，RequestVote请求，RequestVote回复。主要还是按照论文里figure 2的定义确定结构体包含哪些数据域。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//</span></div><div class="line"><span class="comment">// A Go object implementing a single Raft peer.</span></div><div class="line"><span class="comment">//</span></div><div class="line"><span class="keyword">type</span> Raft <span class="keyword">struct</span> &#123;</div><div class="line">	mu        sync.Mutex          <span class="comment">// Lock to protect shared access to this peer's state</span></div><div class="line">	peers     []*labrpc.ClientEnd <span class="comment">// RPC end points of all peers</span></div><div class="line">	persister *Persister          <span class="comment">// Object to hold this peer's persisted state</span></div><div class="line">	me        <span class="keyword">int</span>                 <span class="comment">// this peer's index into peers[]</span></div><div class="line"></div><div class="line">	<span class="comment">// Your data here (2A, 2B, 2C).</span></div><div class="line">	<span class="comment">// Look at the paper's Figure 2 for a description of what</span></div><div class="line">	<span class="comment">// state a Raft server must maintain.</span></div><div class="line">	state            raftState</div><div class="line">	currentTerm      <span class="keyword">int</span></div><div class="line">	votedFor         <span class="keyword">int</span></div><div class="line">	votesNums        <span class="keyword">int</span></div><div class="line">	leaderId         <span class="keyword">int</span></div><div class="line">	lastHeatbeatTime <span class="keyword">int64</span></div><div class="line"></div><div class="line">	log              []Entry</div><div class="line">	commitIndex      <span class="keyword">int</span></div><div class="line">	lastApplied		 <span class="keyword">int</span></div><div class="line">	nextIndex        []<span class="keyword">int</span></div><div class="line">	matchIndex       []<span class="keyword">int</span></div><div class="line"></div><div class="line">	needApplyChan    <span class="keyword">chan</span> needApplyRange</div><div class="line">	applyChan        <span class="keyword">chan</span> ApplyMsg</div><div class="line"></div><div class="line">	debug            <span class="keyword">int</span></div><div class="line"></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">type</span> raftState <span class="keyword">string</span></div><div class="line"></div><div class="line"><span class="keyword">const</span> (</div><div class="line">	candidate raftState = <span class="string">"candidate"</span></div><div class="line">	follower            = <span class="string">"follower"</span></div><div class="line">	leader              = <span class="string">"leader"</span></div><div class="line">）</div><div class="line"></div><div class="line"><span class="comment">//</span></div><div class="line"><span class="comment">// example RequestVote RPC arguments structure.</span></div><div class="line"><span class="comment">// field names must start with capital letters!</span></div><div class="line"><span class="comment">//</span></div><div class="line"><span class="keyword">type</span> RequestVoteArgs <span class="keyword">struct</span> &#123;</div><div class="line">	<span class="comment">// Your data here (2A, 2B).</span></div><div class="line">	Term        <span class="keyword">int</span></div><div class="line">	CandidateId <span class="keyword">int</span></div><div class="line">	LastLogIndex <span class="keyword">int</span></div><div class="line">	LastLogTerm <span class="keyword">int</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">//</span></div><div class="line"><span class="comment">// example RequestVote RPC reply structure.</span></div><div class="line"><span class="comment">// field names must start with capital letters!</span></div><div class="line"><span class="comment">//</span></div><div class="line"><span class="keyword">type</span> RequestVoteReply <span class="keyword">struct</span> &#123;</div><div class="line">	<span class="comment">// Your data here (2A).</span></div><div class="line">	Term        <span class="keyword">int</span></div><div class="line">	VoteGranted <span class="keyword">bool</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">type</span> AppendEntriesArgs <span class="keyword">struct</span> &#123;</div><div class="line">	Term     <span class="keyword">int</span></div><div class="line">	LeaderId <span class="keyword">int</span></div><div class="line">	PrevLogIndex <span class="keyword">int</span></div><div class="line">	PrevLogTerm <span class="keyword">int</span></div><div class="line">	Entries []Entry</div><div class="line">	LeaderCommit <span class="keyword">int</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">type</span> AppendEntriesReply <span class="keyword">struct</span> &#123;</div><div class="line">	Term    <span class="keyword">int</span></div><div class="line">	Success <span class="keyword">bool</span></div><div class="line">	ConflictTerm <span class="keyword">int</span></div><div class="line">	ConflictIndex <span class="keyword">int</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">type</span> Entry <span class="keyword">struct</span> &#123;</div><div class="line">	Command <span class="keyword">interface</span>&#123;&#125;</div><div class="line">	Term <span class="keyword">int</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="leader选举"><a href="#leader选举" class="headerlink" title="leader选举"></a>leader选举</h3><p>　　raft协议的Leader选举主要由term决定。term相当于逻辑时钟，时间轴按term分成长度不等的时间片段，每个term内最多只能有一个leader。如果不考虑数据复制的话，仅仅用term按照先到先得的投票逻辑就能决出一个leader。在每一个term内，每个server最多只能投出一票给某一个server，然后获得超过半数票数的server会当选为该term的leader。leader会通过心跳(heartbeat timeout)来维持自己的统治地位，当超过一定时间（election timeout）其他follower没有收到该Leader的心跳，则会转换为candidate状态，然后发起选举。如果加入了数据复制功能，那么选举逻辑就要加一点限制，不再是先到先得了，而是要看谁的log里的数据最新。因为raft协议是多数节点同步的，所以只要某个请求被commit了，只要多数节点在线，当选的leader就必然有最新commit的数据。</p>
+<h4 id="raft实例初始化"><a href="#raft实例初始化" class="headerlink" title="raft实例初始化"></a>raft实例初始化</h4><figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">Make</span><span class="params">(peers []*labrpc.ClientEnd, me <span class="keyword">int</span>,</span></span></div><div class="line">	persister *Persister, applyCh <span class="keyword">chan</span> ApplyMsg) *<span class="title">Raft</span> &#123;</div><div class="line">	rf := &amp;Raft&#123;&#125;</div><div class="line">	rf.peers = peers</div><div class="line">	rf.persister = persister</div><div class="line">	rf.me = me</div><div class="line"></div><div class="line">	<span class="comment">// Your initialization code here (2A, 2B, 2C).</span></div><div class="line">	rf.debug = Debug</div><div class="line">	rf.applyChan = applyCh</div><div class="line">	rf.needApplyChan = <span class="built_in">make</span>(<span class="keyword">chan</span> needApplyRange)</div><div class="line">	rf.state = follower</div><div class="line">	rf.lastHeartbeatTime = time.Now().UnixNano()</div><div class="line">	rf.votedFor = <span class="number">-1</span></div><div class="line">	rf.log = <span class="built_in">append</span>(rf.log, Entry&#123;Term: <span class="number">0</span>&#125;)</div><div class="line">	rf.nextIndex = <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="built_in">len</span>(rf.peers))</div><div class="line">	rf.matchIndex = <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="built_in">len</span>(rf.peers))</div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="built_in">len</span>(rf.peers); i++ &#123;</div><div class="line">		rf.nextIndex[i] = <span class="number">1</span></div><div class="line">		rf.matchIndex[i] = <span class="number">0</span></div><div class="line">	&#125;</div><div class="line"></div><div class="line">	<span class="comment">// initialize from state persisted before a crash</span></div><div class="line">	rf.readPersist(persister.ReadRaftState())</div><div class="line"></div><div class="line">	<span class="keyword">go</span> rf.sendHeartbeat()</div><div class="line">	<span class="keyword">go</span> rf.elect()</div><div class="line">	<span class="keyword">go</span> rf.apply()</div><div class="line"></div><div class="line">	rf.DPrintf(<span class="string">"server %v state %+v\n\n"</span>, rf.me, rf)</div><div class="line"></div><div class="line">	<span class="keyword">return</span> rf</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　初始化raft结构体，然后启动3个常驻线程。raft结构体里跟选举相关的最重要的几个字段是state,currentTerm, lastHeartbeatTime,log,votedFor和persister。其中votedFor，log和currentTerm是需要持久化的。在每次raft实例启动的时候，都要读取之前持久化的状态。因为raft协议的正确性保证的必要条件之一是每个term里每个server最多只能投出一票。设想一下这个情况，如果某个server投出了一票，就挂了，然后很快重启起来，如果没有保存之前投票的状态，就可能会重新投给别的server，很可能出现多个leader的脑裂情况。log的话不用说肯定是要持久化的，后续的数据恢复、同步以及leader重选都要用到。</p>
+<p>　　下面主要看一下sendHeartbeat和elect两个函数，分别处理发送心跳和发起选举两个任务。</p>
+<h4 id="发送心跳"><a href="#发送心跳" class="headerlink" title="发送心跳"></a>发送心跳</h4><figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rf *Raft)</span> <span class="title">sendHeartbeat</span><span class="params">()</span></span> &#123;</div><div class="line">	<span class="keyword">for</span> &#123;</div><div class="line">		currentTerm, isleader := rf.GetState()</div><div class="line">		rf.mu.Lock()</div><div class="line">		<span class="keyword">if</span> isleader &#123;</div><div class="line">			<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="built_in">len</span>(rf.peers); i++ &#123;</div><div class="line">				<span class="keyword">if</span> i != rf.me &#123;</div><div class="line">					rf.DPrintf(<span class="string">"server %v prevlogindex %v\n\n"</span>, i, rf.nextIndex[i] - <span class="number">1</span>)</div><div class="line">					<span class="keyword">var</span> entries []Entry</div><div class="line">					<span class="keyword">if</span> rf.nextIndex[i] &gt; <span class="built_in">len</span>(rf.log) - <span class="number">1</span> &#123;</div><div class="line">						entries = []Entry&#123;&#125;</div><div class="line">					&#125;<span class="keyword">else</span> &#123;</div><div class="line">						entries = rf.log[rf.nextIndex[i]:]</div><div class="line">					&#125;</div><div class="line">					appendEntriesArgs := AppendEntriesArgs&#123;Term: currentTerm, LeaderId: rf.me, Entries: entries,</div><div class="line">						PrevLogTerm: rf.log[rf.nextIndex[i] - <span class="number">1</span>].Term, PrevLogIndex: rf.nextIndex[i] - <span class="number">1</span>, LeaderCommit: rf.commitIndex&#125;</div><div class="line">					appendEntriesReply := <span class="built_in">new</span>(AppendEntriesReply)</div><div class="line">					rf.DPrintf(<span class="string">"send heartbeat req: %+v from %v to %v, current state %+v\n\n"</span>, appendEntriesArgs, rf.me, i, rf)</div><div class="line">					<span class="keyword">go</span> rf.sendAppendEntries(i, &amp;appendEntriesArgs, appendEntriesReply)</div><div class="line">				&#125;</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">		rf.mu.Unlock()</div><div class="line">		time.Sleep(time.Duration(heartbeatTimeout) * time.Millisecond)</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　该函数执行一个无限循环，定期检查一下自己是不是leader，如果是leader的话需要给其他server发送AppendEntries请求以维持自己的统治地位。这里有一个需要注意的地方。我一开始实现的时候，认为心跳请求只需要发空的entries[]就行，不过这样会导致一个问题：如果长期没有新的请求到达，那么raft实例之间就永远不会主动进行数据同步了。在论文里，明确说了如果请求超时或失败，leader是需要无限尝试的。一旦集群发生大规模的失败和重启，那么之前的请求也可能永远得不到尝试的机会。所以，我认为心跳的实现可以和普通AppendEntries请求并没有太大的区别，在正常情况下，心跳请求携带的entries[]是空的，但如果有数据丢失，就可以携带上数据，马上进行数据恢复。</p>
+<p>　　这种做法有一个缺点，就是可能会有很多重复的数据传输，不过raft协议里请求写Log是幂等的，所以并不会影响正确性。还有一个解决方法，就是在复制数据的时候一旦发生请求失败则无限重试，并且在每次leader选举成功之后commit一个空的请求。这种做法应该是论文推荐的做法，也可以解决线性一致性的问题，不过要过实验的测试用例的话还是用第一种比较合适，实际实现可以用第二种。</p>
+<p>　　这里对其他每一个server的rpc请求都要新开一个线程来处理，因为所有rpc请求都有可能发生阻塞，多线程也有更好的并行性。</p>
+<h4 id="发起选举"><a href="#发起选举" class="headerlink" title="发起选举"></a>发起选举</h4><figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rf *Raft)</span> <span class="title">elect</span><span class="params">()</span></span> &#123;</div><div class="line">	rand.Seed(time.Now().UnixNano())</div><div class="line">	<span class="keyword">for</span> &#123;</div><div class="line">		electionTimeout := rand.Int63n(maxElectionTimeout-minElectionTimeout) + minElectionTimeout</div><div class="line">		rf.mu.Lock()</div><div class="line">		<span class="keyword">for</span> rf.state == follower &#123;</div><div class="line">			currentTime := time.Now().UnixNano()</div><div class="line">			<span class="keyword">if</span> currentTime - rf.lastHeartbeatTime &gt; electionTimeout * <span class="number">1000000</span> &#123;</div><div class="line">				rf.state = candidate</div><div class="line">			&#125; <span class="keyword">else</span> &#123;</div><div class="line">				rf.mu.Unlock()</div><div class="line">				time.Sleep(time.Duration(heartbeatTimeout) * time.Millisecond)</div><div class="line">				rf.mu.Lock()</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">		<span class="keyword">for</span> rf.state == candidate &#123;</div><div class="line">			currentTime := time.Now().UnixNano()</div><div class="line">			<span class="keyword">if</span> currentTime - rf.lastHeartbeatTime &gt; electionTimeout * <span class="number">1000000</span> &#123;</div><div class="line">				rf.currentTerm++</div><div class="line">				rf.votedFor = rf.me</div><div class="line">				rf.votesNums = <span class="number">1</span></div><div class="line">                rf.lastHeartbeatTime = time.Now().UnixNano()</div><div class="line">				<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="built_in">len</span>(rf.peers); i++ &#123;</div><div class="line">					<span class="keyword">if</span> i != rf.me &#123;</div><div class="line">						requestVoteArgs := RequestVoteArgs&#123;Term: rf.currentTerm, CandidateId: rf.me,</div><div class="line">							LastLogTerm: rf.log[<span class="built_in">len</span>(rf.log) - <span class="number">1</span>].Term, LastLogIndex: <span class="built_in">len</span>(rf.log) - <span class="number">1</span>&#125;</div><div class="line">						rf.DPrintf(<span class="string">"send request vote req: %+v from %v to %v, current state %+v\n\n"</span>, requestVoteArgs, rf.me, i, rf)</div><div class="line">						requestVoteReply := <span class="built_in">new</span>(RequestVoteReply)</div><div class="line">						<span class="keyword">go</span> rf.sendRequestVote(i, &amp;requestVoteArgs, requestVoteReply)</div><div class="line">					&#125;</div><div class="line">				&#125;</div><div class="line">				<span class="keyword">break</span></div><div class="line">			&#125;</div><div class="line">			rf.mu.Unlock()</div><div class="line">			time.Sleep(time.Duration(heartbeatTimeout) * time.Millisecond)</div><div class="line">			rf.mu.Lock()</div><div class="line">		&#125;</div><div class="line">		rf.mu.Unlock()</div><div class="line">		time.Sleep(time.Duration(heartbeatTimeout) * time.Millisecond)</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　也是一个无限循环，每隔一个heartbeat timeout，检查一下自己的状态，判断一下最近一次收到heartbeat的时间与当前时间有没有超过election timeout。如果超过的话则要重置计时器，开始一轮新的选举。这里为了实现方便，采用定期检查状态的方式判断有没有超时，也可以用channel或者条件变量等方法来获取通知。</p>
+<p>　　上面的代码主要是投票是如何触发的，下面讲一下整个投票的过程是怎么实现的，主要涉及到两个函数，一个上面代码提到的sendRequestVote函数，主要执行rpc调用并处理返回结果。还有一个函数就是RequestVote rpc调用的回调函数。</p>
+<h4 id="选举过程"><a href="#选举过程" class="headerlink" title="选举过程"></a>选举过程</h4><figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rf *Raft)</span> <span class="title">RequestVote</span><span class="params">(args *RequestVoteArgs, reply *RequestVoteReply)</span></span> &#123;</div><div class="line">	<span class="comment">// Your code here (2A, 2B).</span></div><div class="line">	rf.mu.Lock()</div><div class="line">	<span class="keyword">if</span> args.Term &lt; rf.currentTerm &#123;</div><div class="line">		reply.VoteGranted = <span class="literal">false</span></div><div class="line">		reply.Term = rf.currentTerm</div><div class="line">		rf.mu.Unlock()</div><div class="line">		<span class="keyword">return</span></div><div class="line">	&#125; <span class="keyword">else</span> <span class="keyword">if</span> args.Term &gt; rf.currentTerm &#123;</div><div class="line">		rf.currentTerm = args.Term</div><div class="line">		rf.votesNums = <span class="number">0</span></div><div class="line">		rf.state = follower</div><div class="line">		rf.votedFor = <span class="number">-1</span></div><div class="line">		rf.persist()</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">if</span> (args.LastLogTerm &gt; (rf.log)[<span class="built_in">len</span>(rf.log) - <span class="number">1</span>].Term ||</div><div class="line">		(args.LastLogTerm == (rf.log)[<span class="built_in">len</span>(rf.log) - <span class="number">1</span>].Term &amp;&amp; args.LastLogIndex &gt;= <span class="built_in">len</span>(rf.log) - <span class="number">1</span>)) &amp;&amp;</div><div class="line">		(rf.votedFor == <span class="number">-1</span> || rf.votedFor == args.CandidateId) &#123;</div><div class="line">		reply.VoteGranted = <span class="literal">true</span></div><div class="line">		rf.lastHeartbeatTime = time.Now().UnixNano()</div><div class="line">		rf.votedFor = args.CandidateId</div><div class="line">		rf.persist()</div><div class="line">	&#125; <span class="keyword">else</span> &#123;</div><div class="line">		reply.VoteGranted = <span class="literal">false</span></div><div class="line">	&#125;</div><div class="line">	reply.Term = rf.currentTerm</div><div class="line">	rf.DPrintf(<span class="string">"request vote reply: %+v from %v to %v, current state %+v\n\n"</span>, *reply, rf.me, args.CandidateId, rf)</div><div class="line">	rf.mu.Unlock()</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rf *Raft)</span> <span class="title">sendRequestVote</span><span class="params">(server <span class="keyword">int</span>, args *RequestVoteArgs, reply *RequestVoteReply)</span> <span class="title">bool</span></span> &#123;</div><div class="line">	ok := rf.peers[server].Call(<span class="string">"Raft.RequestVote"</span>, args, reply)</div><div class="line">	rf.mu.Lock()</div><div class="line">	<span class="comment">//DPrintf("reply vote res %v, request term %v, current term %v, current vote num %v, server id %v, state %v",</span></div><div class="line">	<span class="comment">//	reply.VoteGranted, args.Term, rf.currentTerm, rf.votesNums, rf.me, rf.state)</span></div><div class="line">	<span class="keyword">if</span> reply.VoteGranted &amp;&amp; args.Term == rf.currentTerm &amp;&amp; rf.state == candidate &#123;</div><div class="line">		rf.votesNums++</div><div class="line">		<span class="keyword">if</span> rf.votesNums &gt; <span class="built_in">len</span>(rf.peers) / <span class="number">2</span> &#123;</div><div class="line">			rf.state = leader</div><div class="line">			<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="built_in">len</span>(rf.peers); i++ &#123;</div><div class="line">				rf.nextIndex[i] = <span class="built_in">len</span>(rf.log)</div><div class="line">				rf.matchIndex[i] = <span class="number">0</span></div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">if</span> reply.Term &gt; rf.currentTerm &#123;</div><div class="line">		rf.state = follower</div><div class="line">		rf.currentTerm = reply.Term</div><div class="line">		rf.votesNums = <span class="number">0</span></div><div class="line">		rf.votedFor = <span class="number">-1</span></div><div class="line">		rf.persist()</div><div class="line">	&#125;</div><div class="line">	rf.mu.Unlock()</div><div class="line">	<span class="keyword">return</span> ok</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　首先要注意的是，论文里figure 2里提到reply false的，都要马上返回，不要处理后续的逻辑。对于raft里的AppendEntries和RequestVote这两个rpc请求，如果发现请求的term或者返回的term大于自己的term，说明自己已经过时了，需要更新为更大的term，并且重置投票状态，自己变为follower。在选举过程中，把server及时变为follower可以防止多个server进入candidate状态，导致分票。还要注意当投出自己的一票之后，要重置计时器。试想一下这个情景，如果不重置计时器，那么当某个server收到投票请求，自己的term更新了，投了票之后，很快又超时了，自己又成为candidate，term又加1，很可能新选出来的leader又被迫step out，那么系统长期处于选举-&gt;step out-&gt;选举的状态，永远无法稳定提供服务。</p>
+<p>　　如果没有投票，则不要重置计时器。否则拥有旧数据的server如果更早进入candidate状态，那么其他拥有更新数据的server就永远没有机会发起投票了。</p>
+<p>　　投票的准则是当前term自己没有投票，并且对方的日志比自己更新。判断日志更新的标准是先判断term，term大的更新，term相等的话看最后的index，index大的更新。</p>
+<p>　　在收到投票结果时，要判断当前的状态与发起请求的状态是否一样。因为网络不可靠，有可能发生请求的延时，可能当收到返回的时候自己已经不是candidate了，或者term已经不一样了，这样的话肯定不能接受投票结果。</p>
+<p>　　当收到超过半数的票时，把自己的状态更新为leader，同时要按照论文figure 2的要求，初始化每个server的nextIndex和matchIndex。这两个字段在后面讲实现数据复制时候再说明。</p>
+<h3 id="数据复制、一致性检测、同步"><a href="#数据复制、一致性检测、同步" class="headerlink" title="数据复制、一致性检测、同步"></a>数据复制、一致性检测、同步</h3><p>　　实现上主要分成4部分，leader处理写请求并发起复制，follower执行AppendEntries rpc调用的回调，以及leader处理AppendEntries的返回，apply已经commit的请求到状态机。需要时刻注意的是，网络不可靠，rpc请求可能会超时重传，回调函数可能收到多个相同请求，以及可能收到过时的请求，必须能够处理这类情况。</p>
+<h4 id="leader处理写请求并发起复制"><a href="#leader处理写请求并发起复制" class="headerlink" title="leader处理写请求并发起复制"></a>leader处理写请求并发起复制</h4><figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rf *Raft)</span> <span class="title">Start</span><span class="params">(command <span class="keyword">interface</span>&#123;&#125;)</span> <span class="params">(<span class="keyword">int</span>, <span class="keyword">int</span>, <span class="keyword">bool</span>)</span></span> &#123;</div><div class="line">	index := <span class="number">-1</span></div><div class="line">	term := <span class="number">-1</span></div><div class="line">	isLeader := <span class="literal">true</span></div><div class="line"></div><div class="line">	<span class="comment">// Your code here (2B).</span></div><div class="line">	rf.mu.Lock()</div><div class="line">	index, term, isLeader = <span class="built_in">len</span>(rf.log), rf.currentTerm, rf.state == leader</div><div class="line">	<span class="keyword">if</span> isLeader &#123;</div><div class="line">		entry := Entry&#123;Term: term, Command: command&#125;</div><div class="line">		rf.log = <span class="built_in">append</span>(rf.log, entry)</div><div class="line">		rf.persist()</div><div class="line">		<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="built_in">len</span>(rf.peers); i++ &#123;</div><div class="line">			<span class="keyword">if</span> i != rf.me &#123;</div><div class="line">				args := <span class="built_in">new</span>(AppendEntriesArgs)</div><div class="line">				args.Term = rf.currentTerm</div><div class="line">				args.PrevLogIndex = rf.nextIndex[i] - <span class="number">1</span></div><div class="line">				args.PrevLogTerm = rf.log[args.PrevLogIndex].Term</div><div class="line">				args.LeaderCommit = rf.commitIndex</div><div class="line">				args.LeaderId = rf.me</div><div class="line">				args.Entries = rf.log[rf.nextIndex[i]:]</div><div class="line">				rf.matchIndex[rf.me] = index</div><div class="line">				rf.nextIndex[rf.me] = index + <span class="number">1</span></div><div class="line">				rf.DPrintf(<span class="string">"append entries req: %+v from %v to %v, current state %+v\n\n"</span>, args, rf.me, i, rf)</div><div class="line">				<span class="keyword">go</span> rf.sendAppendEntries(i, args, &amp;AppendEntriesReply&#123;&#125;)</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	rf.mu.Unlock()</div><div class="line"></div><div class="line">	<span class="keyword">return</span> index, term, isLeader</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　向所有follower发送请求，请求的时候带上nextIndex以后的所有数据。nextIndex表示对follower当前log进度的一个乐观判断，初始化为leader的log长度+1，表示和leader完全一致。记得更新leader自己的nextIndex和matchIndex，matchIndex是作为请求是否commit的判断，不能把leader自己的算漏了，否则请求可能一直无法commit。</p>
+<h4 id="AppendEntries回调"><a href="#AppendEntries回调" class="headerlink" title="AppendEntries回调"></a>AppendEntries回调</h4><figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rf *Raft)</span> <span class="title">AppendEntries</span><span class="params">(args *AppendEntriesArgs, reply *AppendEntriesReply)</span></span> &#123;</div><div class="line">	rf.mu.Lock()</div><div class="line">	<span class="keyword">if</span> args.Term &lt; rf.currentTerm &#123;</div><div class="line">		reply.Success = <span class="literal">false</span></div><div class="line">		reply.Term = rf.currentTerm</div><div class="line">	&#125;<span class="keyword">else</span>&#123;</div><div class="line">		rf.currentTerm = args.Term</div><div class="line">		rf.leaderId = args.LeaderId</div><div class="line">		rf.state = follower</div><div class="line">		rf.lastHeartbeatTime = time.Now().UnixNano()</div><div class="line">		rf.votedFor = <span class="number">-1</span></div><div class="line">		reply.Term = rf.currentTerm</div><div class="line">		rf.persist()</div><div class="line"></div><div class="line">		<span class="keyword">if</span> <span class="built_in">len</span>(rf.log) - <span class="number">1</span> &lt; args.PrevLogIndex || rf.log[args.PrevLogIndex].Term != args.PrevLogTerm &#123;</div><div class="line">			reply.Success = <span class="literal">false</span></div><div class="line">			<span class="keyword">if</span> <span class="built_in">len</span>(rf.log) - <span class="number">1</span> &lt; args.PrevLogIndex &#123;</div><div class="line">				reply.ConflictTerm = <span class="number">-1</span></div><div class="line">				reply.ConflictIndex = <span class="built_in">len</span>(rf.log)</div><div class="line">			&#125;<span class="keyword">else</span> &#123;</div><div class="line">				reply.ConflictTerm = rf.log[args.PrevLogIndex].Term</div><div class="line">				<span class="keyword">var</span> conflictIndex <span class="keyword">int</span></div><div class="line">				<span class="keyword">for</span> conflictIndex = args.PrevLogIndex; conflictIndex &gt;= <span class="number">0</span> &amp;&amp; rf.log[conflictIndex].Term == reply.ConflictTerm;</div><div class="line">				conflictIndex-- &#123;&#125;</div><div class="line">				reply.ConflictIndex = conflictIndex + <span class="number">1</span></div><div class="line">			&#125;</div><div class="line">		&#125;<span class="keyword">else</span> &#123;</div><div class="line">			reply.Success = <span class="literal">true</span></div><div class="line">			<span class="keyword">if</span> <span class="built_in">len</span>(rf.log) - <span class="number">1</span> &gt; args.PrevLogIndex &#123;</div><div class="line">				<span class="keyword">for</span> i := <span class="number">1</span>; i &lt;= <span class="built_in">len</span>(args.Entries); i++ &#123;</div><div class="line">					<span class="keyword">if</span> i + args.PrevLogIndex &lt; <span class="built_in">len</span>(rf.log) &#123;</div><div class="line">						<span class="keyword">if</span> rf.log[i + args.PrevLogIndex].Term != args.Entries[i - <span class="number">1</span>].Term &#123;</div><div class="line">							rf.log = rf.log[:(i + args.PrevLogIndex)]</div><div class="line">							rf.log = <span class="built_in">append</span>(rf.log, args.Entries[i - <span class="number">1</span>])</div><div class="line">						&#125;<span class="keyword">else</span> &#123;</div><div class="line">							<span class="keyword">continue</span></div><div class="line">						&#125;</div><div class="line">					&#125;<span class="keyword">else</span>&#123;</div><div class="line">						rf.log = <span class="built_in">append</span>(rf.log, args.Entries[i - <span class="number">1</span>])</div><div class="line">					&#125;</div><div class="line">				&#125;</div><div class="line">			&#125;<span class="keyword">else</span> &#123;</div><div class="line">				rf.log = <span class="built_in">append</span>(rf.log, args.Entries...)</div><div class="line">			&#125;</div><div class="line">			<span class="keyword">if</span> <span class="built_in">len</span>(args.Entries) &gt; <span class="number">0</span> &#123;</div><div class="line">				rf.persist()</div><div class="line">			&#125;</div><div class="line"></div><div class="line">			<span class="keyword">if</span> args.LeaderCommit &gt; rf.commitIndex &#123;</div><div class="line">				<span class="keyword">if</span> args.LeaderCommit &gt; <span class="built_in">len</span>(rf.log) - <span class="number">1</span> &#123;</div><div class="line">					rf.commitIndex = <span class="built_in">len</span>(rf.log) - <span class="number">1</span></div><div class="line">				&#125;<span class="keyword">else</span> &#123;</div><div class="line">					rf.commitIndex = args.LeaderCommit</div><div class="line">				&#125;</div><div class="line">				<span class="keyword">if</span> rf.commitIndex &gt; rf.lastApplied &#123;</div><div class="line">					<span class="comment">//DPrintf("apply command\n")</span></div><div class="line">					<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</div><div class="line">						applyRange := needApplyRange&#123;start: rf.lastApplied + <span class="number">1</span>, end: rf.commitIndex&#125;</div><div class="line">						rf.needApplyChan &lt;- applyRange</div><div class="line">					&#125;()</div><div class="line">				&#125;</div><div class="line">			&#125;</div><div class="line"></div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	rf.DPrintf(<span class="string">"append entry reply: %+v from %v to %v, current state %+v\n\n"</span>, *reply, rf.me, args.LeaderId, rf)</div><div class="line">	rf.mu.Unlock()</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　首先判断term是否满足要求，如果对方的term比自己小，则直接拒绝请求。</p>
+<p>　　如果对方的prevLogIndex和prevLogTerm和自己相应index的term完全一致，就说明该位置的entry是一致的，并且之前所有的entries都是一致的，并且都保存着相同的command。这个一致性保证是由两方面原因保证的：</p>
+<ol>
+<li>每个term只有一个leader，而该leader只会在一个index位置上处理一个请求，并且只要term不变（即leader不倒），永远不会被修改的，所以command是唯一的。</li>
+<li>每次AppendEntries都会进行一致性检测，只有一致性检测成功才会接受写请求。由于一开始日志是一致的，因此只要每次一致性检测成功，可以由数学归纳法保证前面的entries都是一致的。</li>
+</ol>
+<p>　　要注意请求有可能顺序会乱，也可能接受多次重复的请求，又或者接收到旧的请求（全部或部分数据已经写入log了），因此不能简单的append到log的末尾，而是从PrevLogIndex+1位置开始，逐个比较是否有不一致，或者是否有重复的entry已经接收过了。顺序更后的请求由于肯定携带有前面未收到回复的请求的数据，因此不会出现数据在log里乱序的问题。容易发现，这种方法处理log是幂等的。</p>
+<p>　　append结束后，如果发现leaderCommit大于自己的commitIndex，需要更新commitIndex，然后apply到状态机。注意更新commitIndex的时候要取自己log和leaderCommit的最小值，如果leaderCommit大于自己的log的最末尾index，而不能简单的把自己的commitIndex设超过自身。因为之后可能会插入一些不是同一个leader发来的entries，把commitIndex设得过大，就会错误apply。</p>
+<p>　　如果在append过程中发现不一致，则要把日志截断，然后append之后的数据。</p>
+<p>　　如果一致性检测失败，则应该拒绝这个rpc请求。这里实现用了论文提到的优化方法，以避免多次拒绝rpc请求，影响性能。传统的方法应该是每次拒绝让leader的prevLogIndex减1，然后再次尝试。这里引入了conflictIndex和conflictTerm两个字段：</p>
+<ol>
+<li>如果prevLogIndex超出自己的日志末尾，那么把conflictIndex设为日志长度，conflictTerm设为空</li>
+<li>如果prevLogIndex没有超出日志末尾，而是term不一样，则找出该term的第一个index，设置conflictIndex和conflictTerm，以求一次越过整个term，这样虽然可能要传输多余的entries，但大大减少了网络交互的请求数。</li>
+</ol>
+<h4 id="处理AppendEntries的返回"><a href="#处理AppendEntries的返回" class="headerlink" title="处理AppendEntries的返回"></a>处理AppendEntries的返回</h4><figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rf *Raft)</span> <span class="title">sendAppendEntries</span><span class="params">(server <span class="keyword">int</span>, args *AppendEntriesArgs, reply *AppendEntriesReply)</span> <span class="title">bool</span></span> &#123;</div><div class="line">	ok := rf.peers[server].Call(<span class="string">"Raft.AppendEntries"</span>, args, reply)</div><div class="line">	rf.mu.Lock()</div><div class="line">	<span class="keyword">if</span> args.Term != rf.currentTerm || !ok &#123;</div><div class="line">		rf.mu.Unlock()</div><div class="line">		<span class="keyword">return</span> ok</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">if</span> reply.Term &gt; rf.currentTerm &#123;</div><div class="line">		rf.currentTerm = reply.Term</div><div class="line">		rf.votedFor = <span class="number">-1</span></div><div class="line">		rf.votesNums = <span class="number">0</span></div><div class="line">		rf.state = follower</div><div class="line">		rf.persist()</div><div class="line">	&#125;<span class="keyword">else</span> <span class="keyword">if</span> !reply.Success &#123;</div><div class="line">		<span class="keyword">if</span> reply.ConflictTerm == <span class="number">-1</span> &#123;</div><div class="line">			rf.nextIndex[server] = reply.ConflictIndex</div><div class="line">		&#125;<span class="keyword">else</span> &#123;</div><div class="line">			<span class="keyword">var</span> index <span class="keyword">int</span></div><div class="line">			<span class="keyword">for</span> index = args.PrevLogIndex - <span class="number">1</span>; index &gt;= <span class="number">0</span> &amp;&amp; rf.log[index].Term != reply.ConflictTerm; index-- &#123;&#125;</div><div class="line">			<span class="keyword">if</span> index &lt; <span class="number">0</span> &#123;</div><div class="line">				rf.nextIndex[server] = reply.ConflictIndex</div><div class="line">			&#125;<span class="keyword">else</span> &#123;</div><div class="line">				rf.nextIndex[server] = index + <span class="number">1</span></div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">		args.PrevLogIndex = rf.nextIndex[server] - <span class="number">1</span></div><div class="line">		args.PrevLogTerm = rf.log[args.PrevLogIndex].Term</div><div class="line">		args.Entries = rf.log[rf.nextIndex[server]:]</div><div class="line">		rf.DPrintf(<span class="string">"resent append entries req: %+v from %v to %v, current state %+v\n\n"</span>, args, rf.me, server, rf)</div><div class="line">		<span class="keyword">go</span> rf.sendAppendEntries(server, args, &amp;AppendEntriesReply&#123;&#125;)</div><div class="line">	&#125;<span class="keyword">else</span> &#123;</div><div class="line">		<span class="keyword">if</span> rf.matchIndex[server] &lt; args.PrevLogIndex + <span class="built_in">len</span>(args.Entries) &#123;</div><div class="line">			rf.matchIndex[server] = args.PrevLogIndex + <span class="built_in">len</span>(args.Entries)</div><div class="line">			rf.nextIndex[server] = rf.matchIndex[server] + <span class="number">1</span></div><div class="line">		&#125;</div><div class="line">		N := rf.matchIndex[server]</div><div class="line">		<span class="keyword">if</span> N &gt; rf.commitIndex &amp;&amp; rf.log[N].Term == rf.currentTerm &#123;</div><div class="line">			cnt := <span class="number">0</span></div><div class="line">			<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="built_in">len</span>(rf.peers); i++ &#123;</div><div class="line">				<span class="keyword">if</span> rf.matchIndex[i] &gt;= N &#123;</div><div class="line">					cnt++</div><div class="line">				&#125;</div><div class="line">			&#125;</div><div class="line">			<span class="keyword">if</span> cnt &gt; <span class="built_in">len</span>(rf.peers) / <span class="number">2</span> &#123;</div><div class="line">				rf.commitIndex = N</div><div class="line">				<span class="keyword">if</span> rf.commitIndex &gt; rf.lastApplied &#123;</div><div class="line">					<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</div><div class="line">						applyRange := needApplyRange&#123;start: rf.lastApplied + <span class="number">1</span>, end: rf.commitIndex&#125;</div><div class="line">						rf.needApplyChan &lt;- applyRange</div><div class="line">					&#125;()</div><div class="line">				&#125;</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	rf.mu.Unlock()</div><div class="line">	<span class="keyword">return</span> ok</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　首先注意请求的term和收到返回的term是否一致，否则代表该请求已过时，直接忽略。</p>
+<p>　　如果请求不成功，说明一致性检测失败。需要减少nextIndex，重发请求。前面讲过，可以通过conflictIndex和conflictTerm加速。这里先把nextIndex置为conflictTerm的最后一个entry后面的index，这样prevLogIndex就带上了conflictTerm的最后一个entry的index。如果conflictTerm不存在，则把nextIndex置为conflictIndex。通过这样的方式，每次一致性检测失败至少可以skip一个term的entries，大大减少了交互数。</p>
+<p>　　如果请求成功，则要更新matchIndex。由于当请求返回的时候，可能已经插入了更多的log，又或者该请求已经过时了。不能简单的把matchIndex设为最后一个index，而是要按照请求当时带的数据，把matchIndex设为args.PrevLogIndex + len(args.Entries)。</p>
+<p>　　记当前请求更新后的matchIndex为N，遍历所有server，如果大于半数的matchIndex大于N，则更新commitIndex。这里还有一个限制条件，不能commit小于当前term的entries。这个原因论文里已经说得很清楚了，过时的entries有风险被覆盖，导致被错误apply。</p>
+<h4 id="apply状态机"><a href="#apply状态机" class="headerlink" title="apply状态机"></a>apply状态机</h4><figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rf *Raft)</span> <span class="title">apply</span><span class="params">()</span></span> &#123;</div><div class="line">	<span class="keyword">for</span> &#123;</div><div class="line">		applyRange := &lt;- rf.needApplyChan</div><div class="line">		msg := ApplyMsg&#123;&#125;</div><div class="line">		rf.mu.Lock()</div><div class="line">		lastApply := rf.lastApplied</div><div class="line">		rf.mu.Unlock()</div><div class="line">		<span class="keyword">var</span> start <span class="keyword">int</span></div><div class="line">		<span class="keyword">if</span> applyRange.start &lt; lastApply &#123;</div><div class="line">			start = lastApply</div><div class="line">		&#125;<span class="keyword">else</span> &#123;</div><div class="line">			start = applyRange.start</div><div class="line">		&#125;</div><div class="line">		<span class="keyword">for</span> i := start; i &lt;= applyRange.end; i++ &#123;</div><div class="line">			msg.Command = rf.log[i].Command</div><div class="line">			msg.CommandIndex = i</div><div class="line">			msg.CommandValid = <span class="literal">true</span></div><div class="line">			rf.applyChan &lt;- msg</div><div class="line">			rf.mu.Lock()</div><div class="line">			rf.lastApplied = i</div><div class="line">			rf.mu.Unlock()</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　所有被commit的entry都可以被apply到状态机里。这里的apply简单地用message发送到channel来表示，是一个异步的过程。</p>
+<p>　　raft协议对状态机的实现没有明确要求，因此不一定是幂等的，所以相同的entry只能被apply一次。实际可以根据具体状态机的性质对apply的严格性进行调整。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/分布式/" rel="tag"># 分布式</a>
+          
+            <a href="/tags/存储/" rel="tag"># 存储</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/12/18/linux-io过程自顶向下分析/" rel="next" title="linux io过程自顶向下分析">
+                <i class="fa fa-chevron-left"></i> linux io过程自顶向下分析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="Gavin Wong" />
+            
+              <p class="site-author-name" itemprop="name">Gavin Wong</p>
+              <p class="site-description motion-element" itemprop="description">蟾宫桂花千里香，暖风拂面惹人狂。我欲因之凌霄起，嫦娥丹桂尽入囊。</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">40</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#整体结构"><span class="nav-number">2.</span> <span class="nav-text">整体结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#leader选举"><span class="nav-number">3.</span> <span class="nav-text">leader选举</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#raft实例初始化"><span class="nav-number">3.1.</span> <span class="nav-text">raft实例初始化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#发送心跳"><span class="nav-number">3.2.</span> <span class="nav-text">发送心跳</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#发起选举"><span class="nav-number">3.3.</span> <span class="nav-text">发起选举</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#选举过程"><span class="nav-number">3.4.</span> <span class="nav-text">选举过程</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据复制、一致性检测、同步"><span class="nav-number">4.</span> <span class="nav-text">数据复制、一致性检测、同步</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#leader处理写请求并发起复制"><span class="nav-number">4.1.</span> <span class="nav-text">leader处理写请求并发起复制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#AppendEntries回调"><span class="nav-number">4.2.</span> <span class="nav-text">AppendEntries回调</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#处理AppendEntries的返回"><span class="nav-number">4.3.</span> <span class="nav-text">处理AppendEntries的返回</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#apply状态机"><span class="nav-number">4.4.</span> <span class="nav-text">apply状态机</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gavin Wong</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="//cdn.jsdelivr.net/jquery/2.1.3/jquery.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="//cdn.jsdelivr.net/fastclick/1.0.6/fastclick.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="//cdn.jsdelivr.net/jquery.lazyload/1.9.3/jquery.lazyload.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="//cdn.jsdelivr.net/velocity/1.2.3/velocity.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="//cdn.jsdelivr.net/velocity/1.2.3/velocity.ui.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="//cdn.jsdelivr.net/fancybox/2.1.5/jquery.fancybox.pack.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("EBQKkMtlkhkxwaXmaewHY2c4-gzGzoHsz", "KSypTWMBbTMgIBYw9EuDa73j");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
