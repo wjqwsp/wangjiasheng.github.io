@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+  <link href="//cdn.jsdelivr.net/fancybox/2.1.5/jquery.fancybox.min.css" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Lobster Two:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+  
+
+<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.2/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="分布式,存储," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前言　　gfs是谷歌研发的一套非常经典的分布式存储系统，当年的论文对后续分布式存储的发展有非常重要的指导与借鉴意义，影响深远。实验室参与开发的冷存储系统当时也借鉴了其中的一些思想。关于gfs论文的分析也非常多了，本文不打算重复太多的gfs原理，而是尝试把一些分布式存储系统通常关注的要点分类整理出来，简要地一窥其全貌。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="gfs技术要点总结与浅析">
+<meta property="og:url" content="http://wjqwsp.github.io/2019/06/13/gfs技术要点总结与浅析/index.html">
+<meta property="og:site_name" content="南国倾城">
+<meta property="og:description" content="前言　　gfs是谷歌研发的一套非常经典的分布式存储系统，当年的论文对后续分布式存储的发展有非常重要的指导与借鉴意义，影响深远。实验室参与开发的冷存储系统当时也借鉴了其中的一些思想。关于gfs论文的分析也非常多了，本文不打算重复太多的gfs原理，而是尝试把一些分布式存储系统通常关注的要点分类整理出来，简要地一窥其全貌。">
+<meta property="og:updated_time" content="2019-06-13T03:50:46.580Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="gfs技术要点总结与浅析">
+<meta name="twitter:description" content="前言　　gfs是谷歌研发的一套非常经典的分布式存储系统，当年的论文对后续分布式存储的发展有非常重要的指导与借鉴意义，影响深远。实验室参与开发的冷存储系统当时也借鉴了其中的一些思想。关于gfs论文的分析也非常多了，本文不打算重复太多的gfs原理，而是尝试把一些分布式存储系统通常关注的要点分类整理出来，简要地一窥其全貌。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: 'undefined',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://wjqwsp.github.io/2019/06/13/gfs技术要点总结与浅析/"/>
+
+
+
+
+
+  <title>gfs技术要点总结与浅析 | 南国倾城</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">南国倾城</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">左手代码，右手年华</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://wjqwsp.github.io/2019/06/13/gfs技术要点总结与浅析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Gavin Wong">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="南国倾城">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">gfs技术要点总结与浅析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-13T09:35:05+08:00">
+                2019-06-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2019/06/13/gfs技术要点总结与浅析/" class="leancloud_visitors" data-flag-title="gfs技术要点总结与浅析">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　gfs是谷歌研发的一套非常经典的分布式存储系统，当年的论文对后续分布式存储的发展有非常重要的指导与借鉴意义，影响深远。实验室参与开发的冷存储系统当时也借鉴了其中的一些思想。关于gfs论文的分析也非常多了，本文不打算重复太多的gfs原理，而是尝试把一些分布式存储系统通常关注的要点分类整理出来，简要地一窥其全貌。<br><a id="more"></a></p>
+<h3 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h3><p>　　分布式存储系统必定是面向一些特定的应用研发的，其系统特性必定针对应用场景做了权衡与折衷，不可能各个方面都尽善尽美。先来看看gfs面向什么场景。</p>
+<ol>
+<li>基于大规模的廉价的消费级服务器或PC机组建，因此机器宕机、网络故障是常态，系统的容错性非常重要，必须有完善的系统状态监控、数据完整性检查、数据重构恢复等手段，数据的分区容灾也要考虑。</li>
+<li>存储大文件，文件的分片与block size等的设置就必须仔细考虑。</li>
+<li>主要是顺序读写文件，写文件也一般是追加的方式，极少随机读写。</li>
+<li>存在多客户端并发追加同一个文件的场景，要保证这个场景下的一致性。</li>
+<li>读写需要高吞吐，对多客户端并发读写多个文件的吞吐量有高要求，对单个请求的响应时间没有太多要求。</li>
+<li>上层应用能够容忍一定程度的数据不一致，包括读到过时数据，多次读有一定概率读到不一样的数据等情况，应用程序有一定办法容忍或解决这些小概率问题。</li>
+</ol>
+<h3 id="元数据管理"><a href="#元数据管理" class="headerlink" title="元数据管理"></a>元数据管理</h3><p>　　元数据用master节点管理，在逻辑上与数据节点分离。单一的master结构管理方便，开发简单，适合提升系统的一致性。其实很多系统的元数据都是分离管理的，有单独的元数据集群来维护，这个设计本身没有特别之处。</p>
+<p>　　为了保证性能，提高读写的响应时间与吞吐量，gfs的master做了以下几点工作：</p>
+<ol>
+<li>元数据在内存中管理，单机读写性能高，尽量消除单点造成的性能瓶颈。</li>
+<li>文件系统的接口为了性能，牺牲了一部分通用性。所有文件与目录以key-value的形式组织，key是文件目录的全路径。构建了逻辑上分层，实现上扁平化的元数据存储，使得读写元数据效率非常高，通常只需要一次put和get请求。但是也牺牲了ls和mv等通用文件系统操作的性能，上层应用的使用场景有一定限制。</li>
+<li>管理每个文件的chunk列表。由于gfs面向大文件，文件分片的size可以设得足够大，一般是几十上百M的量，因此大大减少了需要维护的chunk列表长度，使得master的单机内存足以支撑海量文件的元数据存储。</li>
+<li>由于master存在单点故障的问题，因此一般会维护一个master集群，够成单leader，多slave的结构。写入时由leader转发给各个slave，但所有节点都可以响应读请求，加速了读取元数据的性能。</li>
+<li>client会缓存对于某个chunk的chunk server列表，减少了与master的交互。</li>
+<li>master不负责存储chunk到chunk server的映射，而只是负责file到chunk的映射。在chunk server启动或者加入集群的时候向master汇报该映射信息。这个设计简化了master对元数据的维护。</li>
+</ol>
+<h3 id="数据一致性"><a href="#数据一致性" class="headerlink" title="数据一致性"></a>数据一致性</h3><p>　　gfs的一致性为了性能作出了一定的让步，同时它既不是一个CP系统，也不是AP系统，而是C与A都作了折衷。分析gfs的一致性，可以分成master和chunkserver两部分分类讨论。</p>
+<p>　　master一致性：</p>
+<ol>
+<li>master集群只有一个leader，采用全序广播的方式把请求发送给各个slave。所有请求都在master里通过operation log进行排序，且只有所有节点都写入成功，才向客户端返回成功。因此元数据写入不存在写冲突的情况。但任何一个节点挂掉，写入都会失败。</li>
+<li>对元数据的读取不仅仅从leader上读，所有master节点都可能收到读取请求，由于存在replication lag，在slave节点可能会读到过时数据，因此不能满足线性一致性的要求。应用程序必须能容忍读到过时的元数据的风险。</li>
+<li>元数据加锁处理，不会存在多个客户端并发访问的冲突情况。</li>
+</ol>
+<p>　　chunkserver一致性：</p>
+<ol>
+<li>对每一个chunk，master都会指派多个chunk server去负责存储，默认是3副本。master会从多个chunk server中选出一个作为primary，并赋予chunk version id，利用心跳租约机制来监视primary是否存活。client在拿到chunk server列表之后，会缓存起来，并向所有chunk server发送数据。其中数据的顺序是由primary来决定。因此chunk version id和primary决定的顺序就保证了所有节点接到的请求都是有序一致的。如果没有错误发生，所有节点数据满足一致性。</li>
+<li>当primary宕机或网络故障，master到primary的心跳就断了，此时master会等到心跳过期以后，指派另一个chunk server作为master，并更新chunk version id，这样通过该租约id就可以发现那些chunk server上的数据是过时的。</li>
+<li>必须所有chunk server都写入成功，才向客户端返回成功，这个设计看来是偏向一致性的，牺牲了写入时的可用性。这样能保证只要chunk server的chunk version id一样，数据就必定是最新的，就不需要引入一致性算法来管理一致性，简化了设计。</li>
+<li>对chunk server的读取不一定走primary，这样读取会有不一致的风险，论文里没有怎么提及这方面的保护。</li>
+<li>由于客户端会缓存primary，这样当发生网络分区或宕机时，客户端没有更新最新的chunk server，可能会向过时的chunk server发起读写。不过由于一般的场景是对chunk进行追加，因此很大可能是读到超过末尾的数据而不是读到过时数据。这会导致读错误，client重新向master请求最新的chunk server。</li>
+<li>当发生写错误时，可能会造成chunk server之间数据不一致。</li>
+<li>当多个客户端并发修改同一个chunk时，虽然数据是一致的，但多个客户端的写入会互相穿插，可能会导致数据混乱。其实这个在单机文件系统中也是会发生的，内核提供文件锁来进行保护。gfs出于性能的考虑，没有引入任何锁的同步机制，而是建议使用原子追加或者写匿名文件然后利用原子性的元数据rename操作，来解决这个问题。</li>
+<li>当发生写错误时，由于客户端重试，原子追加可能会在多个chunk server发生数据的重复或者padding，造成在数据字节层面是不一致的，但在逻辑上可以通过给每个请求编号，在读取时候过滤相同id的数据块，实现一致性。</li>
+</ol>
+<h3 id="缓存一致性"><a href="#缓存一致性" class="headerlink" title="缓存一致性"></a>缓存一致性</h3><p>　　gfs由于面向大文件的顺序读写，客户端缓存意义不大，因此避免了设计上针对数据的缓存一致性问题。chunk server上也不单独做缓存管理，而是直接利用linux 内核的page cache,buffer cache来缓存。不过上面提到，为了减少master的压力，客户端会缓存一些元数据，这样会有一定概率发生缓存不一致，有读到过时数据的风险。</p>
+<h3 id="高吞吐"><a href="#高吞吐" class="headerlink" title="高吞吐"></a>高吞吐</h3><p>　　gfs通过对文件分成多个chunk，不同的chunk分散在不同server上，而且同一个chunk也由多个chunk server提供读取业务支持，由于集群由大规模机器组成，因此能满足读写的高吞吐，特别是读取性能会非常好。</p>
+<p>　　写入时把控制与数据写业务分离，控制由primary负责写入顺序的保证，但数据写则是选择最近的机器，用流水线的方式形成一条多个chunk server的数据通路，减少写入延迟，充分利用每个chunk server的写入带宽。</p>
+<p>　　master在分配chunk server时，会优先选择负载低的机器，进行负载均衡，保证系统整体的吞吐量。</p>
+<p>　　因为gfs面向大文件，chunk size一般设得比较大，这就减轻了与master都交互，而且client与chunk server间都是TCP长连接来传输，降低了网络开销。</p>
+<h3 id="snapshot"><a href="#snapshot" class="headerlink" title="snapshot"></a>snapshot</h3><p>　　master定期自动做snapshot，采用copy-on-write机制，元数据的构造要满足copy-on-write要求。</p>
+<p>　　可以针对某个目录或文件做snapshot。仍然是copy-on-write机制：</p>
+<ol>
+<li>元数据层面简单地把chunk同时链到snapshot的文件上，使得chunk有多个引用。</li>
+<li>master撤回所有涉及的chunk的租约，禁止对原文件进行写入。</li>
+<li>当client要写chunk时，会延迟写入，先检查引用数是否大于1，是则通知每个chunk server在本地进行chunk的复制，然后对新chunk赋予租约，返回client。client不会感知到与普通写的任何差别。</li>
+</ol>
+<h3 id="垃圾回收"><a href="#垃圾回收" class="headerlink" title="垃圾回收"></a>垃圾回收</h3><p>　　删除文件不直接删数据，而是先把元数据rename成隐藏文件，然后通过后台定时扫描任务清除隐藏文件，同时清理孤儿chunk，这样大大加速了删除的性能，不过会造成空间浪费。</p>
+<h3 id="sharding"><a href="#sharding" class="headerlink" title="sharding"></a>sharding</h3><p>　　gfs里不仅对不同文件进行sharding，而且对文件内部也分成chunk。分片的数据由master统一管理，对当前负载、机器容量、以及分机架容灾等共同考虑，决定分片的位置。对缺失的数据分片，会进行重新复制；对容量失衡的机器，也会进行rebalance。这就需要master对所有chunk server进行强有力的监控，包括心跳存活以及各方面状态的监控。</p>
+<h3 id="数据完整性"><a href="#数据完整性" class="headerlink" title="数据完整性"></a>数据完整性</h3><p>　　硬盘会损坏，存在硬盘里的数据也可能会因为各种原因造成数据丢失，因此chunk server要定期进行扫描，然后向master汇报，master对损坏的chunk进行重新复制。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/分布式/" rel="tag"># 分布式</a>
+          
+            <a href="/tags/存储/" rel="tag"># 存储</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/13/raft协议实现分析/" rel="next" title="raft协议实现分析">
+                <i class="fa fa-chevron-left"></i> raft协议实现分析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.jpg"
+                alt="Gavin Wong" />
+            
+              <p class="site-author-name" itemprop="name">Gavin Wong</p>
+              <p class="site-description motion-element" itemprop="description">蟾宫桂花千里香，暖风拂面惹人狂。我欲因之凌霄起，嫦娥丹桂尽入囊。</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">41</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#应用场景"><span class="nav-number">2.</span> <span class="nav-text">应用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#元数据管理"><span class="nav-number">3.</span> <span class="nav-text">元数据管理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据一致性"><span class="nav-number">4.</span> <span class="nav-text">数据一致性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缓存一致性"><span class="nav-number">5.</span> <span class="nav-text">缓存一致性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#高吞吐"><span class="nav-number">6.</span> <span class="nav-text">高吞吐</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#snapshot"><span class="nav-number">7.</span> <span class="nav-text">snapshot</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#垃圾回收"><span class="nav-number">8.</span> <span class="nav-text">垃圾回收</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#sharding"><span class="nav-number">9.</span> <span class="nav-text">sharding</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据完整性"><span class="nav-number">10.</span> <span class="nav-text">数据完整性</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gavin Wong</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="//cdn.jsdelivr.net/jquery/2.1.3/jquery.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="//cdn.jsdelivr.net/fastclick/1.0.6/fastclick.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="//cdn.jsdelivr.net/jquery.lazyload/1.9.3/jquery.lazyload.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="//cdn.jsdelivr.net/velocity/1.2.3/velocity.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="//cdn.jsdelivr.net/velocity/1.2.3/velocity.ui.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="//cdn.jsdelivr.net/fancybox/2.1.5/jquery.fancybox.pack.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("EBQKkMtlkhkxwaXmaewHY2c4-gzGzoHsz", "KSypTWMBbTMgIBYw9EuDa73j");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
