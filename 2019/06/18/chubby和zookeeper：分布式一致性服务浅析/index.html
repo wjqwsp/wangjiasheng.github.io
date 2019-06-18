@@ -116,7 +116,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="分布式,存储," />
 
 
 
@@ -127,15 +127,16 @@
 
 
 
-<meta name="description" content="蟾宫桂花千里香，暖风拂面惹人狂。我欲因之凌霄起，嫦娥丹桂尽入囊。">
-<meta property="og:type" content="website">
-<meta property="og:title" content="南国倾城">
-<meta property="og:url" content="http://wjqwsp.github.io/tags/进程/index.html">
+<meta name="description" content="前言　　如果我们的项目需要一致性，例如leader选举、配置维护、分布式锁等服务，我们可以用Raft, Paxos等协议自己实现，也可以看看有没有相关的库。但是，我们的项目可能一开始的架构只是单机的，或者根本没有考虑到将来的扩充会引入一致性协议，可能会导致代码变动较大。因此，我们也许需要一套松耦合的分布式一致性应用，独立地给我们的应用提供服务，chubby和zookeeper就是这样的两个应用。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="chubby和zookeeper：分布式一致性服务浅析">
+<meta property="og:url" content="http://wjqwsp.github.io/2019/06/18/chubby和zookeeper：分布式一致性服务浅析/index.html">
 <meta property="og:site_name" content="南国倾城">
-<meta property="og:description" content="蟾宫桂花千里香，暖风拂面惹人狂。我欲因之凌霄起，嫦娥丹桂尽入囊。">
+<meta property="og:description" content="前言　　如果我们的项目需要一致性，例如leader选举、配置维护、分布式锁等服务，我们可以用Raft, Paxos等协议自己实现，也可以看看有没有相关的库。但是，我们的项目可能一开始的架构只是单机的，或者根本没有考虑到将来的扩充会引入一致性协议，可能会导致代码变动较大。因此，我们也许需要一套松耦合的分布式一致性应用，独立地给我们的应用提供服务，chubby和zookeeper就是这样的两个应用。">
+<meta property="og:updated_time" content="2019-06-18T13:36:33.518Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="南国倾城">
-<meta name="twitter:description" content="蟾宫桂花千里香，暖风拂面惹人狂。我欲因之凌霄起，嫦娥丹桂尽入囊。">
+<meta name="twitter:title" content="chubby和zookeeper：分布式一致性服务浅析">
+<meta name="twitter:description" content="前言　　如果我们的项目需要一致性，例如leader选举、配置维护、分布式锁等服务，我们可以用Raft, Paxos等协议自己实现，也可以看看有没有相关的库。但是，我们的项目可能一开始的架构只是单机的，或者根本没有考虑到将来的扩充会引入一致性协议，可能会导致代码变动较大。因此，我们也许需要一套松耦合的分布式一致性应用，独立地给我们的应用提供服务，chubby和zookeeper就是这样的两个应用。">
 
 
 
@@ -165,13 +166,13 @@
 
 
 
-  <link rel="canonical" href="http://wjqwsp.github.io/tags/进程/"/>
+  <link rel="canonical" href="http://wjqwsp.github.io/2019/06/18/chubby和zookeeper：分布式一致性服务浅析/"/>
 
 
 
 
 
-  <title>标签: 进程 | 南国倾城</title>
+  <title>chubby和zookeeper：分布式一致性服务浅析 | 南国倾城</title>
   
 
 
@@ -190,7 +191,7 @@
     
   
 
-  <div class="container sidebar-position-left ">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -308,54 +309,230 @@
           <div id="content" class="content">
             
 
-  
-  
-  
-  <div class="post-block tag">
+  <div id="posts" class="posts-expand">
+    
 
-    <div id="posts" class="posts-collapse">
-      <div class="collection-title">
-        <h1>进程<small>标签</small>
-        </h1>
-      </div>
+  
 
-      
-        
+  
+  
+  
 
   <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://wjqwsp.github.io/2019/06/18/chubby和zookeeper：分布式一致性服务浅析/">
 
-      <h2 class="post-title">
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Gavin Wong">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="南国倾城">
+    </span>
+
+    
+      <header class="post-header">
+
         
-            <a class="post-title-link" href="/2018/09/01/xv6内存管理与进程初始化过程浅析/" itemprop="url">
-              
-                <span itemprop="name">xv6内存管理与进程调度过程浅析</span>
-              
-            </a>
         
-      </h2>
+          <h1 class="post-title" itemprop="name headline">chubby和zookeeper：分布式一致性服务浅析</h1>
+        
 
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2018-09-01T11:29:59+08:00"
-              content="2018-09-01" >
-          09-01
-        </time>
-      </div>
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-18T09:15:12+08:00">
+                2019-06-18
+              </time>
+            
 
-    </header>
-  </article>
+            
 
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2019/06/18/chubby和zookeeper：分布式一致性服务浅析/" class="leancloud_visitors" data-flag-title="chubby和zookeeper：分布式一致性服务浅析">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　如果我们的项目需要一致性，例如leader选举、配置维护、分布式锁等服务，我们可以用Raft, Paxos等协议自己实现，也可以看看有没有相关的库。但是，我们的项目可能一开始的架构只是单机的，或者根本没有考虑到将来的扩充会引入一致性协议，可能会导致代码变动较大。因此，我们也许需要一套松耦合的分布式一致性应用，独立地给我们的应用提供服务，chubby和zookeeper就是这样的两个应用。<br><a id="more"></a></p>
+<h3 id="chubby"><a href="#chubby" class="headerlink" title="chubby"></a>chubby</h3><p>　　chubby是一个分布式锁服务，它提供类文件系统API，以及加锁解锁操作。对chubby状态的读写，一般是指对它提供的文件系统中的文件进行读写。</p>
+<h4 id="业务场景与主要特性"><a href="#业务场景与主要特性" class="headerlink" title="业务场景与主要特性"></a>业务场景与主要特性</h4><p>　　分析一个分布式存储应用，首先要知道它面向什么业务场景，从而获知它应该要提供的特性，以及可以做的折衷。chubby的主要场景就是：粗粒度锁服务。</p>
+<p>　　由于是粗粒度锁，区别于细粒度锁，就是加锁时间一般较长，但加锁频率不高。加锁时间长，决定了系统对节点崩溃、网络故障等情况比较敏感，必须有机制能够让锁状态能够在发生硬件错误的时候还能够保持正常。由于chubby本身提供一致性的锁服务，因此自身必须始终保持一致性。同时，由于加锁时间长，加锁频率不高，决定了系统不需要有很高的读写性能，但必须支持大量的长连接，心跳请求是主要压力。</p>
+<p>  概括而言，chubby主要需要提供一下特性：</p>
+<ol>
+<li>分布式强一致性。包括自身状态的线性一致性，缓存一致性，以及锁一致性三个层面。</li>
+<li>fail-over要平滑。</li>
+<li>性能要求不高，但必须支持大量的客户端连接，心跳请求是主要压力。</li>
+</ol>
+<p>　　下面就主要对这3个特性入手，看看chubby到底是怎么做的。</p>
+<h4 id="自身状态一致性"><a href="#自身状态一致性" class="headerlink" title="自身状态一致性"></a>自身状态一致性</h4><p>　　一个chubby集群一般包含5个节点，这5个节点通过类Paxos的一致性算法来保证线性一致性，客户读写请求都要落到master节点上。可以保证客户对chubby状态的读写都是线性一致的，只要5个节点中的多数节点在线，就能提供一致性服务。</p>
+<h4 id="缓存一致性"><a href="#缓存一致性" class="headerlink" title="缓存一致性"></a>缓存一致性</h4><p>　　由于chubby内部采用了分布式强一致性算法，所有读写请求都要经过master节点，性能会是一个弱项，即便粗粒度锁对性能要求不高，但仍然有必要考虑如何保证性能。chubby采用了客户端缓存机制来提高性能。</p>
+<p>　　缓存仍然要保证一致性。其中写是直写的，chubby服务器同时维护相应数据的所有缓存session列表，当接收到写请求，在修改相应数据前，必须先阻塞，让所有缓存失效，然后再修改。所有缓存都有租约机制，通过心跳来维护。</p>
+<p>　　更具体而言，chubby在接收到任何写请求之后，会先检查有哪些客户端会受影响，然后先阻塞当前的写请求，给所有这些客户端发送缓存失效请求。当所有客户端给出应答后，确保没有任何旧的缓存影响一致性，然后再修改。服务端最多发送一轮缓存失效请求，但有客户端没给出应答，则等到缓存的租约过期，这时候就能确保缓存安全，此时可以作出修改。</p>
+<p>　　从服务器段发出第一个缓存失效请求，到最终完成写请求为止，这段时间相应数据都是处于不可缓存状态的。此时如果有客户端反复发起读请求，则会穿透缓存，直接落到chubby上。如果这时候读负载过重，则会对服务器造成很大压力。但如果暂时阻塞掉这些读请求，则会造成读延迟。此时可以引入混合机制，先不阻塞读请求，等到负载达到一定量时，再进行阻塞。</p>
+<p>　　客户端还可以对锁进行缓存，解锁以后先不释放，加速下一次重新获取。等到有其他客户端获取锁时，再通知释放。</p>
+<h4 id="锁一致性"><a href="#锁一致性" class="headerlink" title="锁一致性"></a>锁一致性</h4><p>　　chubby所有的文件都会维护一个锁计数器，来保证当客户应用持锁进程崩溃时，不会破坏锁一致性。</p>
+<p>　　试想如下场景：</p>
+<p>　　客户进程A获得了锁L，向另一个进程B发出R请求，然后崩溃了。然后B获得了锁L，进行了一顿操作之后，如果没有接收到R请求，则执行S操作。如果R请求因为网络延迟了，导致其在B执行了S操作之后，再到达，就有可能造成数据不一致。出现这个现象，主要是因为进程B因为网络延迟，接到了上一个锁拥有者发来的请求。</p>
+<p>　　再试想一下如下场景：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">if</span>(lock)&#123;</div><div class="line">  process(request)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>　　上述伪代码描述了一个很简单但必须考虑的问题，如果在检查锁到处理请求这段时间里，进程因为某种原因阻塞了很久，导致超过了锁的超时时间，这样当处理请求的时候，锁可能就被其他进程获取了，此时就会违反锁一致性。这个现象，主要也是因为处理请求的时候没有区分锁拥有者是当前的还是已经更换了。</p>
+<p>　　chubby提供了一个sequencer接口，用户在获取锁的时候，还会获取锁计数器。这样在提交请求的时候把sequencer带上，处理请求那一方必须向chubby询问当前的锁计数器，只有一致才处理请求。这是分布式锁场景下很常用的fencing token技术，即锁的一致性不能仅由客户程序保证，服务程序也必须维护一个锁的单调递增计数，在真正处理请求的时候判断锁是否易主。</p>
+<p>　　不过不是任何应用都愿意支持sequencer，chubby还提供了一个折衷方案。如果用户正常释放锁，此时锁可以马上被其他客户端获取。但如果因为超时等原因，则有一个冷却时间，在该时间段内锁暂时不可用，阻塞锁请求，以期望在这段时间内所有过时的上一个锁拥有者发出来的请求都能够被处理掉。</p>
+<h4 id="fail-over"><a href="#fail-over" class="headerlink" title="fail-over"></a>fail-over</h4><h5 id="master"><a href="#master" class="headerlink" title="master"></a>master</h5><p>　　chubby master有可能崩溃或网络故障，此时chubby的其他节点会重新选出一个master。chubby的粗粒度锁必须能够在重新选主之后保持，客户端也应该能够平滑地进行过度，尽量不要因为短暂的硬件错误而使得缓存丢失或者返回错误。</p>
+<p>　　客户端与chubby之间由心跳维持，同时可以携带缓存失效或者事件通知等信息。客户端和服务端各维持一段心跳超时时间，这个时间是保守的，必须考虑网络延迟带来的影响。服务端在收到心跳之后，等到差不多超时或者有缓存失效、事件通知等消息到来时候，向客户端发送心跳应答。客户端收到应答后，会延长租约。</p>
+<p>　　如果master发生故障，客户端的心跳就会超时，此时客户端会暂时disable缓存，然后进入“grace”期。该期间的任何请求都会先阻塞，直到重新获得心跳或者grace期也超时。grace期超时后就会向上层报错。这段grace期让客户端能在master短暂失效时平滑过渡。</p>
+<p>　　在服务器这边，master重新选举之后，主要会做如下动作：</p>
+<ol>
+<li>更新epoch，上一个epoch的请求会失败，保证master不会处理发往上一个master的过期的请求。</li>
+<li>重建所有session、lock和cache等信息。</li>
+<li>此时可以接受心跳请求。</li>
+<li>向所有客户端发送fail-over事件通知，该事件会让客户端所有缓存失效。因为上一个master的缓存失效请求有可能会丢失，有造成缓存不一致的风险。</li>
+<li>所有客户端对fail-over事件应答后，可以接受其他请求。</li>
+</ol>
+<p>　　session信息必须在chubby集群里分布式一致地存储，这样在master重新选举以后，也可以维持。</p>
+<h5 id="slave"><a href="#slave" class="headerlink" title="slave"></a>slave</h5><p>　　除了master节点以外，chubby集群的其他节点都是slave。这些节点崩溃或网络故障对系统影响不大，因为只有master才对外提供服务。如果发现slave节点丢失了一段时间，一个第三方的替换系统会从空闲池里抽出一台机器替换掉该slave，修改DNS表，让其他机器能够发现这台机器。master会定期地轮询DNS，当发现配置变更时，会进行集群配置的修改。这个修改同样由一致性协议来保证一致性，这个我觉得可以参照Raft协议的集群变更逻辑。</p>
+<h5 id="snapshot"><a href="#snapshot" class="headerlink" title="snapshot"></a>snapshot</h5><p>　　chubby master会定期做snapshot，有助于fail-over的速度。这个snapshot一般会写到另一幢楼的GFS集群。之所以写到另一幢楼，是因为一般本楼层的GFS会使用chubby作为一致性服务，避免服务依赖的发生。</p>
+<h4 id="可扩展性"><a href="#可扩展性" class="headerlink" title="可扩展性"></a>可扩展性</h4><p>　　单个chubby master往往要支持海量的客户端，当负载上升时，必须有应对方案。chubby有如下解决方案：</p>
+<ol>
+<li>多个chubby集群，客户端会选择就近的集群访问。</li>
+<li>负载上升时，延长心跳时长。由于chubby的主要压力来自于心跳，延长时长能减少心跳请求。</li>
+<li>客户端使用缓存。</li>
+<li>集群内做sharding，可以大幅度降低读写压力。不过除非partition数目非常多，一个客户端往往会连接到大部分的partion，心跳压力仍然很严重。</li>
+<li>使用代理进行客户端聚合。客户端请求由代理转发到chubby，多个客户端的心跳由一个代理心跳代替。这个方法能显著降低心跳压力。</li>
+</ol>
+<h3 id="zookeeper"><a href="#zookeeper" class="headerlink" title="zookeeper"></a>zookeeper</h3><p>　　zookeeper是一个wait-free的分布式一致性服务，可以认为是一个无锁的chubby。相对于chubby而言，它牺牲了一些一致性，而提高了性能。它同样提供了类文件系统的API。主要区别在于：</p>
+<ol>
+<li>提供了一个一致性内核服务，非常灵活，用户程序可以基于zookeeper实现分布式锁、选举以及配置维护等一系列需要一致性的业务。</li>
+<li>提供较高程度的缓存一致性，客户端可以监控缓存，服务器端在作出修改前，先发出通知，但不会阻塞请求。</li>
+<li>不提供线性一致性保证，作为代替，作出如下两点保证：写请求线性一致；单客户端请求按FIFO顺序处理。</li>
+<li>在API层面允许客户端多个请求同时发出，并发处理，而不用等到前一个请求处理完再发出下一个。</li>
+<li>读多写少，写请求由一致性协议保证，由zookeeper集群的master处理，但读请求可以落到任意一个节点上，提高读性能。</li>
+<li>提供cas操作，在无锁条件下防止竞态条件的发生。</li>
+</ol>
+<h4 id="自身状态一致性-1"><a href="#自身状态一致性-1" class="headerlink" title="自身状态一致性"></a>自身状态一致性</h4><p>　　zookeeper集群由zab算法来保证节点协同，zab与paxos类似，都是分布式一致性算法。如果读写都只能由master支持，则zookeeper是满足线性一致性的。但是，为了提高读性能，zookeeper牺牲了一部分一致性，只有写才由zab算法负责，读请求则由客户端所连的节点负责。与chubby不同，客户端可以与任意一个节点连接，且只与一个节点维持session并通信。</p>
+<p>　　不过，因为zookeeper允许同时有多个客户端请求流水线发出，zookeeper保证所有请求按发出的顺序依次处理。因此，如果在读请求前有写请求发到leader，则必须要等到leader广播写请求到本节点，才能处理读请求。换言之，即便在slave节点，同一时刻也只能处理一个请求，如果有发往leader的写请求，则必须要等到该请求在本slave节点生效，才能执行下一个请求。</p>
+<h4 id="缓存一致性-1"><a href="#缓存一致性-1" class="headerlink" title="缓存一致性"></a>缓存一致性</h4><p>　　为了不让缓存失效请求阻塞写请求，zookeeper的所有节点在真正处理该请求前，先广播修改通知，向所有watch该文件的session发通知，然后直接处理写请求，客户端不会返回缓存失效的应答。</p>
+<p>　　假设如下场景：</p>
+<p>　　多个进程选举leader进程，在选举成功之后，leader会修改一些配置，然后通知其他进程配置被修改了。要完成这项任务，必须维护配置的完整性，必须要保证以下两点：</p>
+<ol>
+<li>当leader开始修改配置时，其他进程不允许读取配置。</li>
+<li>当leader在修改到一半时候挂了，其他进程也不允许读取修改了一半的配置。</li>
+</ol>
+<p>　　像chubby这样的分布式锁服务可以通过加锁实现第一点，但第二点也不能通过锁直接保证。zookeeper的做法是，用一个ready文件标志配置已经修改成功。当leader开始修改配置时，先删除ready文件，等到所有配置都修改完毕，再创建该文件。</p>
+<p>　　因为没有锁保护，有可能某个进程先读取ready文件存在，然后开始读配置，这时候ready被删除了。由于zookeeper的写具有线性一致性，确保ready文件的删除比配置修改要更早被任意slave知悉，只要slave监控了ready文件，就能在配置修改前先通知客户端。客户端此时可能读到一半的配置，发现配置被修改，就停止，然后重头读起。</p>
+<p>　　当然，因为zookeeper不能保证线性一致，如果客户端之间有另外的通信管道，则可能会读到不一致的数据。例如clientA看到某个文件被修改，然后通知clientB，而由于clientB连的是不同的zookeeper节点，此时就会读到过时的数据。此时就要用到zookeeper提供的sync命令，保证当前节点能看到所有修改，然后再读。</p>
+<h4 id="fail-over-1"><a href="#fail-over-1" class="headerlink" title="fail-over"></a>fail-over</h4><p>　　当客户端所连的zookeeper节点崩溃或网络故障，客户端需要重连其他节点。由于不同的节点数据不完全一致，为了满足写一致性与同一客户端的请求顺序一致性，客户端要连一个至少不比原来节点的数据更老的节点。为了实现这一点，客户端会维护当前看到的最大的zxid（一致性协议递增id），在连新节点时候，要保证新节点的最大zxid大于等于客户端看到的值。</p>
+<h4 id="snapshot-1"><a href="#snapshot-1" class="headerlink" title="snapshot"></a>snapshot</h4><p>　　zookeeper节点采用深度优先的方式对文件树的节点进行snapshot。在做snapshot时不会阻塞新来的请求。这样snapshot可能会包含后来的请求，与日志的请求重复了，在利用snapshot+日志恢复数据时会执行重复的操作。但是由于zookeeper的请求是幂等的，处理重复的请求不会对状态有影响，因此不必担心。</p>
+<p>　　</p>
 
       
     </div>
+    
+    
+    
 
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/分布式/" rel="tag"># 分布式</a>
+          
+            <a href="/tags/存储/" rel="tag"># 存储</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/06/13/gfs技术要点总结与浅析/" rel="next" title="gfs技术要点总结与浅析">
+                <i class="fa fa-chevron-left"></i> gfs技术要点总结与浅析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
   </div>
   
   
   
+  </article>
 
-  
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -363,6 +540,10 @@
 
 
           
+
+  
+
+
 
         </div>
         
@@ -383,8 +564,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -439,6 +629,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#chubby"><span class="nav-number">2.</span> <span class="nav-text">chubby</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#业务场景与主要特性"><span class="nav-number">2.1.</span> <span class="nav-text">业务场景与主要特性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#自身状态一致性"><span class="nav-number">2.2.</span> <span class="nav-text">自身状态一致性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#缓存一致性"><span class="nav-number">2.3.</span> <span class="nav-text">缓存一致性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#锁一致性"><span class="nav-number">2.4.</span> <span class="nav-text">锁一致性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#fail-over"><span class="nav-number">2.5.</span> <span class="nav-text">fail-over</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#master"><span class="nav-number">2.5.1.</span> <span class="nav-text">master</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#slave"><span class="nav-number">2.5.2.</span> <span class="nav-text">slave</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#snapshot"><span class="nav-number">2.5.3.</span> <span class="nav-text">snapshot</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#可扩展性"><span class="nav-number">2.6.</span> <span class="nav-text">可扩展性</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#zookeeper"><span class="nav-number">3.</span> <span class="nav-text">zookeeper</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#自身状态一致性-1"><span class="nav-number">3.1.</span> <span class="nav-text">自身状态一致性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#缓存一致性-1"><span class="nav-number">3.2.</span> <span class="nav-text">缓存一致性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#fail-over-1"><span class="nav-number">3.3.</span> <span class="nav-text">fail-over</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#snapshot-1"><span class="nav-number">3.4.</span> <span class="nav-text">snapshot</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -579,6 +785,10 @@
 
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
 
   
 
