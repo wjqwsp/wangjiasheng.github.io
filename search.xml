@@ -4,6 +4,31 @@
   
     
     <entry>
+      <title><![CDATA[分布式文件存储frangipani速览]]></title>
+      <url>http://wjqwsp.github.io/2019/06/25/%E5%88%86%E5%B8%83%E5%BC%8F%E6%96%87%E4%BB%B6%E5%AD%98%E5%82%A8frangipani%E9%80%9F%E8%A7%88/</url>
+      <content type="html"><![CDATA[<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　frangipani是一个很特殊很有意思的分布式文件存储系统，与GFS之类的架构大相径庭。它的思想很精简也很巧妙，本文将快速总结一下它的核心设计思想。<br><a id="more"></a></p>
+<h3 id="系统架构"><a href="#系统架构" class="headerlink" title="系统架构"></a>系统架构</h3><p><img src="/img/frangipani-architecture.png" alt="frangipani系统架构"></p>
+<p>　　图中给出了frangipani的系统架构。它主要分成两层，三大模块。分别是底层的petal分布式块存储系统，上层的frangipani分布式文件存储系统，以及一个分布式锁服务。petal给frangipani提供一个共享的、高容错的、可扩展的底层块存储，frangipani作为轻量文件客户端访问petal，分布式锁服务为每个frangipani提供缓存一致性以及事务支持。</p>
+<p>　　petal可视为普通块设备，只不过为不同的机器提供了一个共享的存储。frangipani是内核文件系统，与普通文件系统一样挂载到相应的块设备上。每个frangipani机器相当于petal的客户端，维护自己的缓存，通过文件缓存加速文件的存取。分布式锁服务类似chubby，多个frangipani通过读写锁一致地访问文件数据，并且保证多个frangipani的缓存一致性。</p>
+<h3 id="元数据日志"><a href="#元数据日志" class="headerlink" title="元数据日志"></a>元数据日志</h3><p>　　每个frangipani服务器的文件元数据修改都会写到日志里，日志也存储在petal上。petal设备的存储空间有一部分专门用来存储日志，每个frangipani服务器的日志分配一块固定的空间存储。frangipani会维护日志的缓存，先存储在内存里，随着操作系统定期的写回任务同步到petal上。虽然会有丢数据的风险，不过提升了性能。日志里只存储元数据修改，不存储数据。</p>
+<h3 id="缓存一致性"><a href="#缓存一致性" class="headerlink" title="缓存一致性"></a>缓存一致性</h3><p>　　frangipani通过分布式锁服务对文件加读写锁，如果用户不加锁，则数据直写到petal上，从petal读取的数据也不会缓存；如果加了锁，则读的数据全部在frangipani上缓存，写的数据也是采用写回策略，用户发起fsync或者锁被释放或降级的时候才会把数据写回到petal上。分布式锁采用惰性释放机制，用户不使用的锁仍然会持有一段时间不会马上释放，加速同一个frangipani服务器的下一次锁获取。如果在这段惰性时间内，有其他frangipani服务器要获得锁，则锁会释放，写回没有同步的数据。</p>
+<h3 id="锁一致性"><a href="#锁一致性" class="headerlink" title="锁一致性"></a>锁一致性</h3><p>　　frangipani通过心跳租约机制与分布式锁服务通信，但网络可能存在延迟，进程也可能被暂时阻塞，当超过租约之后锁可能分配给其他frangipani了。可能在petal收到请求的时候，该锁已经易主了。3个解决办法：</p>
+<ol>
+<li>frangipani在检测自己是否持有锁的时候，计算租约剩余时间时必须留有误差。误差能降低锁不一致的概率，但不能避免。</li>
+<li>frangipani的请求会带上租约过期的时间。petal收到请求时检测当前时间是否超过请求带上的过期时间。这个方法需要时钟同步，不能有明显偏差。</li>
+<li>将锁服务集成到petal上，用fencing token判断。那么petal收到请求时可以通过递增的租约ID判断锁是否易主。</li>
+</ol>
+<h3 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h3><p>　　frangipani日志与锁服务共同实现事务功能。一个事务往往涉及多个文件目录，frangipani会一次性把所有锁都申请了。为了避免死锁，锁的申请顺序严格按照inode的编号。</p>
+<h3 id="fail-over"><a href="#fail-over" class="headerlink" title="fail-over"></a>fail-over</h3><p>　　当某frangipani服务器失联后，并且其持有的锁租约过期后，会触发fail-over机制。某一台frangipani服务器会被指派recover任务，它会获得petal上原有frangipani的日志使用权，以及所有相关锁。然后它会进行日志恢复。</p>
+<p>　　frangipani的日志恢复与传统分布式存储系统的恢复很不一样。它没有一个中心化的日志，每个frangipani作为文件客户端，维护自己的元数据修改日志。但是，不同的frangipani可能对petal同样的数据作了修改，因此在恢复时需要特别的手段控制。例如以下场景：</p>
+<p>　　WS1: delete(d/f)               crash<br>  　WS2:               create(d/f)<br>  　WS3 is recovering WS1’s log – but it doesn’t look at WS2’s log</p>
+<p>　　3个fangipani服务器，其中WS1崩溃了，删除d/f文件的元数据操作需要恢复，但是WS2在其后又创建了同样的文件，WS3在进行recover时只能看到WS1的日志，如果重新执行就会把WS2的修改冲掉。该问题的根源在于WS3恢复了已经被执行过的日志记录。</p>
+<p>　　为了解决这个问题，fangipani在每个元数据块上预留一部分地方存储版本号，每个元数据块有独立的版本号，每次修改都会递增。一旦发现操作版本号比当前的低，则拒绝修改。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>　　frangipani将文件系统作为块存储的客户端，利用共享存储视图助力fail-over，每个客户端维护操作日志进行恢复，以及缓存一致性等设计思想，都非常有借鉴意义。</p>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[chubby和zookeeper：分布式一致性服务浅析]]></title>
       <url>http://wjqwsp.github.io/2019/06/18/chubby%E5%92%8Czookeeper%EF%BC%9A%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E6%9C%8D%E5%8A%A1%E6%B5%85%E6%9E%90/</url>
       <content type="html"><![CDATA[<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　如果我们的项目需要一致性，例如leader选举、配置维护、分布式锁等服务，我们可以用Raft, Paxos等协议自己实现，也可以看看有没有相关的库。但是，我们的项目可能一开始的架构只是单机的，或者根本没有考虑到将来的扩充会引入一致性协议，可能会导致代码变动较大。因此，我们也许需要一套松耦合的分布式一致性应用，独立地给我们的应用提供服务，chubby和zookeeper就是这样的两个应用。<br><a id="more"></a></p>

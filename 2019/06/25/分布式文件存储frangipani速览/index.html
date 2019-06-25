@@ -116,7 +116,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="分布式,存储," />
 
 
 
@@ -127,15 +127,18 @@
 
 
 
-<meta name="description" content="蟾宫桂花千里香，暖风拂面惹人狂。我欲因之凌霄起，嫦娥丹桂尽入囊。">
-<meta property="og:type" content="website">
-<meta property="og:title" content="南国倾城">
-<meta property="og:url" content="http://wjqwsp.github.io/archives/page/5/index.html">
+<meta name="description" content="前言　　frangipani是一个很特殊很有意思的分布式文件存储系统，与GFS之类的架构大相径庭。它的思想很精简也很巧妙，本文将快速总结一下它的核心设计思想。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分布式文件存储frangipani速览">
+<meta property="og:url" content="http://wjqwsp.github.io/2019/06/25/分布式文件存储frangipani速览/index.html">
 <meta property="og:site_name" content="南国倾城">
-<meta property="og:description" content="蟾宫桂花千里香，暖风拂面惹人狂。我欲因之凌霄起，嫦娥丹桂尽入囊。">
+<meta property="og:description" content="前言　　frangipani是一个很特殊很有意思的分布式文件存储系统，与GFS之类的架构大相径庭。它的思想很精简也很巧妙，本文将快速总结一下它的核心设计思想。">
+<meta property="og:image" content="http://wjqwsp.github.io/img/frangipani-architecture.png">
+<meta property="og:updated_time" content="2019-06-25T03:20:01.730Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="南国倾城">
-<meta name="twitter:description" content="蟾宫桂花千里香，暖风拂面惹人狂。我欲因之凌霄起，嫦娥丹桂尽入囊。">
+<meta name="twitter:title" content="分布式文件存储frangipani速览">
+<meta name="twitter:description" content="前言　　frangipani是一个很特殊很有意思的分布式文件存储系统，与GFS之类的架构大相径庭。它的思想很精简也很巧妙，本文将快速总结一下它的核心设计思想。">
+<meta name="twitter:image" content="http://wjqwsp.github.io/img/frangipani-architecture.png">
 
 
 
@@ -165,13 +168,13 @@
 
 
 
-  <link rel="canonical" href="http://wjqwsp.github.io/archives/page/5/"/>
+  <link rel="canonical" href="http://wjqwsp.github.io/2019/06/25/分布式文件存储frangipani速览/"/>
 
 
 
 
 
-  <title>归档 | 南国倾城</title>
+  <title>分布式文件存储frangipani速览 | 南国倾城</title>
   
 
 
@@ -190,7 +193,7 @@
     
   
 
-  <div class="container sidebar-position-left page-archive">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -308,151 +311,178 @@
           <div id="content" class="content">
             
 
+  <div id="posts" class="posts-expand">
+    
+
+  
+
   
   
   
-  <div class="post-block archive">
-    <div id="posts" class="posts-collapse">
-      <span class="archive-move-on"></span>
 
-      <span class="archive-page-counter">
-        
-        
-         
-        
-        OK! 目前共计 43 篇日志。 继续努力。
-      </span>
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://wjqwsp.github.io/2019/06/25/分布式文件存储frangipani速览/">
 
-      
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Gavin Wong">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="南国倾城">
+    </span>
+
+    
+      <header class="post-header">
 
         
         
+          <h1 class="post-title" itemprop="name headline">分布式文件存储frangipani速览</h1>
         
 
-        
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-25T09:31:24+08:00">
+                2019-06-25
+              </time>
+            
+
+            
+
+            
+          </span>
+
           
-          <div class="collection-title">
-            <h1 class="archive-year" id="archive-year-2016">2016</h1>
-          </div>
-        
-        
 
-        
+          
+            
+          
 
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+          
+          
+             <span id="/2019/06/25/分布式文件存储frangipani速览/" class="leancloud_visitors" data-flag-title="分布式文件存储frangipani速览">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
 
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2016/08/23/RESTful-API规范补充/" itemprop="url">
-              
-                <span itemprop="name">RESTful API规范补充以及JAX-RS传递参数的方法</span>
-              
-            </a>
-        
-      </h2>
+          
 
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2016-08-23T13:46:01+08:00"
-              content="2016-08-23" >
-          08-23
-        </time>
-      </div>
+          
 
-    </header>
-  </article>
+          
 
+        </div>
+      </header>
+    
 
-
-      
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2016/08/22/RESTful-API-入门二-JAX-RS实现/" itemprop="url">
-              
-                <span itemprop="name">RESTful API 入门二(JAX-RS实现)</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2016-08-22T20:04:04+08:00"
-              content="2016-08-22" >
-          08-22
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2016/08/21/RESTful-API-入门-JAX-RS实现/" itemprop="url">
-              
-                <span itemprop="name">RESTful API 入门一(JAX-RS实现)</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2016-08-21T20:52:42+08:00"
-              content="2016-08-21" >
-          08-21
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
       
 
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>　　frangipani是一个很特殊很有意思的分布式文件存储系统，与GFS之类的架构大相径庭。它的思想很精简也很巧妙，本文将快速总结一下它的核心设计思想。<br><a id="more"></a></p>
+<h3 id="系统架构"><a href="#系统架构" class="headerlink" title="系统架构"></a>系统架构</h3><p><img src="/img/frangipani-architecture.png" alt="frangipani系统架构"></p>
+<p>　　图中给出了frangipani的系统架构。它主要分成两层，三大模块。分别是底层的petal分布式块存储系统，上层的frangipani分布式文件存储系统，以及一个分布式锁服务。petal给frangipani提供一个共享的、高容错的、可扩展的底层块存储，frangipani作为轻量文件客户端访问petal，分布式锁服务为每个frangipani提供缓存一致性以及事务支持。</p>
+<p>　　petal可视为普通块设备，只不过为不同的机器提供了一个共享的存储。frangipani是内核文件系统，与普通文件系统一样挂载到相应的块设备上。每个frangipani机器相当于petal的客户端，维护自己的缓存，通过文件缓存加速文件的存取。分布式锁服务类似chubby，多个frangipani通过读写锁一致地访问文件数据，并且保证多个frangipani的缓存一致性。</p>
+<h3 id="元数据日志"><a href="#元数据日志" class="headerlink" title="元数据日志"></a>元数据日志</h3><p>　　每个frangipani服务器的文件元数据修改都会写到日志里，日志也存储在petal上。petal设备的存储空间有一部分专门用来存储日志，每个frangipani服务器的日志分配一块固定的空间存储。frangipani会维护日志的缓存，先存储在内存里，随着操作系统定期的写回任务同步到petal上。虽然会有丢数据的风险，不过提升了性能。日志里只存储元数据修改，不存储数据。</p>
+<h3 id="缓存一致性"><a href="#缓存一致性" class="headerlink" title="缓存一致性"></a>缓存一致性</h3><p>　　frangipani通过分布式锁服务对文件加读写锁，如果用户不加锁，则数据直写到petal上，从petal读取的数据也不会缓存；如果加了锁，则读的数据全部在frangipani上缓存，写的数据也是采用写回策略，用户发起fsync或者锁被释放或降级的时候才会把数据写回到petal上。分布式锁采用惰性释放机制，用户不使用的锁仍然会持有一段时间不会马上释放，加速同一个frangipani服务器的下一次锁获取。如果在这段惰性时间内，有其他frangipani服务器要获得锁，则锁会释放，写回没有同步的数据。</p>
+<h3 id="锁一致性"><a href="#锁一致性" class="headerlink" title="锁一致性"></a>锁一致性</h3><p>　　frangipani通过心跳租约机制与分布式锁服务通信，但网络可能存在延迟，进程也可能被暂时阻塞，当超过租约之后锁可能分配给其他frangipani了。可能在petal收到请求的时候，该锁已经易主了。3个解决办法：</p>
+<ol>
+<li>frangipani在检测自己是否持有锁的时候，计算租约剩余时间时必须留有误差。误差能降低锁不一致的概率，但不能避免。</li>
+<li>frangipani的请求会带上租约过期的时间。petal收到请求时检测当前时间是否超过请求带上的过期时间。这个方法需要时钟同步，不能有明显偏差。</li>
+<li>将锁服务集成到petal上，用fencing token判断。那么petal收到请求时可以通过递增的租约ID判断锁是否易主。</li>
+</ol>
+<h3 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h3><p>　　frangipani日志与锁服务共同实现事务功能。一个事务往往涉及多个文件目录，frangipani会一次性把所有锁都申请了。为了避免死锁，锁的申请顺序严格按照inode的编号。</p>
+<h3 id="fail-over"><a href="#fail-over" class="headerlink" title="fail-over"></a>fail-over</h3><p>　　当某frangipani服务器失联后，并且其持有的锁租约过期后，会触发fail-over机制。某一台frangipani服务器会被指派recover任务，它会获得petal上原有frangipani的日志使用权，以及所有相关锁。然后它会进行日志恢复。</p>
+<p>　　frangipani的日志恢复与传统分布式存储系统的恢复很不一样。它没有一个中心化的日志，每个frangipani作为文件客户端，维护自己的元数据修改日志。但是，不同的frangipani可能对petal同样的数据作了修改，因此在恢复时需要特别的手段控制。例如以下场景：</p>
+<p>　　WS1: delete(d/f)               crash<br>  　WS2:               create(d/f)<br>  　WS3 is recovering WS1’s log – but it doesn’t look at WS2’s log</p>
+<p>　　3个fangipani服务器，其中WS1崩溃了，删除d/f文件的元数据操作需要恢复，但是WS2在其后又创建了同样的文件，WS3在进行recover时只能看到WS1的日志，如果重新执行就会把WS2的修改冲掉。该问题的根源在于WS3恢复了已经被执行过的日志记录。</p>
+<p>　　为了解决这个问题，fangipani在每个元数据块上预留一部分地方存储版本号，每个元数据块有独立的版本号，每次修改都会递增。一旦发现操作版本号比当前的低，则拒绝修改。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>　　frangipani将文件系统作为块存储的客户端，利用共享存储视图助力fail-over，每个客户端维护操作日志进行恢复，以及缓存一致性等设计思想，都非常有借鉴意义。</p>
+
+      
     </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/分布式/" rel="tag"># 分布式</a>
+          
+            <a href="/tags/存储/" rel="tag"># 存储</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/06/18/chubby和zookeeper：分布式一致性服务浅析/" rel="next" title="chubby和zookeeper：分布式一致性服务浅析">
+                <i class="fa fa-chevron-left"></i> chubby和zookeeper：分布式一致性服务浅析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
   </div>
   
   
   
-
-  
-  <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/archives/page/4/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/archives/">1</a><span class="space">&hellip;</span><a class="page-number" href="/archives/page/4/">4</a><span class="page-number current">5</span>
-  </nav>
+  </article>
 
 
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -460,6 +490,10 @@
 
 
           
+
+  
+
+
 
         </div>
         
@@ -480,8 +514,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -536,6 +579,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#系统架构"><span class="nav-number">2.</span> <span class="nav-text">系统架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#元数据日志"><span class="nav-number">3.</span> <span class="nav-text">元数据日志</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缓存一致性"><span class="nav-number">4.</span> <span class="nav-text">缓存一致性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#锁一致性"><span class="nav-number">5.</span> <span class="nav-text">锁一致性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#事务"><span class="nav-number">6.</span> <span class="nav-text">事务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#fail-over"><span class="nav-number">7.</span> <span class="nav-text">fail-over</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -676,6 +735,10 @@
 
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
 
   
 
